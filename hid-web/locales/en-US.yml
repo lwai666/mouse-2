@@ -1,0 +1,169 @@
+index:
+  title: Welcome to S-center
+  selectLanguage: Select Language
+  rightClick: Left Click to Enter Settings
+  pairingGuide: Wireless Connection Pairing Guide
+  schematicGuide: Settings Process Guide
+  description: Here you can quickly set up your Scyrox device, try out some unique settings, and customize your device to your preferences. When the configuration is complete, no background retention is required. Ultimate performance - for true gamers.
+  add_macro_warning: You can only add a maximum of 4 macros!
+  add_macro_warning_1: Please record the macro first!
+  record_macro_warning: Macro recording is full!
+  sports_arena_1: Enabling sports mode can enhance the competitive experience but will also increase power consumption!
+  sports_arena_2: After enabling e-sports arena mode, more subtle hand movements and precise movements will be instantly reflected in the game. The responsiveness is twice that of e-sports mode, but it requires extremely high PC hardware specifications, strict wireless transmission environment, and more advanced wireless transmission devices. It will also result in higher power consumption!
+  not_support_hid_warning: The current browser does not support device connection. We recommend using Chrome, Edge, or Opera browser!
+mouseConnection:
+  connecting: Connecting...
+  loop: Loop
+  times: Times
+  loopUntilKeyRelease: Loop Until Key Release
+  loopUntilAnyKeyPressed: Loop Until Any Key Pressed
+  loopUntilKeyPressAgain: Loop Until Key Press Again
+settings:
+  title: Check Firmware Update
+  versionTitle: Latest version is {version}, update contents are as follows
+  spiVersion: Receiver Firmware Version
+  usbVersion: Mouse Firmware Version
+  updateNow: Update Now
+  updating: Updating
+  updateCompleted: Update Completed
+  updateFailed: Update Failed
+  hint11: Please confirm the receiver is connected to PC via original cable
+  hint12: During the update, please keep the receiver stationary and ensure connection with PC!
+  errorHint11: 'Update failed, please try again!'
+  hint21: Please confirm the mouse is connected to PC via original cable
+  hint22: During the update, please keep the mouse stationary and ensure connection with PC!
+  errorHint21: 'Update failed, please try again!'
+
+input:
+  profile_input: Please paste the corresponding configuration
+
+button:
+  about: About
+  back: Back
+  go: Confirm
+  ok: OK
+  cancel: Close
+  home: Home
+  toggle_dark: Toggle Dark Mode
+  toggle_langs: Toggle Language
+  start_pairing: Start Pairing
+  left_button: Left Button
+  right_button: Right Button
+  middle_button: Middle Button
+  forward_button: Forward Button
+  back_button: Back Button
+  keyboard_key: Keyboard Key
+
+message:
+  warning: Notice
+  profile_copied: Configuration copied successfully!
+  profile_success: Applied successfully!
+  restore_factory_settings: After clicking confirm, the mouse will be restored to factory default settings!
+  restore_factory_settings_success: Factory default settings restored successfully!
+  sports_mode: When e-sports mode is enabled, mouse performance is maximized but power consumption will increase!
+  pairing_connection: Please put the mouse into pairing mode (press and hold left, middle, and right buttons for 28 seconds until the pairing indicator flashes rapidly), then bring it close to the receiver and click the button to start pairing or press the keyboard spacebar
+  pairing_connection_success: Pairing successful!
+  execution_success: Settings have been executed and maintained!
+
+not-found: Page Not Found
+
+tips:
+  clone:
+    title: Clone
+    description: Click the icon behind the key to copy this key and share it with your teammates through social tools. Tell them to paste this key here and click apply, then your friend will clone all settings under your current mode. Double-click the Profile 1 name on the left to change it to your desired name \n Except for the onboard default Profile 1 group
+  button_ball:
+    title: Button Ball
+    description: The button ball is associated with the macro ball. For detailed tips, please move the mouse cursor to the macro ball on the right
+  belete_macro_ball:
+    title: Delete Macro Ball
+    description: Click the left mouse button to delete this macro ball
+  macro_ball_link:
+    title: Macro Ball Link
+    description: Hold the left mouse button and move the cursor to the mouse button ball where you want to bind the macro
+  macro_recording:
+    title: Macro Recording
+    description: Click the left mouse button to start recording the macro, click again to stop recording
+  macro_view:
+    title: Macro View
+    description: Scroll the mouse wheel or hold the left mouse button and drag up and down to view recorded macros
+  insert_macro:
+    title: Insert Macro
+    description: Insert a macro into the list of recorded macros
+  macro_save:
+    title: Save Macro
+    description: Click the left mouse button to save the recorded macro as a macro ball displayed in the upper right
+  macro_revise:
+    title: Macro Revision
+    description: Double-click the left mouse button to modify the key or key trigger interval to your desired value
+
+  pairing_connection:
+    title: Pair with Receiver
+    description: Click the left mouse button to familiarize yourself with the mouse and receiver pairing process\n1. Press and hold the left, middle, and right mouse buttons simultaneously until the mouse indicator light flashes, then release\n2. Confirm the receiver is connected to the PC's USB port, then bring the mouse close to the receiver
+  admin_page:
+    title: Enter Settings Page
+    description: Click the left mouse button to enter, where you can select the program language and upgrade the program firmware
+  restore_factory_settings:
+    title: Program Initialization
+    description: After clicking the left mouse button, the product will be restored to all factory settings and parameters. To avoid accidental operation, please click the left mouse button to confirm
+  jitter_elimination:
+    title: Jitter Elimination
+    description: Slide up and down or directly click the left mouse button to select an ideal value to control or eliminate electrical signal jitter when triggering left and right buttons
+  hibernation:
+    title: Hibernation
+    description: Slide up and down to modify when the mouse enters low power state after the cursor remains stationary for the ideal duration
+  sports_arena:
+    title: Sports Arena
+    description: Click the left mouse button to turn this feature on or off. When the icon is white, it is enabled. While response rate and wireless connection stability improve, power consumption also relatively increases\nYou can also click this icon again to enter e-sports mode, the icon will be blue when started
+  profile_select:
+    title: Profile Selection
+    description: Click the left mouse button to select any Profile group including the onboard default unmodifiable Profile 1, preset named or cloned Profile as the ideal Profile
+  motion_sync:
+    title: Motion Sync
+    description: Click the left mouse button to turn this feature on or off. When the icon is white, it is enabled. This feature synchronizes mouse electrical signals with USB electrical signals
+  lod:
+    title: LOD Settings
+    description: Slide up and down or directly click the left mouse button to select the ideal distance value for the optical IC to work from the mousepad surface. The mouse cursor will stop when the optical IC's intake hole surface distance from the mousepad surface exceeds the ideal value
+  dpi:
+    title: DPI Adjustment
+    description: Slide left and right to adjust DPI value
+  polling:
+    title: Polling Rate Adjustment
+    description: Hold the left mouse button and slide left and right or click to select your ideal value
+  angle:
+    title: Angle Adjustment
+    description: You can adjust to a suitable angle based on your preferred mouse grip posture
+
+mouseKeyOptions:
+  switch_polling_rate: Switch Polling Rate
+  left_button: Left Button
+  right_button: Right Button
+  middle_button: Middle Button
+  forward_button: Forward Button
+  back_button: Back Button
+  disable: Disable
+  scroll_wheel_tilt: Scroll Wheel Left/Right Tilt
+  scroll_wheel_left: Left Scroll Wheel
+  scroll_wheel_right: Right Scroll Wheel
+  switch_dpi: Switch DPI
+  dpi_minus: DPI-
+  dpi_plus: DPI+
+  dpi_cycle: DPI Cycle
+  multimedia_functions: Multimedia Functions
+  player: Player
+  play_pause: Play/Pause
+  next_track: Next Track
+  previous_track: Previous Track
+  stop_playback: Stop Playback
+  mute: Mute
+  volume_up: Volume Up
+  volume_down: Volume Down
+  email: Email
+  calculator: Calculator
+  my_computer: My Computer
+  homepage: Homepage
+  search: Search
+  web_forward: Web Forward
+  web_back: Web Back
+  stop_web: Stop Web
+  refresh: Refresh
+  favorites: Favorites

@@ -1,0 +1,242 @@
+@import './markdown.css';
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: #121212;
+  /* --el-color-primary: #fff; */
+}
+
+html.dark {
+  background: #121212;
+  color-scheme: dark;
+  /* --el-color-primary: #fff; */
+}
+
+/* body {
+  background-color: black;
+  background-image: url(/tile.png);
+} */
+
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: rgb(13, 148, 136);
+  opacity: 0.75;
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+.glass-material {
+  backdrop-filter: blur(24px);
+  background: linear-gradient(
+    134.04deg,
+    rgba(255, 255, 255, 0.5) -20.156%,
+    rgba(235, 235, 235, 0.37) 3.958%,
+    rgba(224, 224, 224, 0.29) 13.659%,
+    rgba(212, 212, 212, 0.21) 27.796%,
+    rgba(207, 207, 207, 0.18) 37.636%,
+    rgba(202, 202, 202, 0.14) 44.239%,
+    rgba(200, 200, 200, 0.13) 50.409%,
+    rgba(196, 196, 196, 0.1) 60.112%
+  );
+  border-radius: 30px;
+  border: 1px solid;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 1px 24px -1px rgba(0, 0, 0, 0.18);
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.hide-focus-visible:focus-visible {
+  outline: none;
+}
+
+
+.right-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+.right-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.right-fade-enter-from,
+.right-fade-leave-to {
+  transform: translateX(100px);
+  opacity: 0;
+}
+
+
+.left-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+.left-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.left-fade-enter-from,
+.left-fade-leave-to {
+  transform: translateX(-100px);
+  opacity: 0;
+}
+
+
+.drag-none {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* 去除焦点边框 */
+:focus {
+  outline: none;
+}
+
+.custom-popper {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  border-radius: 10px;
+
+  .el-scrollbar {
+    border-color: #fff;
+  }
+
+  .el-cascader-panel {
+    font-size: 1rem;
+  }
+  /* .el-cascader-panel .el-cascader-menu:first-of-type:nth-last-of-type(2) {
+    display: none;
+  } */
+
+  .el-popper__arrow {
+    display: none;
+  }
+
+  .el-cascader-node {
+    padding-left: 3px;
+  }
+
+  .el-cascader-node__prefix {
+    display: none;
+  }
+
+  .el-cascader-node.is-active {
+    color: #e83ff4;
+  }
+  .el-cascader-node.in-active-path {
+    color: #e83ff4;
+  }
+  .el-cascader-node:not(.is-disabled):hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .el-cascader-menu__wrap.el-scrollbar__wrap {
+    height: 355px;
+  }
+
+
+  .el-dropdown-menu {
+    background: transparent;
+  }
+  .el-dropdown-menu__item:not(.is-disabled):hover {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #e83ff4;
+  }
+}
+
+.custom-class-el-message {
+  background: transparent;
+  border: none;
+
+  .el-icon {
+    display: none;
+  }
+}
+
+.custom-message-container {
+  position: relative;
+  text-align: center;
+  font-family: "Arial", sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.custom-message-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3), rgba(0, 0, 0, 0));
+  filter: blur(50px);
+  z-index: -1;
+}
+
+.custom-message-container::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(200, 120, 255, 0.3), rgba(0, 0, 0, 0));
+  filter: blur(100px);
+  z-index: -2;
+}
+
+.custom-message-container-text {
+  display: inline-block;
+  background: linear-gradient(to right, #ff8ec5, #c2c2ff);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* <div class="text-container">
+    <div class="text">是否确定恢复出厂设置</div>
+    <div class="text">并将所有设置初始化！</div>
+  </div> */
+
+/* .text-container {
+  position: relative;
+  text-align: center;
+  font-family: "Arial", sans-serif;
+  font-weight: bold;
+  font-size: 2rem;
+}
+
+.text {
+  display: inline-block;
+  background: linear-gradient(to right, #ff8ec5, #c2c2ff);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+ */

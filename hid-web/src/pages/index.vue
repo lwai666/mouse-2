@@ -1,0 +1,366 @@
+<script setup lang="ts">
+import { ElButton, ElCarousel, ElCarouselItem } from 'element-plus'
+import { availableLocales, loadLanguageAsync } from '~/modules/i18n'
+import { createTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+defineOptions({
+  name: 'Scyrox',
+})
+
+const version = __APP_VERSION__
+
+const { t, locale } = useI18n()
+
+const router = useRouter()
+
+const userStore = useUserStore()
+
+const transport = ref();
+
+useTransportWebHID('v8', async (instance) => {
+  transport.value = instance
+})
+
+const selectLanguageList = ref([
+  { title: 'Deutsch', img: '/flag/DE.png', language: 'de-DE' },
+  { title: 'English', img: '/flag/US.png', language: 'en-US' },
+  { title: '简体中文', img: '/flag/CN.png', language: 'zh-CN' },
+  { title: '한국어', img: '/flag/KR.png', language: 'ko-KR' },
+  { title: '日本語', img: '/flag/JP.png', language: 'ja-JP' },
+])
+
+const languageShow = ref(false)
+
+const slideshowList = computed(() => [
+  { title: t('index.pairingGuide'), img: `/slideshow/2_${locale.value}.png` },
+  { title: t('index.schematicGuide'), img: `/slideshow/1_${locale.value}.png` },
+])
+
+const carouselRef = ref(null)
+const activeIndex = ref(0)
+
+function onChangeCarousel(current: number, prev: number) {
+  activeIndex.value = current
+}
+
+toggleLocales(locale.value)
+async function toggleLocales(language: string) {
+  await loadLanguageAsync(language)
+  locale.value = language
+
+  const list = selectLanguageList.value.filter(item => item.language !== language)
+  list.splice(2, 0, selectLanguageList.value.find(item => item.language === language)!)
+  selectLanguageList.value = list
+  languageShow.value = false
+}
+
+const show = ref(false)
+nextTick(() => {
+  show.value = true
+})
+
+async function onNouseClick() {
+  if (transport.value) {
+    router.push(`/hid/v8`)
+    return
+  }
+
+  transport.value = await createTransportWebHID({
+    id: 'v8',
+    filters: [
+      ...toRaw(userStore.devices),
+      // 其他设备
+      // { vendorId: 0x3554, productId: 0xF5F6 },
+      // { vendorId: 0x3554, productId: 0xF5F7 },
+      // { vendorId: 0x3554, productId: 0xF5F4 },
+    ],
+    commandHandler: async (data) => {
+      // console.log('接收的数据=======', data)
+    },
+  })
+  if (transport.value) {
+    router.push(`/hid/v8`)
+  }
+
+  // const devicesInfos = [
+  //   {
+  //       "VID": "0x3554",
+  //       "PID": [
+  //           "0xF5F6",
+  //           "0xF5F7",
+  //           "0xF5F4"
+  //       ],
+  //       "CID": "62",
+  //       "MID": "1",
+  //       "Sensor": "3950",
+  //       "DPIRange": {
+  //           "Mini": [
+  //               "50"
+  //           ],
+  //           "Max": [
+  //               "26000"
+  //           ],
+  //           "Step": [
+  //               "50"
+  //           ],
+  //           "EX": "0x00"
+  //       },
+  //       "Mouse": "NRF52833",
+  //       "Dongle1": "CX52650N",
+  //       "Dongle2": "CX52650N",
+  //       "Dongle4": "CH32V305",
+  //       "Debounce": "8",
+  //       "Keys": [
+  //           {
+  //               "Loc": [
+  //                   "115",
+  //                   "36"
+  //               ],
+  //               "Index": "0",
+  //               "value": [
+  //                   "1",
+  //                   "0x0100"
+  //               ]
+  //           },
+  //           {
+  //               "Loc": [
+  //                   "115",
+  //                   "70"
+  //               ],
+  //               "Index": "1",
+  //               "value": [
+  //                   "1",
+  //                   "0x0200"
+  //               ]
+  //           },
+  //           {
+  //               "Loc": [
+  //                   "115",
+  //                   "110"
+  //               ],
+  //               "Index": "2",
+  //               "value": [
+  //                   "1",
+  //                   "0x0400"
+  //               ]
+  //           },
+  //           {
+  //               "Loc": [
+  //                   "115",
+  //                   "190"
+  //               ],
+  //               "Index": "4",
+  //               "value": [
+  //                   "1",
+  //                   "0x1000"
+  //               ]
+  //           },
+  //           {
+  //               "Loc": [
+  //                   "115",
+  //                   "260"
+  //               ],
+  //               "Index": "3",
+  //               "value": [
+  //                   "1",
+  //                   "0x0800"
+  //               ]
+  //           },
+  //           {
+  //               "Loc": [
+  //                   "530",
+  //                   "285"
+  //               ],
+  //               "Index": "5",
+  //               "value": [
+  //                   "2",
+  //                   "0x0100"
+  //               ]
+  //           }
+  //       ],
+  //       "DPIs": [
+  //           {
+  //               "value": "800",
+  //               "color": "#FF0000"
+  //           },
+  //           {
+  //               "value": "1200",
+  //               "color": "#0000FF"
+  //           },
+  //           {
+  //               "value": "1600",
+  //               "color": "#00FF00"
+  //           },
+  //           {
+  //               "value": "3200",
+  //               "color": "#FFFF00"
+  //           },
+  //           {
+  //               "value": "4000",
+  //               "color": "#00FFFF"
+  //           },
+  //           {
+  //               "value": "8000",
+  //               "color": "#FF00FF"
+  //           }
+  //       ],
+  //       "SensorParm": [
+  //           "6",
+  //           "8",
+  //           "1",
+  //           "2",
+  //           "3",
+  //           "0",
+  //           "0",
+  //           "0",
+  //           "6",
+  //           "0",
+  //           "0",
+  //           "1"
+  //       ],
+  //       "LightParm": [
+  //           "1",
+  //           "0",
+  //           "3",
+  //           "7",
+  //           "1",
+  //           "6",
+  //           "0",
+  //           "0",
+  //           "255"
+  //       ]
+  //   }
+  // ]
+}
+
+const clickCount = ref(0)
+let clickTimer: number | null = null
+
+const handleTitleClick = () => {
+  clickCount.value++
+
+  // 重置计时器
+  if (clickTimer) {
+    clearTimeout(clickTimer)
+  }
+
+  // 3秒内没有新的点击就重置计数
+  clickTimer = window.setTimeout(() => {
+    clickCount.value = 0
+  }, 3000)
+
+  if (clickCount.value >= 10) {
+    clickCount.value = 0
+    if (clickTimer) {
+      clearTimeout(clickTimer)
+    }
+    router.push('/upload-update-package')
+  }
+}
+
+const notSupportHid = ref(false)
+
+onMounted(() => {
+  if (!navigator.hid) {
+    notSupportHid.value = true
+  }
+})
+</script>
+
+<template>
+  <div class="flex flex-col items-center justify-center">
+    <a class="absolute left-30px top-30px" href="https://baidu.com" target="_blank">
+      <img class="h-45px" src="/logo.png" alt="logo">
+    </a>
+
+    <!-- <div fixed top-6 right-6>
+      <nav flex="~ gap-4" justify-end text-xl>
+        <button icon-btn :title="t('button.toggle_dark')" @click="toggleDark()">
+          <div i="carbon-sun dark:carbon-moon" />
+        </button>
+        <button icon-btn :title="t('button.toggle_langs')" @click="toggleLocales()">
+          <div i-carbon-language />
+        </button>
+      </nav>
+    </div> -->
+
+    <div class="flex flex-col items-center justify-between pt-5">
+      <div mb-5 text-2xl @click="handleTitleClick">
+        {{ t('index.title') }}
+      </div>
+      <div v-if="notSupportHid" class="mb-2 text-xl px-5 py-3 bg-white text-red rounded-2xl">
+        {{ t('index.not_support_hid_warning') }}
+      </div>
+
+      <div mb-2 text-2xl>
+        {{ t('index.selectLanguage') }}
+      </div>
+
+      <div class="mb-5 w-50vw min-w-[380px] flex items-center justify-between" @mouseleave="languageShow = false">
+        <div v-for="item in selectLanguageList" :key="item.title">
+          <div :class="locale === item.language ? 'opacity-100' : (languageShow ? 'opacity-45 hover:opacity-100' : 'opacity-0 pointer-events-none')" class="flex flex-col cursor-pointer items-center transition-all duration-500" @click="toggleLocales(item.language)" @mouseenter="(locale === item.language || languageShow) ? languageShow = true : () => {}">
+            <img :src="item.img" :alt="item.title" class="h-40px rounded">
+            <div>{{ item.title }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-5 h-50 w-36vw min-w-[300px] flex flex-col cursor-pointer items-center justify-center border-2 border-gray-600 rounded-2xl bg-#2d2d2d" @click="onNouseClick">
+        <div class="mb-5">
+          {{ t('index.rightClick') }}
+        </div>
+        <img class="h-60px" src="/logo.png" alt="logo">
+      </div>
+
+      <div class="mb-10">
+        <div class="relative h-20 w-100%">
+          <div v-for="(item, index) in slideshowList" class="absolute top-0 w-100% cursor-pointer transition-all duration-500" :class="activeIndex === index ? 'top-8 text-2xl color-#e1fe52' : ''" @click="carouselRef?.setActiveItem(index)">
+            {{ item.title }}
+          </div>
+        </div>
+        <!-- type="card" -->
+        <ElCarousel
+          ref="carouselRef"
+          class="w-60vw min-w-[400px]"
+          height="300px"
+          direction="vertical"
+          :interval="2400"
+          :autoplay="true"
+          indicator-position="none"
+          @change="onChangeCarousel"
+        >
+          <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="h-300px flex items-center justify-center">
+            <img class="h-100%" :src="item.img" alt="item.title">
+          </ElCarouselItem>
+        </ElCarousel>
+      </div>
+
+      <!-- <div text-xl mx-60 mb-10>{{ t('index.description') }}</div> -->
+      <!-- <div class="w-full h-[350px]">
+        <transition name="slide-fade">
+          <img v-if="show" class="icon-btn h-full" src="/mouse-card.png" alt="mouse-card" @click="onNouseClick">
+        </transition>
+      </div> -->
+       <div class="fixed bottom-1">v{{ version }}</div>
+    </div>
+  </div>
+</template>
+
+<style>
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(-50px);
+  opacity: 0;
+}
+</style>

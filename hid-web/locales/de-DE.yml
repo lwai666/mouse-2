@@ -1,0 +1,169 @@
+index:
+  title: Willkommen bei S-center
+  selectLanguage: Sprache auswählen
+  rightClick: Linksklick für Einstellungen
+  pairingGuide: Anleitung zur drahtlosen Verbindung
+  schematicGuide: Anleitung zum Einstellungsprozess
+  description: Hier können Sie Ihr Scyrox-Gerät schnell einrichten, einzigartige Einstellungen ausprobieren und das Gerät nach Ihren Wünschen anpassen. Nach Abschluss der Konfiguration ist keine Hintergrundausführung erforderlich. Ultimative Leistung - für echte Gamer.
+  add_macro_warning: Sie können maximal 4 Makros hinzufügen!
+  add_macro_warning_1: Bitte nehmen Sie zuerst das Makro auf!
+  record_macro_warning: Makroaufnahme ist voll!
+  sports_arena_1: Das Aktivieren des Sportmodus kann das Wettbewerbserlebnis verbessern, erhöht jedoch auch den Stromverbrauch!
+  sports_arena_2: Nach Aktivierung des E-Sport-Arena-Modus werden feinere Handbewegungen und präzise Bewegungen sofort im Spiel umgesetzt. Die Reaktionsgeschwindigkeit ist doppelt so hoch wie im E-Sport-Modus, erfordert aber extrem hohe PC-Hardware-Spezifikationen, eine strenge Funkübertragungsumgebung und fortschrittlichere Funkübertragungsgeräte. Dies führt auch zu einem höheren Stromverbrauch!
+  not_support_hid_warning: Der aktuelle Browser unterstützt keine Geräteverbindung. Wir empfehlen die Verwendung von Chrome, Edge oder Opera Browser!
+mouseConnection:
+  connecting: Verbindung wird hergestellt...
+  loop: Schleife
+  times: Mal
+  loopUntilKeyRelease: Schleife bis Taste losgelassen
+  loopUntilAnyKeyPressed: Schleife bis beliebige Taste gedrückt
+  loopUntilKeyPressAgain: Schleife bis erneut gedrückt
+settings:
+  title: Firmware-Update prüfen
+  versionTitle: Neueste Version ist {version}, Aktualisierungsinhalte wie folgt
+  spiVersion: Empfänger-Firmware-Version
+  usbVersion: Maus-Firmware-Version
+  updateNow: Jetzt aktualisieren
+  updating: Aktualisierung läuft
+  updateCompleted: Aktualisierung abgeschlossen
+  updateFailed: Aktualisierung fehlgeschlagen
+  hint11: Bitte bestätigen Sie, dass der Empfänger über das Original-Kabel mit dem PC verbunden ist
+  hint12: Während der Aktualisierung bitte den Empfänger ruhig halten und die Verbindung zum PC sicherstellen!
+  errorHint11: 'Aktualisierung fehlgeschlagen, bitte erneut versuchen!'
+  hint21: Bitte bestätigen Sie, dass die Maus über das Original-Kabel mit dem PC verbunden ist
+  hint22: Während der Aktualisierung bitte die Maus ruhig halten und die Verbindung zum PC sicherstellen!
+  errorHint21: 'Aktualisierung fehlgeschlagen, bitte erneut versuchen!'
+
+input:
+  profile_input: Bitte fügen Sie die entsprechende Konfiguration ein
+
+button:
+  about: Über
+  back: Zurück
+  go: Bestätigen
+  ok: OK
+  cancel: Schließen
+  home: Startseite
+  toggle_dark: Dunkelmodus umschalten
+  toggle_langs: Sprache umschalten
+  start_pairing: Kopplung starten
+  left_button: Linke Taste
+  right_button: Rechte Taste
+  middle_button: Mittlere Taste
+  forward_button: Vorwärts-Taste
+  back_button: Rückwärts-Taste
+  keyboard_key: Tastatur-Taste
+
+message:
+  warning: Hinweis
+  profile_copied: Konfiguration erfolgreich kopiert!
+  profile_success: Erfolgreich angewendet!
+  restore_factory_settings: Nach Bestätigung wird die Maus auf Werkseinstellungen zurückgesetzt!
+  restore_factory_settings_success: Werkseinstellungen erfolgreich wiederhergestellt!
+  sports_mode: Wenn der E-Sport-Modus aktiviert ist, wird die Mausleistung maximiert, aber der Stromverbrauch erhöht sich!
+  pairing_connection: Bitte versetzen Sie die Maus in den Kopplungsmodus (linke, mittlere und rechte Taste 28 Sekunden lang gedrückt halten, bis die Kopplungsanzeige schnell blinkt), dann in die Nähe des Empfängers bringen und die Taste drücken oder die Leertaste auf der Tastatur drücken
+  pairing_connection_success: Kopplung erfolgreich!
+  execution_success: Einstellungen wurden ausgeführt und beibehalten!
+
+not-found: Seite nicht gefunden
+
+tips:
+  clone:
+    title: Klonen
+    description: Klicken Sie auf das Symbol hinter dem Schlüssel, um diesen zu kopieren und über soziale Tools mit Ihren Teamkollegen zu teilen. Sagen Sie ihnen, dass sie diesen Schlüssel hier einfügen und auf Anwenden klicken sollen, dann wird Ihr Freund alle Einstellungen unter Ihrem aktuellen Modus klonen. Doppelklicken Sie auf den Profilnamen 1 links, um ihn in Ihren gewünschten Namen zu ändern
+  button_ball:
+    title: Tastenkugel
+    description: Die Tastenkugel ist mit der Makrokugel verbunden. Für detaillierte Tipps bewegen Sie den Mauszeiger zur Makrokugel rechts
+  belete_macro_ball:
+    title: Makrokugel löschen
+    description: Klicken Sie mit der linken Maustaste, um diese Makrokugel zu löschen
+  macro_ball_link:
+    title: Makrokugel-Verknüpfung
+    description: Halten Sie die linke Maustaste gedrückt und bewegen Sie den Cursor zur Maustastenkugel, der Sie das Makro zuweisen möchten
+  macro_recording:
+    title: Makroaufnahme
+    description: Klicken Sie mit der linken Maustaste, um die Makroaufnahme zu starten, erneut klicken zum Stoppen
+  macro_view:
+    title: Makro-Ansicht
+    description: Scrollen Sie mit dem Mausrad oder halten Sie die linke Maustaste gedrückt und ziehen Sie nach oben/unten, um aufgezeichnete Makros anzuzeigen
+  insert_macro:
+    title: Makro einfügen
+    description: Ein Makro in die Liste der aufgezeichneten Makros einfügen
+  macro_save:
+    title: Makro speichern
+    description: Klicken Sie mit der linken Maustaste, um das aufgezeichnete Makro als Makrokugel oben rechts anzuzeigen
+  macro_revise:
+    title: Makro bearbeiten
+    description: Doppelklicken Sie mit der linken Maustaste, um die Taste oder das Tastenauslöseintervall auf Ihren gewünschten Wert zu ändern
+
+  pairing_connection:
+    title: Mit Empfänger koppeln
+    description: Klicken Sie mit der linken Maustaste, um sich mit dem Kopplungsprozess von Maus und Empfänger vertraut zu machen \n1. Halten Sie die linke, mittlere und rechte Maustaste gleichzeitig gedrückt, bis die Mausanzeige blinkt, dann loslassen \n2. Bestätigen Sie, dass der Empfänger mit dem USB-Anschluss des PCs verbunden ist, dann bringen Sie die Maus in die Nähe des Empfängers
+  admin_page:
+    title: Einstellungsseite aufrufen
+    description: Klicken Sie mit der linken Maustaste, um die Programmsprache auszuwählen und die Programm-Firmware zu aktualisieren
+  restore_factory_settings:
+    title: Programminitialisierung
+    description: Nach Klicken der linken Maustaste wird das Produkt auf alle Werkseinstellungen und Parameter zurückgesetzt. Um versehentliche Bedienung zu vermeiden, bitte mit der linken Maustaste bestätigen
+  jitter_elimination:
+    title: Zitterunterdrückung
+    description: Nach oben/unten schieben oder direkt mit der linken Maustaste klicken, um einen idealen Wert zur Kontrolle oder Eliminierung von elektrischen Signalzittern beim Auslösen der linken und rechten Tasten zu wählen
+  hibernation:
+    title: Ruhezustand
+    description: Nach oben/unten schieben, um zu ändern, wann die Maus in den Energiesparmodus wechselt, nachdem der Cursor für den idealen Wert stillsteht
+  sports_arena:
+    title: Sports Arena
+    description: Klicken Sie mit der linken Maustaste, um diese Funktion ein- oder auszuschalten. Wenn das Symbol weiß ist, ist sie aktiviert. Während sich Reaktionsrate und Funkverbindungsstabilität verbessern, erhöht sich auch der Stromverbrauch \nSie können auch erneut auf dieses Symbol klicken, um in den E-Sport-Modus zu wechseln, das Symbol wird dann blau
+  profile_select:
+    title: Profilauswahl
+    description: Klicken Sie mit der linken Maustaste, um eine beliebige Profilgruppe auszuwählen, einschließlich des nicht modifizierbaren Onboard-Standard-Profils 1, voreingestellter Namen oder geklonter Profile als ideales Profil
+  motion_sync:
+    title: Motion Sync
+    description: Klicken Sie mit der linken Maustaste, um diese Funktion ein- oder auszuschalten. Wenn das Symbol weiß ist, ist sie aktiviert. Diese Funktion synchronisiert die elektrischen Signale der Maus mit USB-Signalen
+  lod:
+    title: LOD-Einstellungen
+    description: Nach oben/unten schieben oder direkt mit der linken Maustaste klicken, um den idealen Abstandswert für die Funktion des optischen ICs von der Mauspad-Oberfläche zu wählen. Der Mauszeiger stoppt, wenn der Abstand der optischen IC-Einlassöffnung von der Mauspad-Oberfläche den idealen Wert überschreitet
+  dpi:
+    title: DPI-Einstellung
+    description: Nach links/rechts schieben, um den DPI-Wert anzupassen
+  polling:
+    title: Abtastrate einstellen
+    description: Halten Sie die linke Maustaste gedrückt und schieben Sie nach links/rechts oder klicken Sie auf Ihren gewünschten Wert
+  angle:
+    title: Winkeleinstellung
+    description: Sie können den Winkel basierend auf Ihrer bevorzugten Mausgriffhaltung anpassen
+
+mouseKeyOptions:
+  switch_polling_rate: Abtastrate umschalten
+  left_button: Linke Taste
+  right_button: Rechte Taste
+  middle_button: Mittlere Taste
+  forward_button: Vorwärts-Taste
+  back_button: Rückwärts-Taste
+  disable: Deaktivieren
+  scroll_wheel_tilt: Mausrad links/rechts neigen
+  scroll_wheel_left: Linkes Mausrad
+  scroll_wheel_right: Rechtes Mausrad
+  switch_dpi: DPI umschalten
+  dpi_minus: DPI-
+  dpi_plus: DPI+
+  dpi_cycle: DPI-Zyklus
+  multimedia_functions: Multimedia-Funktionen
+  player: Player
+  play_pause: Wiedergabe/Pause
+  next_track: Nächster Titel
+  previous_track: Vorheriger Titel
+  stop_playback: Wiedergabe stoppen
+  mute: Stumm
+  volume_up: Lautstärke erhöhen
+  volume_down: Lautstärke verringern
+  email: E-Mail
+  calculator: Taschenrechner
+  my_computer: Mein Computer
+  homepage: Startseite
+  search: Suchen
+  web_forward: Web vorwärts
+  web_back: Web zurück
+  stop_web: Web stoppen
+  refresh: Aktualisieren
+  favorites: Favoriten

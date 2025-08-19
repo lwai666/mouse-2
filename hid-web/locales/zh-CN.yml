@@ -1,0 +1,168 @@
+index:
+  title: 欢迎使用 S-center
+  selectLanguage: 选择语言
+  rightClick: 左键点击进入设置
+  pairingGuide: 无线连接配对指南
+  schematicGuide: 进入设置过程示意指南
+  description: 在这里您可以迅速设置您的 Scyrox 设备，尝试一些与众不同的设定，并按您的喜好个性化定制您的设备。 当完成配置之后，后台无需保留。极致性能，为真正的玩家而生。
+  add_macro_warning: 最多只能添加4个宏！
+  add_macro_warning_1: 请先录制宏！
+  record_macro_warning: 宏录制已满！
+  sports_arena_1: 己开启竟技模式能提升更佳的竟技体验也将带来更大的功耗！
+  sports_arena_2: 开启电竞赛场模式后会将更细微的手部动作以及更精准的移动即时的体现于游戏中。即时性高于电竟模式一倍，同时要求pc硬件极高，要求苛刻无线传输环境，更先进的无线传输设备。也将带来更大的功耗!
+  not_support_hid_warning: 当前浏览器不支持连接设备,我们推荐您使用 Chrome、Edge 或 Opera 浏览器！
+mouseConnection:
+  connecting: 连线中...
+  loop: 循环
+  times: 次
+  loopUntilKeyRelease: 循环至按键松开
+  loopUntilAnyKeyPressed: 循环至任意按键按下
+  loopUntilKeyPressAgain: 循环至再次按下
+settings:
+  title: 检测固件更新
+  versionTitle: 最新版本为{version}，更新内容如下
+  spiVersion: 接收器固件版本
+  usbVersion: 鼠标固件版本
+  updateNow: 立即更新
+  updating: 正在更新
+  updateCompleted: 更新完成
+  updateFailed: 更新失败
+  hint11: 请确认接收器已通过原装线连接到pc
+  hint12: 更新过程中请耐心等待将接收器静默放置并确保与Pc的连接！
+  errorHint11: 更新失败请重试！
+  hint21: 请确认鼠标已通过原装线连接到Pc
+  hint22: 更新过程中请耐心等待将鼠标静默放置并确保与Pc的连接！
+  errorHint21: 更新失败请重试！
+input:
+  profile_input: 请粘贴对应的配置
+button:
+  about: 关于
+  back: 返回
+  go: 确定
+  ok: 确定
+  cancel: 关闭
+  home: 首页
+  toggle_dark: 切换深色模式
+  toggle_langs: 切换语言
+  start_pairing: 开始配对
+  left_button: 左键
+  right_button: 右键
+  middle_button: 中键
+  forward_button: 前进
+  back_button: 后退
+  keyboard_key: 键盘按键
+message:
+  warning: 提示
+  format_error: 格式错误
+  profile_copied: 配置复制成功！
+  profile_success: 应用成功！
+  restore_factory_settings: 点击确认后鼠标将恢复出厂时的默认设置！
+  restore_factory_settings_success: 恢复出厂默认设置成功！
+  sports_mode: 开启电竞模式后鼠标的性能得到最大释放的同时功耗也会增大！
+  pairing_connection: 请让鼠标进入配对状态（同时按住左中右键 28 秒，直至对码指示灯快闪），并靠近接收器点击按钮开始配对或按键盘的空格键
+  pairing_connection_success: 配对成功！
+  execution_success: 设置已执行并保持!
+  delete_macro_error: 请先删除所有连线!
+not-found: 未找到页面
+tips:
+  clone:
+    title: 克隆
+    description: 点击密钥后面的图标复制这段密钥通过社交工具粘贴分享给你的队友并告诉他将这段密钥粘贴在此处随后点击应用那么你的朋友就克隆了你当前模式下的所有设置 双击左边的 Profile 1 名称需改成你的理想名称 \n 除板载默认 Profile 1 组外
+  button_ball:
+    title: 按键球
+    description: 按键球是与宏球关联详细提示请将鼠标光标移动到右边的宏球
+  belete_macro_ball:
+    title: 删除宏球
+    description: 单击鼠标左键删除这个宏球
+  macro_ball_link:
+    title: 宏球链接
+    description: 按住鼠标左键移动光标到需要宏绑定的鼠标按键球
+  macro_recording:
+    title: 宏录制
+    description: 单击鼠标左键开始录制宏再次单击停止录制宏
+  macro_view:
+    title: 宏查看
+    description: 滚动鼠标滚轮或按住鼠标左键上下拖动查看已录制宏
+  insert_macro:
+    title: 插入宏
+    description: 在已录制的宏列表中插入一个宏
+  macro_save:
+    title: 保存宏
+    description: 单击鼠标左键保存录制好的宏变成宏球显示在右上方
+  macro_revise:
+    title: 宏修改
+    description: 双击鼠标左键修改成你理想值的按键或按键触发间隔时长
+  macro_set:
+    title: 宏设置
+    description: 单击下滑线区域输入1到40循环次数后回车或点击该选项左边球将执行并保存。
+
+  pairing_connection:
+    title: 与接收器配对连接
+    description: 单击鼠标左键熟悉鼠标与接收器配对过程\n1.同时按住鼠标左键中键右键直到鼠标指示灯闪烁松手\n2.确认接受器已连接pc端的usb可以接口再将鼠标靠近接收器
+  admin_page:
+    title: 进入设置页面
+    description: 单击鼠标左键进入后可以选择程序语种还可以升级程序固件
+  restore_factory_settings:
+    title: 程序初始化
+    description: 单击鼠标左键后产品将恢复成出厂时的所有设置和参数为避免误操作此处请单击鼠标左键确认
+  jitter_elimination:
+    title: 抖动消除
+    description: 上下滑动或直接单击鼠标左键选择一个理想值控制或消除左右按键触发时电信号的抖动
+  hibernation:
+    title: 休眠
+    description: 上下滑动修改鼠标在光标静止理想值后进入低功耗状态
+  sports_arena:
+    title: sports_arena
+    description: 单击鼠标左键开启或关闭该功能当图标成白色显示时为开启状态在响应速率无线链接稳定性能提高的同时功耗也相对增加\n你也可以再次点击该图标进入电竞模式起开时图标为蓝色
+  profile_select:
+    title: Profile 选择
+    description: 单击鼠标左键选择任意一组 Profile 包括板载默认不可修改的 Profile 1 预设命名的或克隆的 Profile 设为理想 Profile
+  motion_sync:
+    title: Motion sync
+    description: 单击鼠标左键开启或关闭该功能当图标成白色显示时为开启状态该功能处理鼠标电信号与 usb 电信号同步
+  lod:
+    title: LOD 设置
+    description: 上下滑动或直接单击鼠标左键选择光学 ic 工作时距离鼠标垫表面的理想值光学 ic 的摄入孔表面距离鼠标垫表面大于理想值时鼠标光标将静止
+  dpi:
+    title: DPI 调节
+    description: 左右滑动调节 DPI 值
+  polling:
+    title: 回报率调节
+    description: 并按住鼠标左键左右滑动或者点选你的理想值
+  angle:
+    title: 角度调节
+    description: 可以根据自己习惯握持鼠标的姿势调整到适应的角度
+mouseKeyOptions:
+  switch_polling_rate: 切换回报率
+  left_button: 左键
+  right_button: 右键
+  middle_button: 中键
+  forward_button: 前进
+  back_button: 后退
+  disable: 禁用
+  scroll_wheel_tilt: 滚轮左/右摇摆
+  scroll_wheel_left: 左滚轮
+  scroll_wheel_right: 右滚轮
+  switch_dpi: 切换DPI
+  dpi_minus: DPI-
+  dpi_plus: DPI+
+  dpi_cycle: DPI循环
+  multimedia_functions: 多媒体
+  player: 播放器
+  play_pause: 播放/暂停
+  next_track: 下一曲
+  previous_track: 上一曲
+  stop_playback: 停止播放
+  mute: 静音
+  volume_up: 音量加
+  volume_down: 音量减
+  email: 邮件
+  calculator: 计算器
+  my_computer: 我的电脑
+  homepage: 主页
+  search: 搜索
+  web_forward: 网页前进
+  web_back: 网页后退
+  stop_web: 停止网页
+  refresh: 刷新
+  favorites: 收藏夹

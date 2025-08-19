@@ -1,0 +1,169 @@
+index:
+  title: S-center에 오신 것을 환영합니다
+  selectLanguage: 언어 선택
+  rightClick: 설정으로 들어가려면 왼쪽 클릭
+  pairingGuide: 무선 연결 페어링 가이드
+  schematicGuide: 설정 프로세스 가이드
+  description: 여기에서 Scyrox 장치를 빠르게 설정하고, 독특한 설정을 시도하며, 장치를 개인화할 수 있습니다. 설정이 완료되면 백그라운드에서 실행할 필요가 없습니다. 진정한 게이머를 위한 최고의 성능을 제공합니다.
+  add_macro_warning: 최대 4개의 매크로만 추가할 수 있습니다!
+  add_macro_warning_1: 먼저 매크로를 녹화하세요!
+  record_macro_warning: 매크로 녹화가 가득 찼습니다!
+  sports_arena_1: 경기 모드를 활성화하면 더 나은 경기 경험을 향상시키고 더 많은 전력 소비가 발생합니다!
+  sports_arena_2: e스포츠 아레나 모드를 활성화하면 더 미세한 손동작과 더 정확한 움직임이 게임에 즉시 반영됩니다. e스포츠 모드보다 두 배 더 빠른 응답성을 제공하지만, PC 하드웨어 요구사항이 매우 높고 무선 전송 환경이 까다로우며 더 진보된 무선 전송 장치가 필요합니다. 또한 전력 소비가 증가합니다!
+  not_support_hid_warning: 현재 브라우저는 장치 연결을 지원하지 않습니다. Chrome, Edge 또는 Opera 브라우저를 사용하는 것이 좋습니다!
+mouseConnection:
+  connecting: 연결 중...
+  loop: 루프
+  times: 회
+  loopUntilKeyRelease: 키를 놓을 때까지 루프
+  loopUntilAnyKeyPressed: 아무 키나 누를 때까지 루프
+  loopUntilKeyPressAgain: 다시 누를 때까지 루프
+settings:
+  title: 펌웨어 업데이트 확인
+  versionTitle: 최신 버전은 {version}입니다. 업데이트 내용은 다음과 같습니다
+  spiVersion: 수신기 펌웨어 버전
+  usbVersion: 마우스 펌웨어 버전
+  updateNow: 지금 업데이트
+  updating: 업데이트 중
+  updateCompleted: 업데이트 완료
+  updateFailed: 업데이트 실패
+  hint11: 수신기가 정품 케이블로 PC에 연결되어 있는지 확인하세요
+  hint12: 업데이트 중에는 수신기를 움직이지 말고 PC와의 연결을 유지하세요!
+  errorHint11: 업데이트 실패! 다시 시도해주세요!
+  hint21: 마우스가 정품 케이블로 PC에 연결되어 있는지 확인하세요
+  hint22: 업데이트 중에는 마우스를 움직이지 말고 PC와의 연결을 유지하세요!
+  errorHint21: 업데이트 실패! 다시 시도해주세요!
+
+input:
+  profile_input: 해당 설정을 붙여넣으세요
+
+button:
+  about: 정보
+  back: 뒤로
+  go: 확인
+  ok: 확인
+  cancel: 닫기
+  home: 홈
+  toggle_dark: 다크 모드 전환
+  toggle_langs: 언어 전환
+  start_pairing: 페어링 시작
+  left_button: 왼쪽 버튼
+  right_button: 오른쪽 버튼
+  middle_button: 가운데 버튼
+  forward_button: 앞으로 버튼
+  back_button: 뒤로 버튼
+  keyboard_key: 키보드 키
+
+message:
+  warning: 알림
+  profile_copied: 설정이 복사되었습니다!
+  profile_success: 적용 성공!
+  restore_factory_settings: 확인을 클릭하면 마우스가 공장 초기화됩니다!
+  restore_factory_settings_success: 공장 초기화가 완료되었습니다!
+  sports_mode: e스포츠 모드를 활성화하면 마우스 성능이 최대화되지만 전력 소비도 증가합니다!
+  pairing_connection: 마우스를 페어링 모드로 전환하세요(왼쪽, 가운데, 오른쪽 버튼을 28초 동안 동시에 누르고 페어링 LED가 빠르게 깜박일 때까지 기다리세요). 그런 다음 수신기 근처에서 버튼을 클릭하거나 키보드의 스페이스바를 눌러 페어링을 시작하세요
+  pairing_connection_success: 페어링 성공!
+  execution_success: 설정이 적용되고 유지됩니다!
+
+not-found: 페이지를 찾을 수 없습니다
+
+tips:
+  clone:
+    title: 복제
+    description: 키 뒤의 아이콘을 클릭하여 키를 복사하고 소셜 도구를 통해 팀원과 공유하세요. 팀원이 이 키를 여기에 붙여넣고 적용하면 현재 모드의 모든 설정이 복제됩니다. 왼쪽의 Profile 1 이름을 더블 클릭하여 원하는 이름으로 변경할 수 있습니다.
+  button_ball:
+    title: 버튼 볼
+    description: 버튼 볼은 매크로 볼과 연관되어 있습니다. 자세한 설명은 오른쪽의 매크로 볼에 마우스 커서를 올려놓으세요.
+  belete_macro_ball:
+    title: 매크로 볼 삭제
+    description: 왼쪽 클릭으로 이 매크로 볼을 삭제합니다
+  macro_ball_link:
+    title: 매크로 볼 링크
+    description: 왼쪽 마우스 버튼을 누른 채로 커서를 매크로를 바인딩할 마우스 버튼 볼로 이동하세요
+  macro_recording:
+    title: 매크로 녹화
+    description: 왼쪽 클릭으로 매크로 녹화를 시작하고 다시 클릭하여 중지합니다
+  macro_view:
+    title: 매크로 보기
+    description: 마우스 휠을 스크롤하거나 왼쪽 버튼을 누른 채로 위아래로 드래그하여 녹화된 매크로를 확인하세요
+  insert_macro:
+    title: 매크로 삽입
+    description: 녹화된 매크로 목록에 매크로를 삽입합니다
+  macro_save:
+    title: 매크로 저장
+    description: 왼쪽 클릭으로 녹화된 매크로를 저장하여 오른쪽 상단에 매크로 볼로 표시합니다
+  macro_revise:
+    title: 매크로 수정
+    description: 왼쪽 더블 클릭으로 원하는 키나 키 트리거 간격을 수정합니다
+
+  pairing_connection:
+    title: 수신기와 페어링 연결
+    description: 왼쪽 클릭으로 마우스와 수신기 페어링 과정을 확인하세요\n1. 마우스 표시등이 깜박일 때까지 왼쪽, 가운데, 오른쪽 버튼을 동시에 누르고 있다가 놓으세요\n2. 수신기가 PC의 USB 포트에 연결되어 있는지 확인하고 마우스를 수신기 가까이 가져가세요
+  admin_page:
+    title: 설정 페이지 진입
+    description: 왼쪽 클릭으로 들어가서 프로그램 언어를 선택하고 프로그램 펌웨어를 업그레이드할 수 있습니다
+  restore_factory_settings:
+    title: 프로그램 초기화
+    description: 왼쪽 클릭 후 제품이 공장 출하 시의 모든 설정과 매개변수로 복원됩니다. 실수를 방지하기 위해 왼쪽 클릭으로 확인하세요
+  jitter_elimination:
+    title: 지터 제거
+    description: 위아래로 슬라이드하거나 왼쪽 클릭으로 왼쪽/오른쪽 버튼 트리거 시 전기 신호의 지터를 제어하거나 제거할 이상적인 값을 선택하세요
+  hibernation:
+    title: 절전
+    description: 위아래로 슬라이드하여 커서가 정지한 후 마우스가 저전력 상태로 전환되는 시간을 수정합니다
+  sports_arena:
+    title: sports_arena
+    description: 왼쪽 클릭으로 이 기능을 켜거나 끕니다. 아이콘이 흰색일 때 활성화된 상태입니다. 응답 속도와 무선 연결 안정성이 향상되지만 전력 소비도 증가합니다\n아이콘을 다시 클릭하여 e스포츠 모드로 전환할 수 있으며, 이때 아이콘은 파란색이 됩니다
+  profile_select:
+    title: Profile 선택
+    description: 왼쪽 클릭으로 수정할 수 없는 기본 Profile 1을 포함한 모든 Profile, 사전 설정된 이름 또는 복제된 Profile 중 원하는 Profile을 선택하세요
+  motion_sync:
+    title: Motion sync
+    description: 왼쪽 클릭으로 이 기능을 켜거나 끕니다. 아이콘이 흰색일 때 활성화된 상태입니다. 이 기능은 마우스 전기 신호와 USB 전기 신호를 동기화합니다
+  lod:
+    title: LOD 설정
+    description: 위아래로 슬라이드하거나 왼쪽 클릭으로 광학 센서가 마우스 패드 표면으로부터 작동하는 이상적인 거리를 선택하세요. 광학 센서의 입력 구멍 표면이 마우스 패드 표면으로부터 이상적인 값보다 멀어지면 마우스 커서가 정지합니다
+  dpi:
+    title: DPI 조정
+    description: 좌우로 슬라이드하여 DPI 값을 조정합니다
+  polling:
+    title: 폴링 레이트 조정
+    description: 왼쪽 버튼을 누른 채로 좌우로 슬라이드하거나 원하는 값을 클릭하세요
+  angle:
+    title: 각도 조정
+    description: 마우스를 잡는 자세에 맞춰 적절한 각도로 조정할 수 있습니다
+
+mouseKeyOptions:
+  switch_polling_rate: 폴링 레이트 전환
+  left_button: 왼쪽 버튼
+  right_button: 오른쪽 버튼
+  middle_button: 가운데 버튼
+  forward_button: 앞으로 버튼
+  back_button: 뒤로 버튼
+  disable: 비활성화
+  scroll_wheel_tilt: 스크롤 휠 좌/우 기울기
+  scroll_wheel_left: 왼쪽 스크롤 휠
+  scroll_wheel_right: 오른쪽 스크롤 휠
+  switch_dpi: DPI 전환
+  dpi_minus: DPI-
+  dpi_plus: DPI+
+  dpi_cycle: DPI 순환
+  multimedia_functions: 멀티미디어
+  player: 플레이어
+  play_pause: 재생/일시정지
+  next_track: 다음 트랙
+  previous_track: 이전 트랙
+  stop_playback: 재생 중지
+  mute: 음소거
+  volume_up: 볼륨 증가
+  volume_down: 볼륨 감소
+  email: 이메일
+  calculator: 계산기
+  my_computer: 내 컴퓨터
+  homepage: 홈페이지
+  search: 검색
+  web_forward: 웹 앞으로
+  web_back: 웹 뒤로
+  stop_web: 웹 중지
+  refresh: 새로고침
+  favorites: 즐겨찾기

@@ -1,0 +1,169 @@
+index:
+  title: S-center へようこそ
+  selectLanguage: 言語選択
+  rightClick: 左クリックで設定に入る
+  pairingGuide: ワイヤレス接続ペアリングガイド
+  schematicGuide: 設定プロセスガイド
+  description: ここでは、Scyrox デバイスをすばやく設定し、ユニークな設定を試し、お好みに合わせてデバイスをカスタマイズできます。設定完了後、バックグラウンドでの実行は不要です。真のゲーマーのための究極のパフォーマンスを実現します。
+  add_macro_warning: マクロは最大4つまでしか追加できません！
+  add_macro_warning_1: 先にマクロを記録してください！
+  record_macro_warning: マクロ記録が一杯です！
+  sports_arena_1: 競技モードを有効にすると、より良い競技体験が向上し、より多くの電力消費が発生します！
+  sports_arena_2: e-スポーツアリーナモードを有効にすると、より細かい手の動きとより正確な動作がゲームにリアルタイムで反映されます。e-スポーツモードの2倍の即応性を実現しますが、PCハードウェアの要件が非常に高く、厳密な無線伝送環境と高度な無線伝送デバイスが必要です。また、消費電力も増加します！
+  not_support_hid_warning: 現在のブラウザはデバイス接続をサポートしていません。Chrome、Edge、またはOperaブラウザの使用をお勧めします！
+mouseConnection:
+  connecting: 接続中...
+  loop: ループ
+  times: 回
+  loopUntilKeyRelease: キーを離すまでループ
+  loopUntilAnyKeyPressed: 任意のキーが押されるまでループ
+  loopUntilKeyPressAgain: 再度押されるまでループ
+settings:
+  title: ファームウェアアップデートの確認
+  versionTitle: 最新バージョンは{version}です。更新内容は以下の通りです
+  spiVersion: レシーバーファームウェアバージョン
+  usbVersion: マウスファームウェアバージョン
+  updateNow: 今すぐ更新
+  updating: 更新中
+  updateCompleted: 更新完了
+  updateFailed: 更新失敗
+  hint11: レシーバーが純正ケーブルでPCに接続されていることを確認してください
+  hint12: 更新中はレシーバーを動かさず、PCとの接続を維持してください！
+  errorHint11: 更新に失敗しました。再試行してください！
+  hint21: マウスが純正ケーブルでPCに接続されていることを確認してください
+  hint22: 更新中はマウスを動かさず、PCとの接続を維持してください！
+  errorHint21: 更新に失敗しました。再試行してください！
+
+input:
+  profile_input: 対応する設定を貼り付けてください
+
+button:
+  about: 概要
+  back: 戻る
+  go: 確認
+  ok: 確認
+  cancel: 閉じる
+  home: ホーム
+  toggle_dark: ダークモード切替
+  toggle_langs: 言語切替
+  start_pairing: ペアリング開始
+  left_button: 左ボタン
+  right_button: 右ボタン
+  middle_button: 中央ボタン
+  forward_button: 進むボタン
+  back_button: 戻るボタン
+  keyboard_key: キーボードキー
+
+message:
+  warning: 通知
+  profile_copied: 設定のコピーが完了しました！
+  profile_success: 適用成功！
+  restore_factory_settings: 確認をクリックするとマウスが工場出荷時の設定にリセットされます！
+  restore_factory_settings_success: 工場出荷時の設定に正常にリセットされました！
+  sports_mode: e-スポーツモードを有効にするとマウスの性能が最大限に発揮されますが、消費電力も増加します！
+  pairing_connection: マウスをペアリングモードにしてください（左、中央、右ボタンを28秒間同時に押し、ペアリングLEDが高速点滅するまで待ちます）。その後、レシーバーの近くでボタンをクリックするか、キーボードのスペースキーを押してペアリングを開始してください
+  pairing_connection_success: ペアリング成功！
+  execution_success: 設定が適用され、保持されています！
+
+not-found: ページが見つかりません
+
+tips:
+  clone:
+    title: クローン
+    description: キーの後ろのアイコンをクリックしてキーをコピーし、SNSツールを通じてチームメイトと共有してください。チームメイトがこのキーをここに貼り付けて適用すると、現在のモードのすべての設定がクローンされます。左側のProfile 1の名前をダブルクリックして希望の名前に変更できます。
+  button_ball:
+    title: ボタンボール
+    description: ボタンボールはマクロボールと関連付けられています。詳細は右側のマクロボールにマウスカーソルを合わせてください。
+  belete_macro_ball:
+    title: マクロボールの削除
+    description: 左クリックでこのマクロボールを削除します
+  macro_ball_link:
+    title: マクロボールリンク
+    description: 左マウスボタンを押しながらカーソルをマクロをバインドしたいマウスボタンボールまで移動させてください
+  macro_recording:
+    title: マクロ録画
+    description: 左クリックでマクロの録画を開始し、再度クリックで停止します
+  macro_view:
+    title: マクロ表示
+    description: マウスホイールをスクロールするか、左ボタンを押しながら上下にドラッグして録画済みのマクロを確認します
+  insert_macro:
+    title: マクロの挿入
+    description: 録画済みマクロリストにマクロを挿入します
+  macro_save:
+    title: マクロ保存
+    description: 左クリックで録画したマクロを保存し、右上にマクロボールとして表示します
+  macro_revise:
+    title: マクロ編集
+    description: 左ダブルクリックで希望のキーやキートリガー間隔を修正します
+
+  pairing_connection:
+    title: レシーバーとのペアリング接続
+    description: 左クリックでマウスとレシーバーのペアリングプロセスを確認します\n1.マウスのインジケータが点滅するまで左、中央、右ボタンを同時に押し続けてから離します\n2.レシーバーがPCのUSBポートに接続されていることを確認し、マウスをレシーバーに近づけます
+  admin_page:
+    title: 設定ページへ
+    description: 左クリックで入り、プログラム言語を選択したりプログラムファームウェアをアップグレードしたりできます
+  restore_factory_settings:
+    title: プログラム初期化
+    description: 左クリック後、製品が工場出荷時のすべての設定とパラメータに復元されます。誤操作を防ぐため、左クリックで確認してください
+  jitter_elimination:
+    title: ジッター除去
+    description: 上下にスライドするか左クリックで、左右ボタンのトリガー時の電気信号のジッターを制御または除去する理想的な値を選択します
+  hibernation:
+    title: スリープ
+    description: 上下にスライドしてカーソルが停止した後にマウスが低電力状態に移行するまでの時間を修正します
+  sports_arena:
+    title: sports_arena
+    description: 左クリックでこの機能をオン/オフします。アイコンが白色の時は有効状態です。応答速度と無線接続の安定性が向上しますが、消費電力も相対的に増加します\nアイコンを再度クリックしてe-スポーツモードに入ると、アイコンは青色になります
+  profile_select:
+    title: Profile 選択
+    description: 左クリックで任意のProfileを選択します。これには変更不可能な基板デフォルトのProfile 1、プリセット名、またはクローンされたProfileが含まれます
+  motion_sync:
+    title: Motion sync
+    description: 左クリックでこの機能をオン/オフします。アイコンが白色の時は有効状態です。この機能はマウスの電気信号とUSBの電気信号を同期します
+  lod:
+    title: LOD 設定
+    description: 上下にスライドするか左クリックで、光学センサーがマウスパッド表面から動作する理想的な距離を選択します。光学センサーの入力孔表面がマウスパッド表面から理想値より離れると、マウスカーソルが停止します
+  dpi:
+    title: DPI 調整
+    description: 左右にスライドしてDPI値を調整します
+  polling:
+    title: レポートレート調整
+    description: 左ボタンを押しながら左右にスライドするか、希望の値をクリックします
+  angle:
+    title: 角度調整
+    description: マウスの持ち方に合わせて適切な角度に調整できます
+
+mouseKeyOptions:
+  switch_polling_rate: レポートレート切替
+  left_button: 左ボタン
+  right_button: 右ボタン
+  middle_button: 中央ボタン
+  forward_button: 進むボタン
+  back_button: 戻るボタン
+  disable: 無効
+  scroll_wheel_tilt: スクロールホイール左/右傾き
+  scroll_wheel_left: 左スクロールホイール
+  scroll_wheel_right: 右スクロールホイール
+  switch_dpi: DPI切替
+  dpi_minus: DPI-
+  dpi_plus: DPI+
+  dpi_cycle: DPIサイクル
+  multimedia_functions: マルチメディア
+  player: プレーヤー
+  play_pause: 再生/一時停止
+  next_track: 次のトラック
+  previous_track: 前のトラック
+  stop_playback: 再生停止
+  mute: ミュート
+  volume_up: 音量アップ
+  volume_down: 音量ダウン
+  email: メール
+  calculator: 電卓
+  my_computer: マイコンピュータ
+  homepage: ホームページ
+  search: 検索
+  web_forward: ウェブ進む
+  web_back: ウェブ戻る
+  stop_web: ウェブ停止
+  refresh: 更新
+  favorites: お気に入り
