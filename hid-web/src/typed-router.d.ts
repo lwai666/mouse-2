@@ -24,6 +24,7 @@ declare module 'vue-router/auto-routes' {
     '/hid/[name]': RouteRecordInfo<'/hid/[name]', '/hid/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
     '/hid/settings': RouteRecordInfo<'/hid/settings', '/hid/settings', Record<never, never>, Record<never, never>>,
     '/hid/v8': RouteRecordInfo<'/hid/v8', '/hid/v8', Record<never, never>, Record<never, never>>,
+    '/hid/v9': RouteRecordInfo<'/hid/v9', '/hid/v9', Record<never, never>, Record<never, never>>,
     '/mouse-pairing': RouteRecordInfo<'/mouse-pairing', '/mouse-pairing', Record<never, never>, Record<never, never>>,
     '/README': RouteRecordInfo<'/README', '/README', Record<never, never>, Record<never, never>>,
     '/upload-update-package': RouteRecordInfo<'/upload-update-package', '/upload-update-package', Record<never, never>, Record<never, never>>,

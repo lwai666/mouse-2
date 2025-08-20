@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ElButton, ElCarousel, ElCarouselItem } from 'element-plus'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { availableLocales, loadLanguageAsync } from '~/modules/i18n'
 import { createTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 
 defineOptions({
   name: 'Scyrox',
@@ -18,7 +18,7 @@ const router = useRouter()
 
 const userStore = useUserStore()
 
-const transport = ref();
+const transport = ref()
 
 useTransportWebHID('v8', async (instance) => {
   transport.value = instance
@@ -84,162 +84,12 @@ async function onNouseClick() {
   if (transport.value) {
     router.push(`/hid/v8`)
   }
-
-  // const devicesInfos = [
-  //   {
-  //       "VID": "0x3554",
-  //       "PID": [
-  //           "0xF5F6",
-  //           "0xF5F7",
-  //           "0xF5F4"
-  //       ],
-  //       "CID": "62",
-  //       "MID": "1",
-  //       "Sensor": "3950",
-  //       "DPIRange": {
-  //           "Mini": [
-  //               "50"
-  //           ],
-  //           "Max": [
-  //               "26000"
-  //           ],
-  //           "Step": [
-  //               "50"
-  //           ],
-  //           "EX": "0x00"
-  //       },
-  //       "Mouse": "NRF52833",
-  //       "Dongle1": "CX52650N",
-  //       "Dongle2": "CX52650N",
-  //       "Dongle4": "CH32V305",
-  //       "Debounce": "8",
-  //       "Keys": [
-  //           {
-  //               "Loc": [
-  //                   "115",
-  //                   "36"
-  //               ],
-  //               "Index": "0",
-  //               "value": [
-  //                   "1",
-  //                   "0x0100"
-  //               ]
-  //           },
-  //           {
-  //               "Loc": [
-  //                   "115",
-  //                   "70"
-  //               ],
-  //               "Index": "1",
-  //               "value": [
-  //                   "1",
-  //                   "0x0200"
-  //               ]
-  //           },
-  //           {
-  //               "Loc": [
-  //                   "115",
-  //                   "110"
-  //               ],
-  //               "Index": "2",
-  //               "value": [
-  //                   "1",
-  //                   "0x0400"
-  //               ]
-  //           },
-  //           {
-  //               "Loc": [
-  //                   "115",
-  //                   "190"
-  //               ],
-  //               "Index": "4",
-  //               "value": [
-  //                   "1",
-  //                   "0x1000"
-  //               ]
-  //           },
-  //           {
-  //               "Loc": [
-  //                   "115",
-  //                   "260"
-  //               ],
-  //               "Index": "3",
-  //               "value": [
-  //                   "1",
-  //                   "0x0800"
-  //               ]
-  //           },
-  //           {
-  //               "Loc": [
-  //                   "530",
-  //                   "285"
-  //               ],
-  //               "Index": "5",
-  //               "value": [
-  //                   "2",
-  //                   "0x0100"
-  //               ]
-  //           }
-  //       ],
-  //       "DPIs": [
-  //           {
-  //               "value": "800",
-  //               "color": "#FF0000"
-  //           },
-  //           {
-  //               "value": "1200",
-  //               "color": "#0000FF"
-  //           },
-  //           {
-  //               "value": "1600",
-  //               "color": "#00FF00"
-  //           },
-  //           {
-  //               "value": "3200",
-  //               "color": "#FFFF00"
-  //           },
-  //           {
-  //               "value": "4000",
-  //               "color": "#00FFFF"
-  //           },
-  //           {
-  //               "value": "8000",
-  //               "color": "#FF00FF"
-  //           }
-  //       ],
-  //       "SensorParm": [
-  //           "6",
-  //           "8",
-  //           "1",
-  //           "2",
-  //           "3",
-  //           "0",
-  //           "0",
-  //           "0",
-  //           "6",
-  //           "0",
-  //           "0",
-  //           "1"
-  //       ],
-  //       "LightParm": [
-  //           "1",
-  //           "0",
-  //           "3",
-  //           "7",
-  //           "1",
-  //           "6",
-  //           "0",
-  //           "0",
-  //           "255"
-  //       ]
-  //   }
-  // ]
 }
 
 const clickCount = ref(0)
 let clickTimer: number | null = null
 
-const handleTitleClick = () => {
+function handleTitleClick() {
   clickCount.value++
 
   // 重置计时器
@@ -291,7 +141,7 @@ onMounted(() => {
       <div mb-5 text-2xl @click="handleTitleClick">
         {{ t('index.title') }}
       </div>
-      <div v-if="notSupportHid" class="mb-2 text-xl px-5 py-3 bg-white text-red rounded-2xl">
+      <div v-if="notSupportHid" class="mb-2 rounded-2xl bg-white px-5 py-3 text-xl text-red">
         {{ t('index.not_support_hid_warning') }}
       </div>
 
@@ -299,7 +149,7 @@ onMounted(() => {
         {{ t('index.selectLanguage') }}
       </div>
 
-      <div class="mb-5 w-50vw min-w-[380px] flex items-center justify-between" @mouseleave="languageShow = false">
+      <div class="mb-5 min-w-[380px] w-50vw flex items-center justify-between" @mouseleave="languageShow = false">
         <div v-for="item in selectLanguageList" :key="item.title">
           <div :class="locale === item.language ? 'opacity-100' : (languageShow ? 'opacity-45 hover:opacity-100' : 'opacity-0 pointer-events-none')" class="flex flex-col cursor-pointer items-center transition-all duration-500" @click="toggleLocales(item.language)" @mouseenter="(locale === item.language || languageShow) ? languageShow = true : () => {}">
             <img :src="item.img" :alt="item.title" class="h-40px rounded">
@@ -308,7 +158,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="mb-5 h-50 w-36vw min-w-[300px] flex flex-col cursor-pointer items-center justify-center border-2 border-gray-600 rounded-2xl bg-#2d2d2d" @click="onNouseClick">
+      <div class="mb-5 h-50 min-w-[300px] w-36vw flex flex-col cursor-pointer items-center justify-center border-2 border-gray-600 rounded-2xl bg-#2d2d2d" @click="onNouseClick">
         <div class="mb-5">
           {{ t('index.rightClick') }}
         </div>
@@ -324,7 +174,7 @@ onMounted(() => {
         <!-- type="card" -->
         <ElCarousel
           ref="carouselRef"
-          class="w-60vw min-w-[400px]"
+          class="min-w-[400px] w-60vw"
           height="300px"
           direction="vertical"
           :interval="2400"
@@ -344,7 +194,9 @@ onMounted(() => {
           <img v-if="show" class="icon-btn h-full" src="/mouse-card.png" alt="mouse-card" @click="onNouseClick">
         </transition>
       </div> -->
-       <div class="fixed bottom-1">v{{ version }}</div>
+      <div class="fixed bottom-1">
+        v{{ version }}
+      </div>
     </div>
   </div>
 </template>
