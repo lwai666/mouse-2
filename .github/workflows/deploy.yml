@@ -28,7 +28,7 @@ jobs:
       - name: Build Frontend
         working-directory: ./hid-web
         run: |
-          pnpm install
+          pnpm install --no-frozen-lockfile
           pnpm run build
 
       # 4️⃣ 上传 dist 到服务器
