@@ -235,7 +235,7 @@ onMounted(() => {
 .contain-content{
   height: 100%;
   width: 100%;
-  background-image: url('../../../public/v9/bg-s.png');
+  background-image: url('/public/v9/bg-s.png');
   background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;

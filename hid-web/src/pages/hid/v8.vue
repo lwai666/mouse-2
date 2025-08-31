@@ -238,8 +238,8 @@ const mouseButtonValue = computed(() => {
 })
 
 let hover = ref(false)
-let hoverSrc = ref('../../../public/v9/wenhao_active.png')
-let originalSrc = ref('../../../public/v9/wenhao.png')
+let hoverSrc = ref('/public/v9/wenhao_active.png')
+let originalSrc = ref('/public/v9/wenhao.png')
 
 
 const imageToDisplay = computed(()=>{
@@ -611,7 +611,7 @@ function bottomItemChange(type) {
 
                     <div class="flex" style="margin-top: 12px;">
                       <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y <img @click="startXY"
-                        style="margin-left: 5px;" src="../../../public/v9/wenhao.png" alt="" srcset=""
+                        style="margin-left: 5px;" src="/public/v9/wenhao.png" alt="" srcset=""
                       ></span>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
@@ -742,7 +742,7 @@ function bottomItemChange(type) {
                           <img
                             class="absolute"
                             style="left: 50%; top: 50%; margin-left: -42px; margin-top: -96px; width: 84px;height:152px;"
-                            src="../../../public/v9/mouse.png" alt="" srcset=""
+                            src="/public/v9/mouse.png" alt="" srcset=""
                           >
                           <!-- @mouseenter="setRightHintCode('angle')"
                       @change="sendAngle" -->
@@ -1118,7 +1118,7 @@ function bottomItemChange(type) {
 <style>
   .hid-container {
   height: 1080px;
-  background-image: url('../../../public/v9/bg-w.png');
+  background-image: url('/public/v9/bg-w.png');
   background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;
@@ -1185,7 +1185,7 @@ function bottomItemChange(type) {
   }
 
   .bottom-box1{
-    background-image: url('../../../public/v9/bg-b.png');
+    background-image: url('/public/v9/bg-b.png');
     background-size: 100% 90%;
     /* background-position: center center; */
     background-repeat: no-repeat;
@@ -1223,7 +1223,7 @@ function bottomItemChange(type) {
     width: 219px;
     height: 107px;
     line-height: 107px;
-    background-image: url('../../../public/v9/bg.png');
+    background-image: url('/public/v9/bg.png');
     background-size: 84% 54%;
     background-repeat: no-repeat;
     background-position: -15px center;
@@ -1234,7 +1234,7 @@ function bottomItemChange(type) {
     height: 107px;
     line-height: 100px;
     background-size: 100% 100%;
-    background-image: url('../../../public/v9/active-bg.png');
+    background-image: url('/public/v9/active-bg.png');
     background-position: -15px center;
   }
 
