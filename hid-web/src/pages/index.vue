@@ -170,7 +170,7 @@ onMounted(() => {
 
       <div class="mb-5 h-[251px] border-gray-600 w-[800px]" style="overflow: hidden;" >
         <div class="mb-5 flex justify-center items-center relative" style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);">
-          <img style="width: 84px;height:162px;" src="../../../public/mouse.png" alt="" srcset="" />
+          <img style="width: 84px;height:162px;" src="/public/mouse.png" alt="" srcset="" />
           <p class="absolute bottom-3" style="color: black; font-weight: bold;font-size: 20px;">V6</p>
           <div class="absolute right-3 top-5">
             <div class="mb-3" style="width: 18px;height: 18px;background: #333; border-radius: 50%;"></div>
