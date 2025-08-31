@@ -393,10 +393,10 @@ const initEcharts = ()=>{
 let bottomItem = ref(0)
 
 function bottomItemChange(type) {
-  // if(type == 1){
-  //   bottomItem.value = 2
-  //   return
-  // }
+  if(bottomItem.value == 1 && type == 1){
+    bottomItem.value = 2
+    return
+  }
   if (bottomItem.value === type) {
     return
   }
@@ -415,11 +415,11 @@ function bottomItemChange(type) {
     </a>
 
     <div class="logo-box absolute right-90px top-50px" >
-      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
-      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
-      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
-      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
-      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
+      <img class="h-38px w-38px" src="/flag/CN.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; ">
+      <img class="h-38px w-38px" src="/flag/DE.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover; ">
+      <img class="h-38px w-38px" src="/flag/JP.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;">
+      <img class="h-38px w-38px" src="/flag/KR.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;">
+      <img class="h-38px w-38px" src="/flag/US.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;;">
     </div>
 
     <div style="flex: 1;">
