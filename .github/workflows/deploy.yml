@@ -30,15 +30,16 @@ jobs:
         run: |
           pnpm install
           pnpm run build
+          ls -la dist
 
       # 4️⃣ 上传 dist 到服务器
       - name: Upload dist to Server
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "hid-web/dist/*"
+          source: "hid-web/dist"
           target: "~/mouse-2/hid-web/dist"
 
       # 5️⃣ 重启后端服务
