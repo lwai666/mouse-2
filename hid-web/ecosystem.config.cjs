@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "mouse-hid-backend",
+      name: "mouse-2-backend",
       script: "backend/server.js",
       instances: 1,                // 进程实例数（1 表示单实例，可改为 'max' 以使用所有 CPU）
       exec_mode: "fork",           // 运行模式：fork（单进程）或 cluster（多进程）
