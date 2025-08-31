@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ElRadioGroup, ElRadio } from 'element-plus'
-import { ProfileInfoType } from '~/types'
-import { MouseButtonStatus } from '~/types'
+import type { MouseButtonStatus, ProfileInfoType } from '~/types'
+import { ElRadio, ElRadioGroup } from 'element-plus'
 import { deepClone } from '~/utils'
 // import { TransportWebHIDInstance } from '~/utils/hidHandle'
 
@@ -16,13 +15,13 @@ interface Props {
   macroIndex: number
 }
 
-const { t } = useI18n()
-
-const setLeftHintCode = inject<(str: string) => void>('setLeftHintCode');
-
 const props = withDefaults(defineProps<Props>(), { width: '50%' })
 
 const emit = defineEmits(['click', 'change'])
+
+const { t } = useI18n()
+
+const setLeftHintCode = inject<(str: string) => void>('setLeftHintCode')
 
 const mouseButtonCascaderRef = ref()
 
@@ -30,7 +29,7 @@ const mouseButtonCascaderRef = ref()
 
 const constants = useConstants(t)
 
-const profileInfo = inject<ProfileInfoType>('profileInfo');
+const profileInfo = inject<ProfileInfoType>('profileInfo')
 
 // const transport = inject<Ref<TransportWebHIDInstance>>('transport');
 
@@ -53,7 +52,7 @@ async function onEnterKey() {
   emit('change', props.id, 2000 + props.macroIndex, 1999, {
     cycleTimes: sendData.value.cycleTimes, // 循环次数
     cycleMode: 4, // 循环模式
-    macroIndex: props.macroIndex // 录制宏索引
+    macroIndex: props.macroIndex, // 录制宏索引
   })
 }
 
@@ -61,7 +60,7 @@ async function onChangeRadioGroup() {
   emit('change', props.id, 2000 + props.macroIndex, 1999, {
     cycleTimes: sendData.value.cycleTimes, // 循环次数
     cycleMode: sendData.value.cycleMode, // 循环模式
-    macroIndex: props.macroIndex // 录制宏索引
+    macroIndex: props.macroIndex, // 录制宏索引
   })
 }
 
@@ -82,16 +81,18 @@ function onClick() {
 
   if (mouseButtonCascaderRef.value?.show) {
     mouseButtonCascaderRef.value?.close()
-  } else {
+  }
+  else {
     mouseButtonCascaderRef.value?.open()
   }
 }
 
 function validateInput() {
   if (sendData.value.cycleTimes < 1) {
-    sendData.value.cycleTimes = 1;
-  } else if (sendData.value.cycleTimes > 40) {
-    sendData.value.cycleTimes = 40;
+    sendData.value.cycleTimes = 1
+  }
+  else if (sendData.value.cycleTimes > 40) {
+    sendData.value.cycleTimes = 40
   }
 }
 
@@ -99,42 +100,47 @@ defineExpose({ mouseButtonCascaderRef })
 </script>
 
 <template>
-<div class="mouse-button-item">
-  <div :class="`${cursorClass} ${colorClass}`" class="flex items-center mb-1">
-    <div :key="props.id" :class="`${bgClass} ${props.disabled ? '' : 'dot-b' }`" class="w-20px h-20px rounded-50% mr-2 z-2" :data-key-id="props.id"></div>
-    <div v-if="props.status === 'connecting'" class="mouse-button-item-radio-group">
-      {{ t('mouseConnection.connecting') }}
-      <div class="absolute top--50px left-0">
-        <el-radio-group v-model="sendData.cycleMode" class="flex-col items-start" @change="onChangeRadioGroup">
-          <el-radio :value="4" @click="onEnterKey">
-            <div @mouseenter="setLeftHintCode?.('macro_set')">
-              {{ t('mouseConnection.loop') }}
-              <input type="number" :min="1" :max="40" class="w-10 bg-transparent border-b border-white text-center" v-model="sendData.cycleTimes" @keyup.enter="onEnterKey" @click.stop="()=>{}" @input="validateInput" />
-              {{ t('mouseConnection.times') }}
-            </div>
-          </el-radio>
-          <div class="w-50px h-70px"></div>
-          <el-radio :value="1">{{ t('mouseConnection.loopUntilKeyRelease') }}</el-radio>
-          <el-radio :value="2">{{ t('mouseConnection.loopUntilAnyKeyPressed') }}</el-radio>
-          <el-radio :value="3">{{ t('mouseConnection.loopUntilKeyPressAgain') }}</el-radio>
-        </el-radio-group>
+  <div class="mouse-button-item">
+    <div :class="`${cursorClass} ${colorClass}`" class="mb-1 flex items-center">
+      <div :key="props.id" :class="`${bgClass} ${props.disabled ? '' : 'dot-b'}`" class="z-2 mr-2 h-18px w-18px rounded-50%" :data-key-id="props.id" />
+      <div v-if="props.status === 'connecting'" class="mouse-button-item-radio-group">
+        {{ t('mouseConnection.connecting') }}
+        <div class="absolute left-0 top--50px">
+          <ElRadioGroup v-model="sendData.cycleMode" class="flex-col items-start" @change="onChangeRadioGroup">
+            <ElRadio :value="4" @click="onEnterKey">
+              <div @mouseenter="setLeftHintCode?.('macro_set')">
+                {{ t('mouseConnection.loop') }}
+                <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
+                {{ t('mouseConnection.times') }}
+              </div>
+            </ElRadio>
+            <div class="h-70px w-50px" />
+            <ElRadio :value="1">
+              {{ t('mouseConnection.loopUntilKeyRelease') }}
+            </ElRadio>
+            <ElRadio :value="2">
+              {{ t('mouseConnection.loopUntilAnyKeyPressed') }}
+            </ElRadio>
+            <ElRadio :value="3">
+              {{ t('mouseConnection.loopUntilKeyPressAgain') }}
+            </ElRadio>
+          </ElRadioGroup>
+        </div>
       </div>
+      <MouseButtonCascader
+        v-else
+        ref="mouseButtonCascaderRef"
+        :value="value"
+        :options="options"
+        :cascader-top="cascaderTop"
+        :disabled="props.disabled || value > 1999"
+        @click="onClick"
+        @change="(value, parentValue) => emit('change', id, value, parentValue)"
+      />
     </div>
-    <MouseButtonCascader
-      v-else
-      ref="mouseButtonCascaderRef"
-      :value="value"
-      :options="options"
-      :cascaderTop="cascaderTop"
-      :disabled="props.disabled || value > 1999"
-      @click="onClick"
-      @change="(value, parentValue) => emit('change', id, value, parentValue)"
-    />
+    <div :class="bgClass" class="h-[0.5px] w-0 transition-all duration-500" :style="{ width: props.width }" />
   </div>
-  <div :class="bgClass" class="w-0 h-[0.5px] transition-all duration-500" :style="{ width: props.width }"></div>
-</div>
 </template>
-
 
 <style>
 .mouse-button-item {
@@ -144,7 +150,7 @@ defineExpose({ mouseButtonCascaderRef })
     &:hover {
       color: #e83ff4 !important;
     }
-    .el-radio__input.is-checked+.el-radio__label:hover {
+    .el-radio__input.is-checked + .el-radio__label:hover {
       color: #e83ff4 !important;
     }
   }

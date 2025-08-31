@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AnimateCanvas: typeof import('./components/animateCanvas.vue')['default']
     CustomMessageBox: typeof import('./components/CustomMessageBox/CustomMessageBox.vue')['default']
     CustomSlider: typeof import('./components/CustomSlider.vue')['default']
     CustomSliderLabel: typeof import('./components/CustomSliderLabel.vue')['default']

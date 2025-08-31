@@ -1,22 +1,20 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue'
+import type { MouseButtonType } from '~/pages/hid/v8.vue'
 import { ElMessage } from 'element-plus'
+import { onBeforeUnmount, onMounted } from 'vue'
 import MouseButtonItem from './MouseButtonItem.vue'
-import { MouseButtonType } from '~/pages/hid/v8.vue';
 
+const props = withDefaults(defineProps<Props>(), {})
+const emit = defineEmits(['change'])
 // const { t } = useI18n()
 
-const dotsCleanup = inject<Ref<() => void>>('dotsCleanup', ref(() => {}));
-const createConnection = inject<() => void>('createConnection', () => {});
+const dotsCleanup = inject<Ref<() => void>>('dotsCleanup', ref(() => {}))
+const createConnection = inject<() => void>('createConnection', () => {})
 
 interface Props {
   value: Record<string, number>
 }
-const props = withDefaults(defineProps<Props>(), {})
-
-const emit = defineEmits(['change'])
-
-const mouseButtonItemRef = ref();
+const mouseButtonItemRef = ref()
 
 export interface mouseButton {
   id: string
@@ -29,7 +27,7 @@ export interface mouseButton {
 }
 
 const userStore = useUserStore()
-const macroIndex = ref<number>(0);
+const macroIndex = ref<number>(0)
 
 const mouseButtonList = ref<mouseButton[]>([
   { id: 'Left', show: true, value: 0, class: 'w-full absolute left--15% top-7%', width: '0%', cascaderTop: 2, disabled: true },
@@ -47,14 +45,14 @@ watchEffect(() => {
 })
 
 onMounted(() => {
-  mouseButtonList.value[0].width = '66%'
-  mouseButtonList.value[1].width = '66%'
-  mouseButtonList.value[2].width = '78%'
-  mouseButtonList.value[3].width = '37%'
-  mouseButtonList.value[4].width = '37%'
+  mouseButtonList.value[0].width = '75%'
+  mouseButtonList.value[1].width = '74%'
+  mouseButtonList.value[2].width = '86%'
+  mouseButtonList.value[3].width = '47%'
+  mouseButtonList.value[4].width = '47%'
 })
 
-function onClick(id?: string,) {
+function onClick(id?: string) {
   if (id == 'Left') { return }
 
   const showList = mouseButtonList.value.filter(i => i.show)
@@ -63,22 +61,22 @@ function onClick(id?: string,) {
   if (id) {
     if (showList && showList[0].id === id) {
       nextTick(() => setTimeout(createConnection, 100))
-    } else {
+    }
+    else {
       dotsCleanup.value()
     }
   }
 
   if (showList && showList.length === 1 && showList[0].id === id) {
-    id = void 0; // 显示所有
+    id = void 0 // 显示所有
   }
-
 
   mouseButtonList.value.forEach((item) => {
     item.show = id ? (item.id === id) : true
   })
 
   // 设置组合键宏 - 回复
-  userStore.mouseButtonStatus = 'normal';
+  userStore.mouseButtonStatus = 'normal'
 }
 
 function onChange(id: MouseButtonType, value: number, parentValue: number, connectionData: number[]) {
@@ -87,7 +85,6 @@ function onChange(id: MouseButtonType, value: number, parentValue: number, conne
     onClick()
   }, 300)
 }
-
 
 function onConnection(fromIndex: number, toId: string) {
   macroIndex.value = fromIndex
@@ -105,7 +102,6 @@ function resetConnection() {
   })
   userStore.mouseButtonStatus = 'normal'
 }
-
 
 function handleClickOutside(event: MouseEvent) {
   const cascaderElement = document.querySelector('.mouse-button-container')
@@ -135,6 +131,6 @@ defineExpose({ onConnection, resetConnection })
 
 <template>
   <div class="mouse-button-container">
-    <MouseButtonItem ref="mouseButtonItemRef" v-for="item in mouseButtonList" :class="{ 'hidden': !item.show }" :key="item.id" v-bind="item" @click="onClick(item.id)" :status="userStore.mouseButtonStatus" :macroIndex="macroIndex" @change="onChange" />
+    <MouseButtonItem v-for="item in mouseButtonList" ref="mouseButtonItemRef" :key="item.id" :class="{ hidden: !item.show }" v-bind="item" :status="userStore.mouseButtonStatus" :macro-index="macroIndex" @click="onClick(item.id)" @change="onChange" />
   </div>
 </template>

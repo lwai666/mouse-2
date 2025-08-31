@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ElSlider } from 'element-plus'
 
+
 interface Props {
   bind: Record<string, any>
   modelValue: number
   vertical?: boolean
   doubleClickEdit?: boolean
+  showFixed?: boolean
   defaultSelectOptions: { label: string; value: number }[]
+  marks: Record<string, any>
   labelTransform?: (value: number) => void
   mouseenter?: () => void
 }
@@ -75,6 +78,8 @@ function onMouseleave() {
     showOptions.value = false;
   }
 }
+
+
 </script>
 
 <template>
@@ -87,19 +92,21 @@ function onMouseleave() {
     @change="emit('change', $event)"
     @mouseenter="showOptions = true"
     @mouseleave="onMouseleave"
+    :marks="marks"
   />
   <ul
-    v-if="showOptions"
+    v-if="showOptions || showFixed"
     class="custo-slider-default-select absolute"
     :class="vertical ? `left-[-100%]` : 'bottom-[33px] -translate-x-1/2'"
+    style="color: #DAFF00;"
     :style="vertical ? `bottom: calc(${(value - bind.min)/(bind.max - bind.min)*100}% - 12px);` : `left: ${(value - bind.min)/(bind.max - bind.min)*100}%;`"
     @mouseenter="showOptions = true"
     @mouseleave="onMouseleave"
   >
     <template v-for="item in defaultSelectOptions" :key="item.value">
       <li
-        v-if="value !== item.value"
-        class="color-description leading-4 hover:color-white cursor-pointer"
+        v-if="value !== item.value && !showFixed"
+        class="color-description leading-4 hover:color-[#DAFF00] cursor-pointer"
         @click="onClickOptions(item)"
         @mouseenter="mouseenter">
         {{ item.label }}
