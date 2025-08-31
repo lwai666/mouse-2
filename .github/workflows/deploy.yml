@@ -50,8 +50,9 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "hid-web/backend/dist/**"
+          source: "hid-web/backend/dist/*"
           target: "~/mouse-2/hid-web/backend/dist"
+          strip_components: 3
 
       # 5️⃣ 重启后端服务
       - name: Restart Backend with PM2
