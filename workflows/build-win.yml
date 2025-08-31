@@ -1,0 +1,41 @@
+name: Build Electron
+
+on:
+  push:
+    tags:
+      - 'v*'   # 打 tag 时触发（如 v1.0.0）
+  workflow_dispatch: # 允许手动触发
+
+permissions:
+  contents: write  # 用于上传 release 资源
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ----- Electron 环节 -----
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+
+      - name: Install Electron dependencies
+        working-directory: hid-electron
+        run: npm install
+
+      - name: Build Electron App
+        working-directory: hid-electron
+        run: npm run build:win
+
+      # ----- 发布 Release -----
+      - name: Upload EXE to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            hid-electron/dist/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

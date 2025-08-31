@@ -1,0 +1,5 @@
+
+# 下面不起作用，下载 electron 文件要在 pnpm approve-builds 命令之前运行 export ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+# See: https://github.com/electron-userland/electron-builder/issues/6289#issuecomment-1042620422
+shamefully-hoist = true
