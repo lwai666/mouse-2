@@ -388,7 +388,7 @@ const initEcharts = ()=>{
       ]
     })
   }
-  }
+}
 
 let bottomItem = ref(0)
 
@@ -401,8 +401,15 @@ function bottomItemChange(type) {
     return
   }
   bottomItem.value = type
-
 }
+let showMouseenter = ref('show')
+
+function mouseenter(){
+  hover.value = true
+  showMouseenter.value = 'showMouseenter'
+}
+
+
 
 
 
@@ -469,6 +476,11 @@ function bottomItemChange(type) {
           ref="mouseButtonRef" :value="mouseButtonValue" class="absolute right-0 h-full w-200%"
           style="top: -16px;"
         />
+
+        <div class="absolute right-[-50px] top-0">
+          <div class="mb-3" style="width: 18px;height: 18px;background: #8B8B8B; border-radius: 50%;"></div>
+          <div style="width: 18px;height: 18px;background: #fff; border-radius: 50%;"></div>
+        </div>
       </div>
     </div>
     <div class="bottom-con relative">
@@ -610,7 +622,7 @@ function bottomItemChange(type) {
                     </div>
 
                     <div class="flex" style="margin-top: 12px;">
-                      <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y <img @click="startXY"
+                      <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y <img  @mouseenter="startXY" 
                         style="margin-left: 5px;" src="/public/v9/wenhao.png" alt="" srcset=""
                       ></span>
                       <div
@@ -929,7 +941,7 @@ function bottomItemChange(type) {
                       <div style="font-size: 20px; display: flex; align-items: center;">
                         <div style="width: 170px;" class="flex items-center">
                           <div>动态灵敏度</div>
-                          <img @mouseenter="hover = true" @mouseleave="hover = false"  style=" margin-left: 5px;margin-right: 30px;" :src="imageToDisplay"  srcset="">
+                          <img @mouseenter="mouseenter"   style=" margin-left: 5px;margin-right: 30px;" :src="imageToDisplay"  srcset="">
                         </div>
                         <div
                           class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
@@ -971,36 +983,9 @@ function bottomItemChange(type) {
 
                     </div>
                   </div>
-                  <Transition>
-                    <!-- <div style="padding: 25px 25px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290);" class="flex">
-                      <div>
-                        <div style="font-size: 20px;text-align: left">动态灵敏度</div>
-                        <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
-                          优化了精度和响应速度
-                        </div>
-                      </div>
-                      <div style="text-align: left;">
-                        <p>使用预设或你喜欢的自定义设置来调整鼠标的响应速度和加速度，使其适应你的需求。 </p>
-                        <p>· 经典:采用传统的灵敏度设置，非常适合在日常使用中进行精确控制。</p>
-                        <p>· 自然:光标移动可预测，最大灵敏度有上限。</p>
-                        <p>· 跳跃:缓慢移动时使用低灵敏度，快速移动时立即转换为高灵敏度。 </p>
-                        <p> &nbsp;&nbsp;是喜欢超低灵敏度的 FPS 玩家的理想之选，同时还能在快速移动中完成 180 度旋转，实现出色的控制。</p>
-                        <p>· 自定义:你自己的动态灵敏度设置。</p>
-                        <AnimateCanvas
-                          :width="593"
-                          :height="287"
-                          :img-length="91"
-                          :end-stop="false"
-                          url="/advanced/2_0"
-                        />
-                      </div>
-
-                      <ElIcon size="40" style="position: absolute; right: 10px; top: 10px;">
-                        <Close />
-                      </ElIcon>
-                    </div> -->
-                    <div class="flex justify-between relative" style="flex:1">
-                      <div class="h-100% w-100% absolute" style="z-index:1; background: #0D0D0D95;">蒙版</div>
+                  <Transition name="slide-right">
+                    <div v-if="showMouseenter == 'show'" class="absolute flex justify-between right-0" style="width:1250px">
+                      <!-- <div class="h-100% w-100% absolute" style="z-index:1; background: #0D0D0D95;"></div> -->
                       <div  style="padding: 25px 25px 0 25px; flex:1;" >
                         <div class="flex items-center">
                           <div class="icon-box">
@@ -1057,12 +1042,39 @@ function bottomItemChange(type) {
                         </div>
                           
                       </div>
-                      <div class="config-child-box" style="height: 100%; flex-direction: column; margin-left: 30px; justify-content: center;">
+                      <div class="config-child-box" style="flex-direction: column; margin-left: 30px; justify-content: center;">
                         <span style="margin-bottom: 35px;">经典</span>
                         <span style="margin-bottom: 35px;">自然</span>
                         <span style="margin-bottom: 35px;">跳跃</span>
                         <span style="margin-bottom: 35px;" class="active">自定义</span>
                       </div>
+                    </div>
+                    <div v-else-if="showMouseenter == 'showMouseenter'" style="padding: 25px 25px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290);" class="flex">
+                      <div>
+                        <div style="font-size: 20px;text-align: left">动态灵敏度</div>
+                        <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                          优化了精度和响应速度
+                        </div>
+                      </div>
+                      <div style="text-align: left;">
+                        <p>使用预设或你喜欢的自定义设置来调整鼠标的响应速度和加速度，使其适应你的需求。 </p>
+                        <p>· 经典:采用传统的灵敏度设置，非常适合在日常使用中进行精确控制。</p>
+                        <p>· 自然:光标移动可预测，最大灵敏度有上限。</p>
+                        <p>· 跳跃:缓慢移动时使用低灵敏度，快速移动时立即转换为高灵敏度。 </p>
+                        <p> &nbsp;&nbsp;是喜欢超低灵敏度的 FPS 玩家的理想之选，同时还能在快速移动中完成 180 度旋转，实现出色的控制。</p>
+                        <p>· 自定义:你自己的动态灵敏度设置。</p>
+                        <AnimateCanvas
+                          :width="593"
+                          :height="287"
+                          :img-length="91"
+                          :end-stop="false"
+                          url="/advanced/2_0"
+                        />
+                      </div>
+
+                      <ElIcon size="40" style="position: absolute; right: 10px; top: 10px;" @click="showMouseenter = 'show'">
+                        <Close />
+                      </ElIcon>
                     </div>
                   </Transition>
                 </div>
