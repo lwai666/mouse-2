@@ -1193,8 +1193,11 @@ provide('createConnection', createConnection)
 <template>
   <div class="hid-container h-screen min-h-650px min-w-1050px w-screen flex items-center justify-center p-10px">
     <div class="left-container relative h-full w-35%">
+      <!-- 录制之后的宏配置 -->
       <MacroButton ref="macroButtonRef" v-model="profileInfo.macroList" :selected-index="currentMacroButtonRecordedKeyIndex" class="h-33% w-40% pt-13%" @mouseenter="setLeftHintCode('macro_ball_link')" @mouseup="onMacroButtonMouseUp" />
+      <!-- 宏录制内容开始 -->
 
+      <!-- 宏录制提示文字 & 动画 -->
       <div class="hint-container absolute left-10% top-40% h-15% w-65%">
         <div :class="leftHintCode ? 'w-full bg-white' : 'w-0'" class="absolute left-0% top-0% h-[1px] bg-gray transition-all duration-500" />
         <div :class="leftHintCode ? 'h-full bg-white' : 'h-0'" class="absolute left-0% top-0% w-[1px] bg-gray transition-all duration-500" />
@@ -1216,11 +1219,19 @@ provide('createConnection', createConnection)
         <div class="absolute left-0 top-0 h-[1px] w-90% bg-white" />
         <div class="absolute right-10% top-0 h-full w-[1px] bg-white" />
         <div class="absolute bottom-0 h-[1px] w-30% bg-white -right-20%" />
+
+        <!-- 保存宏 -->
         <ElButton class="absolute right-10% top-0 translate-x-1/2 bg-white text-base font-bold -translate-y-1/2" :icon="Plus" color="#e83ff4" plain circle size="small" @mouseenter="setLeftHintCode('macro_save')" @click="addMacro" />
+
+        <!-- 录制宏 -->
         <ElButton class="absolute bottom-0 right-10% translate-1/2 bg-white text-[25px]" :icon="isRecording ? VideoPause : VideoPlay" color="#e83ff4" plain circle size="large" @mouseenter="setLeftHintCode('macro_recording')" @click="onClickPecordBtn" />
+
+        <!-- 查看宏 -->
         <div class="absolute left-45% top-25px h-93% -translate-x-1/2">
           <ElSlider v-model="keyboardRecordingListScrollPercentage" vertical :show-tooltip="false" @mouseenter="setLeftHintCode('macro_view')" />
         </div>
+
+        <!-- 插入宏 -->
 
         <ElDropdown class="absolute left-45% top-0 -translate-x-1/2 -translate-y-1/2" trigger="click" popper-class="custom-popper custom-dropdown-popper" @mouseenter="setLeftHintCode('insert_macro')" @command="insertMacro">
           <ElButton class="bg-white text-base font-bold" color="#e83ff4" plain :icon="ArrowRight" circle size="small" />
@@ -1250,17 +1261,22 @@ provide('createConnection', createConnection)
 
         <div ref="keyboardRecordingListRef" class="keyboard-recording-list hide-scrollbar absolute left-5% top-0 mt-2 h-full overflow-auto">
           <ul class="relative text-start color-#fff leading-7" @mouseenter="setLeftHintCode('macro_revise')">
+            <!-- 拖拽时底部的蓝色的线 -->
             <div v-if="isDragging" class="absolute z-10 h-[2px] w-full bg-blue-500 transition-all duration-200" :style="{ top: `${dropLinePosition}px` }" />
+
             <li v-for="(item, index) in recordedKeys" :key="index" class="group relative mb-1 flex border-1 border-#000 rounded-lg px-2 hover:border-#fff" :class="{ 'border-#fff': recordedKeyHighlightIndex === index, 'border-blue-500': isDragging && dragIndex === index }" draggable="true" @click="recordedKeyHighlightIndex = index" @dragstart="onDragStart($event, index)" @dragover="onDragOver($event, index)" @dragenter.prevent @drop="onDrop($event, index)">
               <ElIcon size="20" class="mr-2 mt-1">
                 <Download v-if="item.type" />
                 <Upload v-else />
               </ElIcon>
+
               <div>
+                <!-- 录制按键内容 & 毫秒, 双击可编辑 -->
                 <div @dblclick="onDblclicRecordedKey(item)">
                   <input v-if="item._editable === 'KEY'" ref="inputRecordedKeyRef" type="text" :value="item.key" class="hide-focus-visible w-[70px] border-0 border-b-1" @keydown="(event) => onKeydownRecordedKey(event, item)" @blur="onblurRecordedKey(item)">
                   <span v-else>{{ item.key }}</span>
                 </div>
+
                 <div @dblclick="onDblclicIntervalTime(item)">
                   <input v-if="item._editable === 'INTERVAL_TIME'" ref="inputIntervalTimeRef" v-model.number="item.intervalTime" type="text" class="hide-focus-visible w-[70px] border-0 border-b-1" @blur="onblurRecordedKey(item)">
                   <span v-else>{{ item.intervalTime }}ms</span>
@@ -1273,22 +1289,35 @@ provide('createConnection', createConnection)
           </ul>
         </div>
       </div>
+      <!-- 宏录制内容结束 -->
     </div>
+
+    <!-- 中间鼠标内容开始 -->
 
     <div class="middle-container relative h-full w-23% flex flex-col items-center">
       <div class="relative h-60%">
+        <!-- 鼠标图片 -->
         <img class="h-full pt-10%" :class="['', 'opacity-20', 'opacity-30'][profileInfo.sports_arena]" src="/mouse1.png" alt="mouse-card" draggable="false">
+
+        <!-- sports_arena 竞技模式图片 -->
         <img class="absolute right-8px top-26% w-100%" :src="`/sports_arena_${profileInfo.sports_arena}.png`" alt="sports_arena" draggable="false">
+
+        <!-- 鼠标后旋转背景图 -->
         <img class="absolute top-0 h-full transform pt-10%" src="/mouse3.png" :class="['', 'opacity-20', 'opacity-30'][profileInfo.sports_arena]" alt="mouse-card" draggable="false" :style="{ transform: `rotate(${profileInfo.angle_slider}deg)` }">
+
+        <!-- 竞技模式下图片下文字 -->
         <div v-if="[1, 2].includes(profileInfo.sports_arena)" class="custom-message-container absolute top-70.4% w-100%">
           <div class="custom-message-container-text">
             {{ t(`index.sports_arena_${profileInfo.sports_arena}`) }}
           </div>
         </div>
+
+        <!-- 鼠标左侧设置按钮功能 -->
         <MouseButton ref="mouseButtonRef" :value="mouseButtonValue" class="absolute right-0 top-0 h-full w-160%" @mouseenter="setLeftHintCode('button_ball')" @change="onMouseButtonChange" />
       </div>
 
-      <!-- :labelTransform="angleSliderLabelTransform" -->
+      <!-- 调整鼠标角度 -->
+
       <CustomSlider
         v-model="profileInfo.angle_slider"
         class="relative mt-26 w-50%"
@@ -1298,8 +1327,10 @@ provide('createConnection', createConnection)
         @change="sendAngle"
       />
 
+      <!-- 电量 -->
       <ElProgress class="mt-15 w-40%" color="#67c23a" :percentage="profileInfo.battery_level" />
 
+      <!-- 电量图标 -->
       <div v-if="chargingStatus === 1" class="h-8 w-8" :class="profileInfo.battery_level == 100 ? 'color-green-500' : 'color-yellow-500'" draggable="false">
         <svg t="1751002332004" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9714"><path d="M568 171.84v285.312h144.64a12.8 12.8 0 0 1 10.816 19.648l-243.84 382.208a12.8 12.8 0 0 1-23.616-6.848V566.848h-144.64a12.8 12.8 0 0 1-10.816-19.648l243.84-382.208a12.8 12.8 0 0 1 23.616 6.848z" fill="currentColor" fill-opacity=".88" p-id="9715" /></svg>
       </div>
@@ -1311,8 +1342,12 @@ provide('createConnection', createConnection)
       <img class="mt-8 w-[50px] cursor-pointer" :class="profileInfo.sports_arena ? 'opacity-100' : 'opacity-30 hover:opacity-100'" :src="['/sports_arena_icon_0.png', '/sports_arena_icon_1.png', '/sports_arena_icon_2.png'][profileInfo.sports_arena]" alt="sports_arena" draggable="false" @mouseenter="setRightHintCode('sports_arena')" @click="onSportsMode">
     </div>
 
+    <!-- 中间鼠标内容结束 -->
+
     <div class="right-container relative h-full w-42%">
       <div class="relative h-full w-full">
+        <!-- 右侧内容白色线开始 -->
+
         <div class="absolute left-16% top-5% h-90% w-[1px] bg-white" />
         <div class="absolute bottom-31% left-0 h-[1px] w-75% bg-white -translate-y-[15.5px]" />
         <div class="absolute bottom-14% left-16% h-[1px] w-45% bg-white -translate-y-[15.5px]" />
@@ -1334,11 +1369,19 @@ provide('createConnection', createConnection)
           </transition>
         </div>
 
+        <!-- 四个配置 1.2.3.4 开始 -->
+
         <div class="profile-container absolute left-0 top-25% h-20% w-full" @mouseenter="setRightHintCode('profile_select')">
           <ProfileList :value="profileInfo" :current-profile-index="active_profile_index" :profile-list="profileList" @mouseenter-share="setRightHintCode('clone')" @change="setProfile" />
         </div>
 
+        <!-- 四个配置 1.2.3.4 结束 -->
+
+        <!-- 右侧内容白色线结束 -->
+
         <!-- top -->
+
+        <!-- 右侧内容第一个白色点开始Y轴(抖动消除?) -->
         <CustomSlider
           v-model="profileInfo.jitter_elimination_slider"
           class="transparent-slider absolute left-16% top-5% h-10% -translate-x-49%"
@@ -1349,7 +1392,12 @@ provide('createConnection', createConnection)
           @change="sendJitterElimination"
         />
 
+        <!-- 右侧内容第一个白色点结束 -->
+
         <!-- right -->
+
+        <!-- 右侧内容X轴白色点开始(DPI设置) -->
+
         <div class="transparent-slider" @mouseenter="setRightHintCode('dpi')">
           <CustomSlider
             v-for="(_, index) in profileInfo.dpi_slider_list"
@@ -1362,11 +1410,12 @@ provide('createConnection', createConnection)
             :double-click-edit="true"
             @change="sendDpi(index)"
           />
-          <!-- del num add -->
+          <!-- 右侧内容X轴白色点结束(DPI条件) -->
+          <!-- 减去右边的DPI -->
           <ElInputNumber v-model="profileInfo.dpi_length" class="dpi-edit-button absolute bottom-31.5% left-78%" :min="1" :max="5" size="small" :disabled="dpi_progress" @change="sendDpiLength" />
         </div>
 
-        <!-- left -->
+        <!-- Y轴下左第一个白色的开始(回报率调节) -->
         <CustomSliderLabel
           v-model="profileInfo.polling_slider"
           class="transparent-slider absolute bottom-31% left-0 w-12%"
@@ -1376,7 +1425,10 @@ provide('createConnection', createConnection)
           @change="sendPolling"
         />
 
-        <!-- bottom-right -->
+        <!-- Y轴下左第一个白色的结束(回报率调节) -->
+
+        <!-- bottom-right (休眠点)开始 -->
+
         <CustomSlider
           v-model="profileInfo.hibernation_slider"
           class="transparent-slider absolute bottom-14% left-20% w-40%"
@@ -1386,7 +1438,9 @@ provide('createConnection', createConnection)
           @change="sendHibernation"
         />
 
-        <!-- bottom -->
+        <!-- bottom-right (休眠点)结束 -->
+
+        <!-- bottom (LOD设置)开始 -->
         <CustomSliderLabel
           v-model="profileInfo.lod_slider"
           class="transparent-slider absolute bottom-5% left-16% h-8% -translate-x-49%"
@@ -1397,6 +1451,10 @@ provide('createConnection', createConnection)
           @change="sendLod"
         />
 
+        <!-- bottom (LOD设置)结束 -->
+
+        <!-- 下方操作区开始 -->
+
         <div class="absolute bottom-3% right-5% w-50% flex justify-around">
           <img src="/motion_sync.png" :class="profileInfo.motion_sync ? 'opacity-100' : 'opacity-30 hover:opacity-100'" class="drag-none h-[40px] w-[40px] cursor-pointer" alt="motion_sync" @mouseenter="setRightHintCode('motion_sync')" @click="onMotionSync">
           <img src="/pairing_connection.png" alt="pairing_connection" class="drag-none h-[40px] w-[40px] color-#fff opacity-30 hover:opacity-100" @mouseenter="setRightHintCode('pairing_connection')" @click="onPairingConnection">
@@ -1405,6 +1463,7 @@ provide('createConnection', createConnection)
             <ArrowRightBold class="w-[40px] color-#fff font-900 opacity-30 hover:opacity-100" @mouseenter="setRightHintCode('admin_page')" @click="toSettings" />
           </ElBadge>
         </div>
+        <!-- 下方操作区结束 -->
       </div>
     </div>
   </div>

@@ -285,7 +285,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center">
+  <div class="flex flex-col items-center contain-content">
     <a class="absolute left-30px top-30px" href="/">
       <img class="h-45px" src="/logo.png" alt="logo" />
     </a>
@@ -348,3 +348,14 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.contain-content{
+  height: 100%;
+  width: 100%;
+  background-image: url('../../../public/v9/bg-s.png');
+  background-size: 100% 100%;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+</style>

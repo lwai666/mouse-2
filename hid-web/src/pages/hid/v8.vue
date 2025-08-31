@@ -1,61 +1,179 @@
 <script setup lang="ts">
-import type { DotConnection } from '~/composables/useDotsConnection'
-import type { ConnectionType, Macro, ProfileInfoType, ProfileType } from '~/types'
+import { ArrowDown, ArrowDownBold, ArrowRight, ArrowRightBold, ArrowUpBold, Close, Delete, Download, Plus,Minus, Upload, VideoPause, VideoPlay } from '@element-plus/icons-vue'
 
-import type { TransportWebHIDInstance } from '~/utils/hidHandle'
-import { ArrowDown, ArrowRight, ArrowRightBold, Close, Download, Plus, Upload, VideoPause, VideoPlay } from '@element-plus/icons-vue'
-import { ElAlert, ElBadge, ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInputNumber, ElLoading, ElMessage, ElMessageBox, ElProgress, ElSlider } from 'element-plus'
-import { messageBox } from '~/components/CustomMessageBox'
-import { chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, removeItem, sleep } from '~/utils'
-import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import {
+  ElAlert,
+  ElBadge,
+  ElButton,
+  ElDropdown,
+  ElDropdownItem,
+  ElDropdownMenu,
+  ElIcon,
+  ElInputNumber,
+  ElLoading,
+  ElMessage,
+  ElMessageBox,
+  ElProgress,
+  ElScrollbar,
+  ElSlider,
+  ElSpace,
+} from 'element-plus'
+
+const scale = ref(`scale(${document.body.clientWidth / 1920})`)
 
 export type MouseButtonType = 'Left' | 'Right' | 'Wheel' | 'Forward' | 'Back' | 'dpi'
 const mouseButton: MouseButtonType[] = ['Left', 'Right', 'Wheel', 'Forward', 'Back', 'dpi']
 
-const { t } = useI18n()
-const router = useRouter()
-const userStore = useUserStore()
+// 引入 echarts 核心模块，核心模块提供了 echarts 使用必须要的接口。
+import * as echarts from 'echarts/core';
+// 引入柱状图图表，图表后缀都为 Chart
+import { LineChart } from 'echarts/charts';
+// 引入标题，提示框，直角坐标系，数据集，内置数据转换器组件，组件后缀都为 Component
+import {
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  DatasetComponent,
+  TransformComponent,
+  GraphicComponent
+} from 'echarts/components';
+// 标签自动布局、全局过渡动画等特性
+import { LabelLayout, UniversalTransition } from 'echarts/features';
+// 引入 Canvas 渲染器，注意引入 CanvasRenderer 或者 SVGRenderer 是必须的一步
+import { CanvasRenderer } from 'echarts/renderers';
 
-const macroButtonRef = ref()
-
-const transport = ref()
-
-const constants = useConstants(t)
-
-const chargingStatus = ref(0) // 充电状态 0:未充电，1:充电中
-
-let loading = { close: () => {} }
-
-// const alertTitle = ref('')
-// let alertTitleTimer: NodeJS.Timeout = setTimeout(() => {}, 0)
-
-// watch(() => userStore.alertTitle, () => {
-//   clearTimeout(alertTitleTimer)
-//   alertTitleTimer = setTimeout(() => {
-//     userStore.setAlertTitle('')
-//   }, 2000)
-// })
-
-// 当前修改的录制宏下标
-const currentMacroButtonRecordedKeyIndex = ref()
+// 注册必须的组件
+echarts.use([
+  TitleComponent,
+  TooltipComponent,
+  GridComponent,
+  DatasetComponent,
+  TransformComponent,
+  GraphicComponent,
+  LineChart,
+  LabelLayout,
+  UniversalTransition,
+  CanvasRenderer
+]);
 
 const sliderDefaultSelectOptions = {
-  jitter_elimination_slider: [{ label: '6ms', value: 6 }, { label: '4ms', value: 4 }, { label: '2ms', value: 2 }, { label: '0ms', value: 0 }],
-  polling_slider: [{ label: '8000', value: 6 }, { label: '4000', value: 5 }, { label: '2000', value: 4 }, { label: '1000', value: 3 }, { label: '500', value: 2 }, { label: '250', value: 1 }, { label: '125', value: 0 }],
-  dpi_slider: [{ label: '3200', value: 3200 }, { label: '2400', value: 2400 }, { label: '1400', value: 1400 }, { label: '800', value: 800 }],
-  hibernation_slider: [{ label: '90s', value: 90 }, { label: '60s', value: 60 }, { label: '30s', value: 30 }, { label: '10s', value: 10 }],
-  lod_slider: [{ label: '2mm', value: 2 }, { label: '1mm', value: 1 }, { label: '0.7mm', value: 0 }],
+  jitter_elimination_slider: [{
+    label: '6ms',
+    value: 6,
+  }, {
+    label: '4ms',
+    value: 4,
+  }, {
+    label: '2ms',
+    value: 2,
+  }, {
+    label: '0ms',
+    value: 0,
+  }],
+  polling_slider: [{
+    label: '8000',
+    value: 6,
+  }, {
+    label: '4000',
+    value: 5,
+  }, {
+    label: '2000',
+    value: 4,
+  }, {
+    label: '1000',
+    value: 3,
+  }, {
+    label: '500',
+    value: 2,
+  }, {
+    label: '250',
+    value: 1,
+  }, {
+    label: '125',
+    value: 0,
+  }],
+  dpi_slider: [{
+    label: '3200',
+    value: 3200,
+  }, {
+    label: '2400',
+    value: 2400,
+  }, {
+    label: '1400',
+    value: 1400,
+  }, {
+    label: '800',
+    value: 800,
+  }],
+  hibernation_slider: [{
+    label: '90s',
+    value: 90,
+  }, {
+    label: '60s',
+    value: 60,
+  }, {
+    label: '30s',
+    value: 30,
+  }, {
+    label: '10s',
+    value: 10,
+  }],
+  lod_slider: [{
+    label: '2mm',
+    value: 2,
+  }, {
+    label: '1mm',
+    value: 1,
+  }, {
+    label: '0.7mm',
+    value: 0,
+  }],
   // angle_slider: [{ label: '-30', value: 1 },{ label: '-10', value: 2 },{ label: '0', value: 3 },{ label: '15', value: 4 },{ label: '30', value: 5 }],
-  angle_slider: [{ label: '-30°', value: -30 }, { label: '-10°', value: -10 }, { label: '15°', value: 15 }, { label: '30°', value: 30 }],
+  angle_slider: [{
+    label: '-30°',
+    value: -30,
+  }, {
+    label: '-10°',
+    value: -10,
+  }, {
+    label: '15°',
+    value: 15,
+  }, {
+    label: '30°',
+    value: 30,
+  }],
 }
-
 const sliderOptions = {
-  jitter_elimination_slider: { min: 0, max: 6, step: 2 },
-  polling_slider: { min: 0, max: 6, step: 1 },
-  dpi_slider: { min: 400, max: 30000, step: 50 },
-  hibernation_slider: { min: 1, max: 90, step: 1 },
-  lod_slider: { min: 0, max: 2, step: 1 },
-  angle_slider: { min: -30, max: 30, step: 1 },
+  jitter_elimination_slider: {
+    min: 0,
+    max: 6,
+    step: 2,
+  },
+  polling_slider: {
+    min: 0,
+    max: 6,
+    step: 1,
+  },
+  dpi_slider: {
+    min: 100,
+    max: 30000,
+    step: 50,
+  },
+  hibernation_slider: {
+    min: 1,
+    max: 90,
+    step: 1,
+  },
+  lod_slider: {
+    min: 0,
+    max: 2,
+    step: 1,
+  },
+  angle_slider: {
+    min: -30,
+    max: 30,
+    step: 1,
+  },
 }
 
 function initProfileInfo() {
@@ -84,51 +202,29 @@ function initProfileInfo() {
     dpi: 5,
 
     // 录制宏-组合键
-    macroList: [
-      { name: '', connections: [], value: [] },
-      { name: '', connections: [], value: [] },
-      { name: '', connections: [], value: [] },
-      { name: '', connections: [], value: [] },
-      // cycleTimes: 0-40（循环次数）, cycleMode: 1-4(循环直到此按键松开，循环直到任意按键按下，循环直到此按键再次按下，循环次数模式)
-      // { name: '鼠标宏名称1', connections: [{keyid: 'Left', cycleTimes: 40, cycleMode: 1}], value: [{ keyCode: 1, keyStatus: 0, intervalTime: 200 }] },
-    ] as Macro[],
+    macroList: [{
+      name: '',
+      connections: [],
+      value: [],
+    }, {
+      name: '',
+      connections: [],
+      value: [],
+    }, {
+      name: '',
+      connections: [],
+      value: [],
+    }, {
+      name: '',
+      connections: [],
+      value: [],
+    }], // cycleTimes: 0-40（循环次数）, cycleMode: 1-4(循环直到此按键松开，循环直到任意按键按下，循环直到此按键再次按下，循环次数模式)      // { name: '鼠标宏名称1', connections: [{keyid: 'Left', cycleTimes: 40, cycleMode: 1}], value: [{ keyCode: 1, keyStatus: 0, intervalTime: 200 }] },    ] as Macro[],
   }
 }
 
 const profileInfo = reactive(initProfileInfo())
 
-provide<ProfileInfoType>('profileInfo', profileInfo)
-
-const profileList = reactive<ProfileType[]>([
-  { title: 'Profile 1', base64: '', uint8Array: [], value: undefined },
-  { title: 'Profile 2', base64: '', uint8Array: [], value: undefined },
-  { title: 'Profile 3', base64: '', uint8Array: [], value: undefined },
-  { title: 'Profile 4', base64: '', uint8Array: [], value: undefined },
-])
-const active_profile_index = ref(0)
-
-async function setProfileInfo(index: number) {
-  // 切换时保存最新配置
-  if (profileList[active_profile_index.value].value) {
-    profileList[active_profile_index.value].value = JSON.parse(JSON.stringify(profileInfo))
-  }
-
-  active_profile_index.value = index
-
-  // 有缓存数据则直接使用
-  if (profileList[index].value) {
-    Object.assign(profileInfo, profileList[index].value)
-  }
-  // 没有缓存数据则使用获取到的 uint8Array 数据
-  else {
-    Object.assign(profileInfo, uint8ArrayToProfileInfo(profileList[active_profile_index.value].uint8Array))
-    profileList[active_profile_index.value].base64 = insertAt9th(jsonToBase64(profileInfo), 'd')
-    profileList[index].value = JSON.parse(JSON.stringify(profileInfo))
-  }
-
-  // 创建连线监听
-  nextTick(restartConnection)
-}
+provide < ProfileInfoType > ('profileInfo', profileInfo)
 
 const mouseButtonValue = computed(() => {
   return {
@@ -141,1431 +237,1194 @@ const mouseButtonValue = computed(() => {
   }
 })
 
-function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
-  const profileInfo = initProfileInfo()
+let hover = ref(false)
+let hoverSrc = ref('../../../public/v9/wenhao_active.png')
+let originalSrc = ref('../../../public/v9/wenhao.png')
 
-  uint8Array.forEach((res) => {
-    // 获取 profile 基础配置信息
-    if (res[0] === 1) {
-      const start_index = 3
-      const dpi_slider_active_index = res[start_index + 2]
-      const dpi_length = res[start_index + 3]
 
-      const dpi_data_length = dpi_length * 2
-      const dpi_end_index = start_index + 3 + dpi_data_length
+const imageToDisplay = computed(()=>{
+  return hover.value ? hoverSrc.value : originalSrc.value; 
+})
 
-      const dpi_slider_list = Array.from({ length: dpi_length }, (_, i) => (res[start_index + 3 + i * 2 + 2] << 8) | res[start_index + 3 + i * 2 + 1])
-      const polling_slider = (res[dpi_end_index + 2] << 8) | res[dpi_end_index + 1] // 回报率
+const radioActive = ref(false)
 
-      const battery_level_index = dpi_end_index + 3
-      const battery_level = res[battery_level_index] // 电量;
-      const version = (res[battery_level_index + 2] << 8) | res[battery_level_index + 1]
-      const lod_slider = res[battery_level_index + 3] // 静默高度
-      const sports_arena = res[battery_level_index + 4] // 性能模式状态 0:普通模式，1:性能模式 2:竞技模式
-      const jitter_elimination_slider = (res[battery_level_index + 6] << 8) | res[battery_level_index + 5] // 消抖时间
-      const hibernation_slider = (res[battery_level_index + 10] << 24) | (res[battery_level_index + 9] << 16) | (res[battery_level_index + 8] << 8) | res[battery_level_index + 7] // 深度睡眠时间
-      const motion_sync = res[battery_level_index + 11] // 运动模式
-      const angle = mapHexToRange(res[battery_level_index + 12]) // 0xE2-0xFF（-30,-1） 和 0x00-0x1E (0, 30)     以前的：[-30, -10, 0, 15, 30] 角度 1-61 表示 -30度 ～ 30度
+function radioChange() {
+  radioActive.value = !radioActive.value
+}
+const activeBg = ref('performance')
 
-      console.log(`
-        当前运行profile: ${active_profile_index.value}
-        dpi: ${dpi_slider_list}
-        当前dpi: ${profileInfo.dpi_slider_active_index}
-        回报率: ${polling_slider}
-        电量: ${battery_level}
-        version: ${version}
-        静默高度: ${lod_slider}
-        性能模式状态 (0:普通模式，1:性能模式，2:竞技模式): ${sports_arena}
-        消抖时间: ${jitter_elimination_slider}
-        深度睡眠时间: ${hibernation_slider}
-        运动模式: ${motion_sync}
-        angle: ${angle} 【角度】
-      `)
+function activeBgChange(type) {
+  if (activeBg.value === type) {
+    return
+  }
+  activeBg.value = type
 
-      profileInfo.battery_level = battery_level
-      profileInfo.version = version
-      profileInfo.sports_arena = sports_arena
-      profileInfo.motion_sync = !!motion_sync
+  if(type == 'advanced'){
+    nextTick(()=>{
+      initEcharts()
+    })
+  }
+}
 
-      profileInfo.dpi_length = dpi_length
-      profileInfo.dpi_slider_active_index = dpi_slider_active_index
-      profileInfo.dpi_slider_list = dpi_slider_list
-      profileInfo.polling_slider = polling_slider
-      profileInfo.lod_slider = lod_slider
-      profileInfo.jitter_elimination_slider = jitter_elimination_slider > 6 ? 6 : jitter_elimination_slider
-      profileInfo.hibernation_slider = (hibernation_slider / 1000) > 90 ? 90 : (hibernation_slider / 1000)
-      profileInfo.angle_slider = angle || 0
-    }
-    // 获取多媒体宏
-    else if (res[0] === 7) {
-      chunkArray([...res.slice(3, 3 + res[2] * 3)], 3).forEach(([mouseButtonIndex, low8Bits, high8Bits]: number[]) => {
-        profileInfo[mouseButton[mouseButtonIndex]] = combineLowAndHigh8Bits(low8Bits, high8Bits)
-      })
+const startXYFlag = ref(false)
 
-      console.log(`
-        多媒体鼠标按钮：
-        左: ${profileInfo.Left}
-        右: ${profileInfo.Right}
-        中: ${profileInfo.Wheel}
-        前进: ${profileInfo.Forward}
-        后退: ${profileInfo.Back}
-        dpi: ${profileInfo.dpi}
-      `)
-    }
-    // 获取组合按键宏
-    else if (res[0] === 8) {
-      const connectionlist = chunkArray([...res.slice(3, 3 + res[2] * 4)], 4)
+function startXY(){
+  startXYFlag.value = !startXYFlag.value
+}
 
-      connectionlist.forEach(([cycleMode, cycleTimes, mouseButtonIndex, macroIndex]: number[]) => {
-        profileInfo.macroList[macroIndex].connections.push({
-          cycleMode,
-          cycleTimes,
-          keyid: mouseButton[mouseButtonIndex],
-        })
-        profileInfo[mouseButton[mouseButtonIndex]] = 2000 + macroIndex
-      })
-    }
-    // 获取鼠标按钮宏：左: 0，右: 1，中: 2，后退: 3，前进: 4，dpi: 5
-    else if (res[0] === 9) {
-      chunkArray([...res.slice(3, 3 + res[2] * 2)], 2).forEach(([mouseButtonIndex, value]: number[]) => {
-        profileInfo[mouseButton[mouseButtonIndex]] = value // window.aaaaa ? window.aaaaa : value
-      })
 
-      console.log(`
-        鼠标按钮：
-        左: ${profileInfo.Left}
-        右: ${profileInfo.Right}
-        中: ${profileInfo.Wheel}
-        后退: ${profileInfo.Back}
-        前进: ${profileInfo.Forward}
-        dpi: ${profileInfo.dpi}
-      `)
-    }
-    // 获取宏录制名字 profile 名字
-    else if (res[0] === 25) {
-      const macroName = decodeArrayBufferToString(new Uint8Array(res.slice(4, 4 + res[2])))
-      // 0-5 （左，右，中，前进，后退，dpi）   6-9 录制宏（球1-球4）
-      if ([6, 7, 8, 9].includes(res[3])) {
-        profileInfo.macroList[res[3] - 6].name = macroName
+
+
+const initEcharts = ()=>{
+  var myChart = echarts.init(document.getElementById('myChart'))
+  const symbolSize = 20;
+  const data = [
+    [0, 1],
+    [18, 1.2],
+    [50, 1],
+    [60, 1.5],
+    [80.1, 0.5]
+  ];
+  let option = {
+
+    grid: {
+      top: '8%',
+      bottom: '20%',
+      left:"10%",
+      right: '3%'
+    },
+    xAxis: {
+      min: 0,
+      max: 105,
+      type: 'value',
+
+      splitLine:{
+        lineStyle:{
+          color: '#262626', // 轴线颜色
+          width: 1,
+          type:'dashed'
+
+        }
+      },
+      axisLine: { 
+        onZero: false,
+        lineStyle: {
+          color: '#DAFF00'
+        } 
       }
-      // 0x0a-0x0d（profile 名字）
-      else if ([10, 11, 12, 13].includes(res[3])) {
-        profileList[res[3] - 10].title = macroName
+    },
+    yAxis: {
+      min: 0,
+      max: 1.5,
+      type: 'value',
+      splitLine:{
+        lineStyle:{
+          color: '#262626', // 轴线颜色
+          width: 1,
+          type:'dashed'
+        }
+      },
+      axisLine: { 
+        onZero: false,
+        lineStyle: {
+          color: '#DAFF00'
+        } 
       }
-    }
-    // 获取宏录制 [0x1A, 0x1B, 0x1C, 0x1D]
-    else if ([26, 27, 28, 29].includes(res[0])) {
-      const data = chunkArray([...res.slice(3, 3 + res[2] * 4)], 4)
-      const recordedKey = data.map(([keyCode, keyStatus, high8Bits, low8Bits]) => {
-        const intervalTime = combineLowAndHigh8Bits(low8Bits, high8Bits)
-        const key = keyMap[Object.keys(keyMap).find(key => keyMap[key].value === keyCode) || '']?.text
+    },
+
+    series: [
+      {
+        id: 'a',
+        type: 'line',
+        smooth: true,
+        symbolSize: symbolSize,
+        data: data,
+        itemStyle: {
+          color: '#DAFF00'  // 折线点颜色（番茄色）
+        },
+        lineStyle: {
+          color: '#DAFF00', // 折线颜色（皇家蓝）
+          width: 3
+        }
+      }
+    ]
+  };
+
+  myChart.setOption(option)
+  
+  setTimeout(function () {
+    // Add shadow circles (which is not visible) to enable drag.
+    myChart.setOption({
+      graphic: data.map(function (item, dataIndex) {
         return {
-          key,
-          type: [0x01, 0xA1, 0xB1].includes(keyStatus) ? 1 : 0, // 1:按下，0:抬起
-          keyCode,
-          keyStatus,
-          intervalTime,
-        }
+          type: 'circle',
+          position: myChart.convertToPixel('grid', item),
+          shape: {
+            cx: 0,
+            cy: 0,
+            r: symbolSize / 2
+          },
+          invisible: true,
+          draggable: true,
+          ondrag: function (dx, dy) {
+            onPointDragging(dataIndex, [this.x, this.y]);
+          },
+          z: 100
+        };
       })
-      profileInfo.macroList[res[0] - 26].value = recordedKey
-    }
-  })
+    });
+  }, 0);
 
-  return profileInfo
-}
 
-function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
-  const uint8Array: Uint8Array[] = []
-
-  // 获取 profile 基础配置信息：0
-  let uint8Array0: number[] = []
-  const dpi_data = profileInfo.dpi_slider_list.reduce((arr: number[], item: number) => {
-    arr.push(item & 0xFF, item >> 8 & 0xFF)
-    return arr
-  }, [])
-  const dpi_length = profileInfo.dpi_slider_list.length
-  uint8Array0 = [
-    0x00,
-    0, // Placeholder for length
-    0, // Placeholder for end flag
-    // active_profile_index.value,
-    profileInfo.dpi_slider_active_index,
-    dpi_length,
-    ...dpi_data,
-    profileInfo.polling_slider & 0xFF,
-    profileInfo.polling_slider >> 8 & 0xFF,
-    profileInfo.battery_level,
-    profileInfo.version & 0xFF,
-    profileInfo.version >> 8 & 0xFF,
-    profileInfo.lod_slider,
-    profileInfo.sports_arena,
-    profileInfo.jitter_elimination_slider & 0xFF,
-    profileInfo.jitter_elimination_slider >> 8 & 0xFF,
-    (profileInfo.hibernation_slider * 1000) & 0xFF,
-    (profileInfo.hibernation_slider * 1000) >> 8 & 0xFF,
-    (profileInfo.hibernation_slider * 1000) >> 16 & 0xFF,
-    (profileInfo.hibernation_slider * 1000) >> 24 & 0xFF,
-    profileInfo.motion_sync ? 1 : 0,
-    mapRangeToHex(profileInfo.angle_slider),
-  ]
-  uint8Array0[2] = uint8Array0.length - 2 // Set length
-  uint8Array.push(transport.value.generatePacket(new Uint8Array(uint8Array0)))
-
-  // 获取鼠标按钮宏：0x09 (左: 0，右: 1，中: 2，后退: 3，前进: 4，dpi: 5)
-  let uint8Array9: number[] = []
-  const isMouseKeys: MouseButtonType[] = []
-  mouseButton.forEach((item) => {
-    const value = findParentValue(constants.mouseKeyOptions, profileInfo[item])
-    if (!value) {
-      isMouseKeys.push(item)
-    }
-  })
-  if (isMouseKeys.length) {
-    uint8Array9 = [0x09, 0, isMouseKeys.length, ...isMouseKeys.map((btn: MouseButtonType) => [mouseButton.indexOf(btn), profileInfo[btn]]).flat()]
-    uint8Array.push(transport.value.generatePacket(new Uint8Array(uint8Array9)))
-  }
-
-  // 获取多媒体宏: 0x07
-  let uint8Array7: number[] = []
-  const isMultimediaKeys: MouseButtonType[] = []
-  mouseButton.forEach((item) => {
-    const value = findParentValue(constants.mouseKeyOptions, profileInfo[item])
-    if (value === 1000) {
-      isMultimediaKeys.push(item)
-    }
-  })
-  if (isMultimediaKeys.length) {
-    uint8Array7 = [0x07, 0, isMultimediaKeys.length, ...isMultimediaKeys.map((btn: MouseButtonType) => [mouseButton.indexOf(btn), ...getLowAndHigh8Bits(profileInfo[btn])]).flat()]
-    uint8Array.push(transport.value.generatePacket(new Uint8Array(uint8Array7)))
-  }
-
-  // 获取组合按键宏: 0x08
-  let uint8Array8: number[] = []
-  const isCombinationMacroKeys: MouseButtonType[] = []
-  mouseButton.forEach((item) => {
-    const value = findParentValue(constants.mouseKeyOptions, profileInfo[item])
-    if (value === 1999) {
-      isCombinationMacroKeys.push(item)
-    }
-  })
-
-  if (isCombinationMacroKeys.length) {
-    const combinationMacroList = profileInfo.macroList.reduce((res: number[][], macro: Macro, macroIndex: number) => {
-      macro.connections?.forEach(({ cycleMode, cycleTimes, keyid }) => {
-        if (isCombinationMacroKeys.includes(keyid)) {
-          // [4(循环模式), 1(循环次数), 1(第几个按键), 0(映射第几个宏球)]
-          res.push([cycleMode, cycleTimes, mouseButton.indexOf(keyid), macroIndex])
+  function onPointDragging(dataIndex, pos) {
+    data[dataIndex] = myChart.convertFromPixel('grid', pos);
+    // Update data
+    myChart.setOption({
+      series: [
+        {
+          id: 'a',
+          data: data
         }
-      })
-      return res
-    }, [])
-
-    uint8Array8 = [0x08, 0, isCombinationMacroKeys.length, ...combinationMacroList.flat()]
-    uint8Array.push(transport.value.generatePacket(new Uint8Array(uint8Array8)))
-  }
-
-  // 获取宏录制 [0x1A, 0x1B, 0x1C, 0x1D]
-  profileInfo.macroList.forEach((macro: Macro, macroIndex: number) => {
-    if (macro.value.length) {
-      const recordedKey = macro.value.reduce((arr: number[], { keyCode, keyStatus, intervalTime }: any) => {
-        arr.push(keyCode, keyStatus, ...getLowAndHigh8Bits(intervalTime).reverse())
-        return arr
-      }, [])
-      uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1A + macroIndex, 0, macro.value.length, ...recordedKey])))
-    }
-  })
-
-  // 获取宏录制名字:  (6-9 录制宏（球1-球4）| @todo: 0x0a-0x0d（profile 名字）)
-  profileInfo.macroList.forEach((macro: Macro, macroIndex: number) => {
-    if (macro.name) {
-      const macroName = encodeStringToArrayBuffer(macro.name)
-      uint8Array.push(transport.value.generatePacket(new Uint8Array([0x19, 0, macroName.length, macroIndex + 6, ...macroName])))
-    }
-  })
-
-  // 当前第几个配置
-  // uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1E, 0x00, 0x01, active_profile_index.value])))
-
-  // 结束包
-  // uint8Array.push(transport.value.generatePacket(new Uint8Array([0])))
-
-  return uint8Array
-}
-
-/** **************** 连线逻辑 start */
-
-const mouseButtonRef = ref()
-const dotsConnections = ref()
-let dotsAddConnection: any = () => {}
-let dotsRemoveConnection: any = () => {}
-let dotsCleanup = ref(() => {})
-
-// 离开页面删除连线
-onBeforeRouteLeave(() => {
-  dotsCleanup.value()
-})
-
-function restartConnection() {
-  dotsCleanup.value()
-  createConnection()
-}
-
-function setConnectionLineOpacity(opacity: string, exclude: number = 0) {
-  for (let i = 0; i < dotsConnections.value.length - exclude; i++) {
-    dotsConnections.value[i].line.style.opacity = opacity
-  }
-}
-
-/** 创建连线 */
-function createConnection() {
-  let connectioning = false
-  let _oldConnection: ConnectionType | undefined
-  const { connections, addConnection, removeConnection, cleanup } = useDotsConnection({
-    rules: [
-      // 支持 class 包含 dot-a 的标签连接到 dot-b 的标签
-      { from: '.dot-a', to: ['.dot-b'], maxConnections: { from: 4, to: 1 } },
-      // { from: '.dot-b', to: ['.dot-a'], maxConnections: { from: 1, to: 1 } },
-    ],
-    onConnection: (connection: DotConnection) => {
-      if (!connectioning) {
-        mouseButtonRef.value.onConnection(Number(connection.start.dataset.macroIndex), connection.end.dataset.keyId)
-        setConnectionLineOpacity('0', 1)
-      }
-    },
-    onConnectionUpdate: async (newConnection: DotConnection, oldConnection: DotConnection) => {
-      // const _oldMacro = profileInfo.macroList[Number(oldConnection.start.dataset.macroIndex)]
-      // const _oldConnection = removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === oldConnection.end.dataset.keyId))
-
-      // console.log("_oldConnection========", _oldConnection)
-      // console.log('修改连线-恢复默认按键===========', _oldConnection)
-      // const oldKeyId = oldConnection.end.dataset.keyId as MouseButtonType
-      // await onMouseButtonChange(oldKeyId, mouseButton.indexOf(oldKeyId))
-
-      console.log('修改连线-添加组合宏键===========', Number(newConnection.start.dataset.macroIndex), newConnection.end.dataset.keyId)
-      if (_oldConnection) {
-        const newKeyId = newConnection.end.dataset.keyId as MouseButtonType
-        const newKeyValue = 2000 + Number(newConnection.start.dataset.macroIndex)
-        await onMouseButtonChange(newKeyId, newKeyValue, 1999, {
-          cycleMode: _oldConnection.cycleMode,
-          cycleTimes: _oldConnection.cycleTimes,
-          macroIndex: Number(newConnection.start.dataset.macroIndex),
-        })
-      }
-      else {
-        if (!connectioning) {
-          mouseButtonRef.value.onConnection(Number(newConnection.start.dataset.macroIndex), newConnection.end.dataset.keyId)
-          setConnectionLineOpacity('0', 1)
-        }
-      }
-    },
-    onConnectionLeave: async (connection: DotConnection) => {
-      console.log('离开连线-恢复默认按键===========', connection)
-      const oldKeyId = connection.end.dataset.keyId as MouseButtonType
-      const _oldMacro = profileInfo.macroList[Number(connection.start.dataset.macroIndex)]
-      const removeIndex = _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId)
-
-      if (userStore.mouseButtonStatus === 'connecting') {
-        mouseButtonRef.value.resetConnection()
-        setConnectionLineOpacity('1', 1)
-        return
-      }
-
-      if (removeIndex !== -1) {
-        _oldConnection = removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId))
-        await sendKeyMacro(oldKeyId, mouseButton.indexOf(oldKeyId))
-      }
-    },
-    // onConnectionRemove: async (connection: DotConnection) => {
-    //   console.log('删除连线-恢复默认按键===========', connection)
-    //   const oldKeyId = connection.end.dataset.keyId as MouseButtonType
-    //   const _oldMacro = profileInfo.macroList[Number(connection.start.dataset.macroIndex)]
-    //   const removeIndex = _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId)
-
-    //   // 删除连线中
-    //   if (removeIndex === -1) {
-    //     mouseButtonRef.value.resetConnection()
-    //     nextTick(() => setTimeout(restartConnection, 200))
-    //   }
-    //   // 删除已连线
-    //   else {
-    //     removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId))
-    //     await onMouseButtonChange(oldKeyId, mouseButton.indexOf(oldKeyId))
-    //   }
-    // },
-  })
-  dotsConnections.value = connections.value
-  dotsAddConnection = addConnection
-  dotsRemoveConnection = removeConnection
-  dotsCleanup.value = cleanup
-
-  connectioning = true
-  profileInfo.macroList.forEach((macro, macroIndex) => {
-    macro.connections.forEach(({ keyid }) => {
-      addConnection(`[data-macro-index="${macroIndex}"]`, `[data-key-id="${keyid}"]`)
-    })
-  })
-  connectioning = false
-}
-/** **************** 连线逻辑 end */
-
-async function initProfile() {
-  await getProfile()
-  await sendChargingStatus() // 获取充电状态
-}
-
-async function getProfile() {
-  return new Promise(async (resolve, reject) => {
-    let _active_profile_index = 0 // 当前 profile 下标
-    let _profile_index = 0 // 当前正在接收的 profile
-
-    try {
-      transport.value.on('input-all', profileListener)
-      loading.close()
-      loading = ElLoading.service({
-        lock: true,
-        text: '',
-        spinner: 'none',
-        background: 'rgba(0, 0, 0, 0.7)',
-      })
-      await transport.value.send([0x01])
-    }
-    catch (error) {
-      transport.value.off('input-all', profileListener)
-      loading.close()
-      console.error('获取 profile 失败', error)
-    }
-
-    function profileListener(res: Uint8Array) {
-      // 获取 profile 监听结束
-      if (res[0] === 1 && res[2] === 0) {
-        transport.value.off('input-all', profileListener)
-        try {
-          setProfileInfo(_active_profile_index)
-          resolve(_active_profile_index)
-        }
-        finally {
-          loading.close()
-        }
-        console.log('收集4个 profile 数据=========', profileList)
-        return
-      }
-
-      // 收集数据
-      if (res[0] === 1) {
-        _active_profile_index = res[3]
-        _profile_index = res[4]
-      }
-      profileList[_profile_index].uint8Array.push(res)
-      // const isCurrentProfile = active_profile_index.value === profile_index
-    }
-
-    setTimeout(() => {
-      reject()
-    }, 6000)
-  })
-}
-
-// 粘贴分享设置 Profile
-async function setProfile(data: { profileInfo: any, index: number }) {
-  // 重置选中的宏
-  resetSelectedMacro()
-
-  const newProfileInfo = data.profileInfo
-
-  // 切换 Profile
-  if (data.index !== undefined) {
-    await transport.value.send([0x1E, 0x00, 0x01, data.index])
-
-    // 如果当前 profile 有缓存数据，则直接使用
-    if (profileList[data.index].uint8Array?.length > 0) {
-      setProfileInfo(data.index)
-    }
-    else {
-      // 如果当前 profile 没有缓存数据，则获取
-      initProfile()
-    }
-    return
-  }
-
-  const uint8Array = profileInfoToUint8Array(newProfileInfo)
-  console.log('uint8Array=======', uint8Array)
-  console.log('newProfileInfo=======', newProfileInfo)
-
-  loading = ElLoading.service({ lock: true, text: '', spinner: 'none', background: 'rgba(0, 0, 0, 0.7)' })
-  // 发生包
-  for (const item of uint8Array) {
-    await transport.value.send(item)
-  }
-  loading.close()
-
-  Object.assign(profileInfo, JSON.parse(JSON.stringify(newProfileInfo)))
-  setProfileInfo(active_profile_index.value)
-  showMessage(t('message.profile_success'))
-}
-
-function onExecutionSuccess() {
-  showMessage(t('message.execution_success'))
-}
-
-/**
- *
- * @param id 鼠标按键 'Left' | 'Right' | 'Wheel'| 'Forward' | 'Back' | 'dpi'
- * @param value 鼠标按键值
- * @param parentValue 父级值 (鼠标按键:null 多媒体:1000 组合宏:1999)
- * @param connectionData 组合键数据 { cycleTimes: number, cycleMode: number, macroIndex: number }
- */
-async function onMouseButtonChange(id: MouseButtonType, value: number, parentValue?: number, connectionData?: { cycleTimes: number, cycleMode: number, macroIndex: number }) {
-  if (parentValue) {
-    if (parentValue === 1000) {
-      await sendMultimediaMacro(id, value)
-    }
-    else if (parentValue === 1999 && connectionData) {
-      await sendConnectionMacro(id, value, connectionData)
-    }
-  }
-  else {
-    await sendKeyMacro(id, value)
-  }
-
-  onExecutionSuccess()
-  nextTick(() => setTimeout(restartConnection, 400))
-}
-
-/** 发送设置组合键宏 */
-async function sendConnectionMacro(id: MouseButtonType, value: number, data: { cycleTimes: number, cycleMode: number, macroIndex: number }) {
-  const index = mouseButton.indexOf(id)
-  console.log('设置组合键宏========')
-  await transport.value.send([0x08, 0x00, 1, data.cycleMode, data.cycleTimes, index, data.macroIndex])
-  profileInfo[id] = value
-  profileInfo.macroList[data.macroIndex].connections.push({
-    cycleMode: data.cycleMode,
-    cycleTimes: data.cycleTimes,
-    keyid: id,
-  })
-  console.log('组合键宏已设置======', profileInfo)
-
-  // loading = ElLoading.service({ lock: true, text: '', spinner: 'none', background: 'rgba(0, 0, 0, 0)' })
-}
-
-// 发送多媒体宏
-function sendMultimediaMacro(id: MouseButtonType, value: number) {
-  const index = mouseButton.indexOf(id)
-  console.log('发送多媒体宏======')
-  transport.value.send([0x07, 0x00, 0x01, index, ...getLowAndHigh8Bits(value)])
-  profileInfo[id] = value
-}
-
-// 发送鼠标宏
-async function sendKeyMacro(id: MouseButtonType, value: number) {
-  const index = mouseButton.indexOf(id)
-  console.log('发送鼠标宏======')
-  await transport.value.send([0x09, 0x00, 0x01, index, value])
-  profileInfo[id] = value
-}
-
-const dpi_progress = ref(false)
-/** dpi设置 */
-async function sendDpi(index?: number) {
-  dpi_progress.value = true
-  const dpi_length = profileInfo.dpi_slider_list.length
-  const list = profileInfo.dpi_slider_list.reduce((arr: number[], item: number) => {
-    arr.push(item & 0xFF, item >> 8 & 0xFF)
-    return arr
-  }, [])
-
-  if (index !== undefined) {
-    profileInfo.dpi_slider_active_index = index
-  }
-
-  // [设置类型，发多少条消息，后面传入数据长度，当前DPI挡位下标， DPI挡位个数， DPI挡位1(低8位)，DPI挡位1(高8位)，...]
-  await transport.value.send([0x0A, 0x00, 2 + list.length, profileInfo.dpi_slider_active_index, dpi_length, ...list])
-  dpi_progress.value = false
-  onExecutionSuccess()
-}
-
-async function sendDpiLength(newLength: number | undefined, oldLength: number | undefined) {
-  if (newLength === undefined || oldLength === undefined) { return }
-
-  const default_dpi_slider_list = [3000, 8000, 15000, 24000, 30000]
-  // 添加 dpi
-  if (newLength > oldLength) {
-    profileInfo.dpi_slider_list = [...profileInfo.dpi_slider_list, default_dpi_slider_list[newLength - 1]]
-  }
-  // 删除 dpi
-  else if (newLength < oldLength) {
-    // 删除的是当前 dpi 位，则删除前一个 dpi 位
-    if (profileInfo.dpi_slider_active_index === newLength) {
-      profileInfo.dpi_slider_list.splice(oldLength - 2, 1)
-      profileInfo.dpi_slider_active_index = newLength - 1
-    }
-    else {
-      profileInfo.dpi_slider_list = profileInfo.dpi_slider_list.slice(0, newLength)
-    }
-  }
-
-  await sendDpi()
-}
-
-/** 设置进入休眠时间 */
-async function sendPolling() {
-  await transport.value.send([0x0C, 0x00, 0x01, profileInfo.polling_slider])
-  onExecutionSuccess()
-}
-
-/** 设置进入休眠时间 */
-async function sendHibernation() {
-  const byte = profileInfo.hibernation_slider * 1000
-  await transport.value.send([0x15, 0x00, 0x04, ...[byte & 0xFF, byte >> 8 & 0xFF, byte >> 16 & 0xFF, byte >> 24 & 0xFF]])
-  onExecutionSuccess()
-}
-
-/** 设置静默高度 */
-async function sendLod() {
-  await transport.value.send([0x11, 0x00, 0x01, profileInfo.lod_slider])
-  onExecutionSuccess()
-}
-
-/** 设置消抖时间 */
-async function sendJitterElimination() {
-  await transport.value.send([0x13, 0x00, 0x02, profileInfo.jitter_elimination_slider])
-  onExecutionSuccess()
-}
-
-/** 设置角度 */
-async function sendAngle() {
-  await transport.value.send([0x17, 0x00, 0x01, mapRangeToHex(profileInfo.angle_slider)])
-  onExecutionSuccess()
-}
-
-/** 设置性能模式（电竞模式） */
-async function onSportsMode() {
-  const sports_arena = profileInfo.sports_arena + 1
-  profileInfo.sports_arena = sports_arena > 2 ? 0 : sports_arena
-
-  await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
-  onExecutionSuccess()
-}
-
-// 获取充电状态 0:不充电  1：充电
-async function sendChargingStatus() {
-  const res = await transport.value.send([0x20])
-  chargingStatus.value = res[3]
-}
-// const onSportsMode = () => {
-//   let sports_arena = profileInfo.sports_arena + 1
-//   profileInfo.sports_arena = sports_arena > 2 ? 0 : sports_arena
-
-//   await transport.value.send([0x12,0x00,0x01, profileInfo.sports_arena])
-//   // customMessageBox.confirm(t('message.sports_mode'), t('message.warning'), { center: true })
-//   // .then(() => {
-//   //   // 点击勾确认按钮时执行的逻辑
-//   // })
-// }
-
-async function onMotionSync() {
-  profileInfo.motion_sync = !profileInfo.motion_sync
-  await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
-  onExecutionSuccess()
-}
-
-interface RecordedKey {
-  key: string
-  type: number
-  keyCode: number
-  keyStatus: number
-  intervalTime: number
-  _editable?: 'INTERVAL_TIME' | 'KEY' | null
-}
-
-// 录制中
-const isRecording = ref(false)
-let startTime: number = 0
-const recordedKeys = ref<RecordedKey[]>([])
-const recordedKeyHighlightIndex = ref()
-
-function onClickPecordBtn() {
-  isRecording.value = !isRecording.value
-
-  if (isRecording.value) {
-    startTime = new Date().getTime()
-    recordedKeys.value = []
-    document.addEventListener('keydown', handleKeyDown)
-    document.addEventListener('keyup', handleKeyUp)
-  }
-  else {
-    document.removeEventListener('keydown', handleKeyDown)
-    document.removeEventListener('keyup', handleKeyUp)
-    console.log('录制的按键：', recordedKeys.value)
-  }
-}
-
-function recordedKeyMaxCheck() {
-  if (recordedKeys.value.length >= 12) {
-    showMessage(t('index.record_macro_warning'))
-    return false
-  }
-  return true
-}
-
-function handleKeyDown(event: any) {
-  if (keyMap[event.code]) {
-    const now = new Date().getTime()
-    const intervalTime = recordedKeys.value.length > 0 ? now - startTime : 10
-    startTime = now
-
-    recordedKeyMaxCheck() && recordedKeys.value.push({
-      key: keyMap[event.code].text,
-      keyCode: keyMap[event.code].value,
-      intervalTime,
-      keyStatus: keyMap[event.code].type === 1 ? 0xA1 : 1, // 【LShift这类控制键 0xA0: 按下 / 0xA1: 松开】
-      type: 1,
+      ]
     })
   }
-}
-
-function handleKeyUp(event: any) {
-  if (keyMap[event.code]) {
-    const now = new Date().getTime()
-    const intervalTime = now - startTime
-    startTime = now
-
-    recordedKeyMaxCheck() && recordedKeys.value.push({
-      key: keyMap[event.code].text,
-      keyCode: keyMap[event.code].value,
-      intervalTime,
-      keyStatus: keyMap[event.code].type === 1 ? 0xA0 : 0, // 【LShift这类控制键 0xA0: 按下 / 0xA1: 松开】
-      type: 0,
-    })
-  }
-}
-
-const keyboardRecordingListScrollPercentage = ref(0)
-const keyboardRecordingListRef = ref()
-
-watch(keyboardRecordingListScrollPercentage, () => {
-  if (keyboardRecordingListRef.value) {
-    const maxScrollTop = keyboardRecordingListRef.value.scrollHeight - keyboardRecordingListRef.value.clientHeight
-    keyboardRecordingListRef.value.scrollTo({
-      top: ((100 - keyboardRecordingListScrollPercentage.value) / 100) * maxScrollTop,
-    })
-  }
-})
-watch(() => recordedKeys.value.length, () => {
-  if (isRecording.value) {
-    keyboardRecordingListScrollPercentage.value = 0
-    if (keyboardRecordingListRef.value) {
-      const maxScrollTop = keyboardRecordingListRef.value.scrollHeight - keyboardRecordingListRef.value.clientHeight
-      keyboardRecordingListRef.value.scrollTo({
-        top: ((100 - keyboardRecordingListScrollPercentage.value) / 100) * maxScrollTop,
-      })
-    }
-  }
-})
-
-const inputRecordedKeyRef = ref()
-const inputIntervalTimeRef = ref()
-
-function onDblclicRecordedKey(item: RecordedKey) {
-  item._editable = 'KEY'
-  nextTick(() => {
-    inputRecordedKeyRef.value[0].focus()
-  })
-}
-
-function onKeydownRecordedKey(event: any, item: RecordedKey) {
-  event.preventDefault()
-  item.key = keyMap[event.code].text
-  item.keyCode = keyMap[event.code].value
-  if (item.type === 1) { // 按下
-    item.keyStatus = keyMap[event.code].type === 1 ? 0xA1 : 1
-  }
-  else if (item.type === 0) { // 松开
-    item.keyStatus = keyMap[event.code].type === 1 ? 0xA0 : 0
-  }
-}
-
-function onDblclicIntervalTime(item: RecordedKey) {
-  item._editable = 'INTERVAL_TIME'
-  nextTick(() => {
-    inputIntervalTimeRef.value[0].focus()
-  })
-}
-
-function onblurRecordedKey(item: RecordedKey) {
-  item._editable = null
-}
-
-const leftHintCode = ref('')
-const leftTransitionShow = ref(true)
-let leftHintCodeTimer: NodeJS.Timeout = setTimeout(() => {}, 0)
-const setLeftHintCode = useThrottleFn((code: string) => {
-  if (leftHintCode.value === code)
-    return
-  clearTimeout(leftHintCodeTimer)
-  leftHintCode.value = ''
-  leftHintCodeTimer = setTimeout(() => {
-    leftHintCode.value = code
-    leftTransitionShow.value = false
-    nextTick(() => leftTransitionShow.value = true)
-  }, 300)
-}, 300)
-
-const rightHintCode = ref('')
-const rightTransitionShow = ref(true)
-let rightHintCodeTimer: NodeJS.Timeout = setTimeout(() => {}, 0)
-const setRightHintCode = useThrottleFn((code: string) => {
-  if (rightHintCode.value === code)
-    return
-  clearTimeout(rightHintCodeTimer)
-  rightHintCode.value = ''
-  rightHintCodeTimer = setTimeout(() => {
-    rightHintCode.value = code
-    rightTransitionShow.value = false
-    nextTick(() => rightTransitionShow.value = true)
-  }, 300)
-}, 300)
-
-provide('setLeftHintCode', setLeftHintCode)
-provide('setRightHintCode', setRightHintCode)
-
-async function onPairingConnection() {
-  const connection = async () => {
-    const res = await transport.value.send([0x14])
-    console.log('配对链接成功===========', res)
-    showMessage(t('message.pairing_connection_success'))
-  }
-  // 监听空格键按下执行配对方法
-  const handleSpaceKey = async (event: any) => {
-    if (event.code === 'Space') {
-      connection()
-    }
-  }
-  window.addEventListener('keydown', handleSpaceKey)
-  messageBox.confirm(t('message.pairing_connection'), { container: '.middle-container' })
-    .then(connection)
-    .finally(() => {
-      window.removeEventListener('keydown', handleSpaceKey)
-    })
-}
-
-async function onRestoreFactorySettings() {
-  messageBox.confirm(t('message.restore_factory_settings'), { container: '.middle-container' })
-    .then(async () => {
-      await transport.value.send([0x10])
-      showMessage(t('message.restore_factory_settings_success'))
-      setTimeout(() => {
-        location.reload()
-      }, 1000)
-    })
-}
-
-function toSettings() {
-  router.push('/hid/settings')
-}
-
-// 添加宏
-async function addMacro() {
-  // 停止录制
-  if (isRecording.value) {
-    onClickPecordBtn()
   }
 
-  if (recordedKeys.value.length === 0) {
-    showMessage(t('index.add_macro_warning_1'))
+let bottomItem = ref(0)
+
+function bottomItemChange(type) {
+  // if(type == 1){
+  //   bottomItem.value = 2
+  //   return
+  // }
+  if (bottomItem.value === type) {
     return
   }
+  bottomItem.value = type
 
-  // 添加第几个宏录制
-  let macroIndex = profileInfo.macroList.findIndex(item => item.value.length === 0)
-  // 改变第几个宏录制
-  if (currentMacroButtonRecordedKeyIndex.value !== undefined) {
-    macroIndex = currentMacroButtonRecordedKeyIndex.value
-  }
-
-  if (macroIndex === -1) {
-    showMessage(t('index.add_macro_warning'))
-    return
-  }
-
-  const macroName = `Macro ${macroIndex + 1}`
-
-  const data = recordedKeys.value.map((item) => {
-    const [_low, _high] = getLowAndHigh8Bits(item.intervalTime)
-    return [item.keyCode, item.keyStatus, _high, _low]
-  })
-
-  console.log('添加组合键宏球=======', macroIndex + 1)
-  await transport.value.send([0x1A + macroIndex, 0x00, recordedKeys.value.length, ...data.flat()])
-
-  console.log('设置宏按键名字=======', macroName)
-  const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
-  await transport.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + macroIndex, ...macroNameArrayBuffer])
-
-  profileInfo.macroList[macroIndex].name = macroName
-  profileInfo.macroList[macroIndex].value = recordedKeys.value.map(item => ({
-    keyCode: item.keyCode,
-    keyStatus: item.keyStatus,
-    intervalTime: item.intervalTime,
-  }))
-  recordedKeys.value = []
-
-  nextTick(() => {
-    restartConnection()
-    onExecutionSuccess()
-  })
 }
 
-// watch(recordedKeys, () => {
-//   console.log('recordedKeys.value========', recordedKeys.value)
-// }, {
-//   deep: true,
-// })
 
-// 录制宏插入
-function insertMacro(command: number) {
-  const index = recordedKeyHighlightIndex.value === undefined ? recordedKeys.value.length : recordedKeyHighlightIndex.value
-  if (recordedKeys.value.length <= 10) {
-    if (command === 5) {
-      recordedKeys.value.splice(index + 1, 0, { key: 'A', type: 1, keyCode: 4, keyStatus: 1, intervalTime: 10 }, { key: 'A', type: 0, keyCode: 4, keyStatus: 0, intervalTime: 10 },
-      )
-    }
-    else {
-      recordedKeys.value.splice(index + 1, 0, { key: mouseButton[command], type: 1, keyCode: command, keyStatus: 0xB1, intervalTime: 10 }, { key: mouseButton[command], type: 0, keyCode: command, keyStatus: 0xB0, intervalTime: 10 },
-      )
-    }
-  }
-}
 
-function resetSelectedMacro() {
-  currentMacroButtonRecordedKeyIndex.value = void 0
-  recordedKeys.value = []
-}
-
-function onMacroButtonMouseUp(index: number) {
-  if (currentMacroButtonRecordedKeyIndex.value === index) {
-    resetSelectedMacro()
-  }
-  else {
-    currentMacroButtonRecordedKeyIndex.value = index
-    recordedKeys.value = profileInfo.macroList[index].value.map(item => ({
-      key: keyCodeToText(item.keyCode, item.keyStatus),
-      type: [0x01, 0xA1, 0xB1].includes(item.keyStatus) ? 1 : 0,
-      keyCode: item.keyCode,
-      keyStatus: item.keyStatus,
-      intervalTime: item.intervalTime,
-    }))
-  }
-}
-
-function keyCodeToText(keyCode: number, keyStatus: number): string {
-  // 鼠标按键
-  if ([0xB1, 0xB0].includes(keyStatus)) {
-    return mouseButton[keyCode]
-  }
-
-  // 普通按键 ｜ 快捷键
-  let type: number
-  if ([0x01, 0x00].includes(keyStatus)) {
-    type = 0
-  }
-  else if ([0xA1, 0xA0].includes(keyStatus)) {
-    type = 1
-  }
-  return Object.entries(keyMap).find(([key, item]) => (item.value === keyCode && item.type === type))?.[1].text || ''
-}
-
-/** *********** 录制宏拖拽 start */
-const isDragging = ref(false)
-const dragIndex = ref<number>()
-
-const dropLinePosition = ref(0)
-
-function onDragOver(event: DragEvent, index: number) {
-  event.preventDefault()
-  const listItem = (event.target as HTMLElement).closest('li')
-  if (!listItem)
-    return
-
-  const rect = listItem.getBoundingClientRect()
-  const mouseY = event.clientY
-
-  // 根据鼠标位置决定是放在当前项的上方还是下方
-  if (mouseY < rect.top + rect.height / 2) {
-    // 放在当前项上方
-    dropLinePosition.value = listItem.offsetTop
-  }
-  else {
-    // 放在当前项下方
-    dropLinePosition.value = listItem.offsetTop + listItem.offsetHeight
-  }
-}
-
-function onDrop(event: DragEvent, dropIndex: number) {
-  isDragging.value = false
-  dragIndex.value = undefined
-  dropLinePosition.value = 0
-
-  const draggedIndex = Number(event.dataTransfer?.getData('text/plain'))
-  if (draggedIndex === dropIndex)
-    return
-
-  const listItem = (event.target as HTMLElement).closest('li')
-  if (!listItem)
-    return
-
-  const rect = listItem.getBoundingClientRect()
-  const mouseY = event.clientY
-
-  // 如果鼠标在元素下半部分，则插入位置加1
-  if (mouseY > rect.top + rect.height / 2) {
-    dropIndex++
-  }
-
-  const temp = recordedKeys.value[draggedIndex]
-  recordedKeys.value.splice(draggedIndex, 1)
-  recordedKeys.value.splice(dropIndex, 0, temp)
-}
-
-function onDragStart(event: DragEvent, index: number) {
-  isDragging.value = true
-  dragIndex.value = index
-  dropLinePosition.value = 0
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/plain', index.toString())
-  }
-}
-/** *********** 录制宏拖拽 end */
-
-function onDisconnect(event: any) {
-  if (event.device.productId === transport.value.device.productId && event.device.vendorId === transport.value.device.vendorId) {
-    transportWebHID?._s.set('v8', null)
-    router.push('/')
-  }
-}
-
-function onInputReport(uint8ArrayRes: Uint8Array) {
-  // 按下鼠标 DPI 物理按钮
-  if (uint8ArrayRes[0] === 0x0B) {
-    const dpiIndex = uint8ArrayRes[3]
-    if (dpiIndex >= 0 && dpiIndex < profileInfo.dpi_slider_list.length) {
-      profileInfo.dpi_slider_active_index = dpiIndex
-    }
-  }
-  // 返回充电状态
-  else if (uint8ArrayRes[0] === 0x20) {
-    chargingStatus.value = uint8ArrayRes[3]
-  }
-}
-
-useTransportWebHID('v8', async (instance) => {
-  transport.value = instance
-  console.log('transport.value ======', transport.value)
-  if (!transport.value) {
-    router.push('/')
-    return
-  }
-
-  // 监听鼠标主动事件: 如 DPI 物理按钮变化
-  transport.value.on('input-all', onInputReport)
-  // 监听鼠标断开
-  navigator.hid.addEventListener('disconnect', onDisconnect)
-
-  initProfile()
-})
-
-onMounted(() => {
-  userStore.fetchLatestVersion()
-})
-
-onUnmounted(() => {
-  transport.value.off('input-all', onInputReport)
-  navigator.hid.removeEventListener('disconnect', onDisconnect)
-})
-
-// 使用 provide 提供数据
-provide<Ref<TransportWebHIDInstance>>('transport', transport)
-// 选择鼠标键设置连线透明度0
-provide('dotsCleanup', dotsCleanup)
-provide('createConnection', createConnection)
 </script>
 
 <template>
-  <div class="hid-container h-screen min-h-650px min-w-1050px w-screen flex items-center justify-center p-10px">
-    <div class="left-container relative h-full w-35%">
-      <!-- 录制之后的宏配置 -->
-      <MacroButton ref="macroButtonRef" v-model="profileInfo.macroList" :selected-index="currentMacroButtonRecordedKeyIndex" class="h-33% w-40% pt-13%" @mouseenter="setLeftHintCode('macro_ball_link')" @mouseup="onMacroButtonMouseUp" />
-      <!-- 宏录制内容开始 -->
+  <div :style="{ width: '1920px', transform: scale }" class="hid-container">
+    <a class="absolute left-30px top-30px" href="https://baidu.com" target="_blank">
+      <img class="h-45px" src="/logo.png" alt="logo">
+    </a>
 
-      <!-- 宏录制提示文字 & 动画 -->
-      <div class="hint-container absolute left-10% top-40% h-15% w-65%">
-        <div :class="leftHintCode ? 'w-full bg-white' : 'w-0'" class="absolute left-0% top-0% h-[1px] bg-gray transition-all duration-500" />
-        <div :class="leftHintCode ? 'h-full bg-white' : 'h-0'" class="absolute left-0% top-0% w-[1px] bg-gray transition-all duration-500" />
-        <div :class="leftHintCode ? 'opacity-100 bg-white top-full' : 'opacity-60 top-10px'" class="absolute bottom--10px left--10px h-20px w-20px rounded-50% bg-gray duration-500" />
-        <div :class="leftHintCode ? 'opacity-100 bg-white left-full' : 'opacity-60 left-10px'" class="absolute right--10px top--10px h-20px w-20px rounded-50% bg-gray duration-500" />
-        <div class="absolute left--10px top--10px h-20px w-20px rounded-50% bg-white" />
-
-        <transition v-if="leftHintCode" :key="leftHintCode" name="right-fade">
-          <div v-if="leftTransitionShow" class="hint-body p-4 text-start">
-            <div class="hint-title text-xl leading-8">
-              {{ t(`tips.${leftHintCode}.title`) }}
-            </div>
-            <div class="hint-description color-#606266" v-html="t(`tips.${leftHintCode}.description`)" />
-          </div>
-        </transition>
-      </div>
-
-      <div class="create-macro-container absolute left-10% top-60% h-35% w-70%">
-        <div class="absolute left-0 top-0 h-[1px] w-90% bg-white" />
-        <div class="absolute right-10% top-0 h-full w-[1px] bg-white" />
-        <div class="absolute bottom-0 h-[1px] w-30% bg-white -right-20%" />
-
-        <!-- 保存宏 -->
-        <ElButton class="absolute right-10% top-0 translate-x-1/2 bg-white text-base font-bold -translate-y-1/2" :icon="Plus" color="#e83ff4" plain circle size="small" @mouseenter="setLeftHintCode('macro_save')" @click="addMacro" />
-
-        <!-- 录制宏 -->
-        <ElButton class="absolute bottom-0 right-10% translate-1/2 bg-white text-[25px]" :icon="isRecording ? VideoPause : VideoPlay" color="#e83ff4" plain circle size="large" @mouseenter="setLeftHintCode('macro_recording')" @click="onClickPecordBtn" />
-
-        <!-- 查看宏 -->
-        <div class="absolute left-45% top-25px h-93% -translate-x-1/2">
-          <ElSlider v-model="keyboardRecordingListScrollPercentage" vertical :show-tooltip="false" @mouseenter="setLeftHintCode('macro_view')" />
-        </div>
-
-        <!-- 插入宏 -->
-
-        <ElDropdown class="absolute left-45% top-0 -translate-x-1/2 -translate-y-1/2" trigger="click" popper-class="custom-popper custom-dropdown-popper" @mouseenter="setLeftHintCode('insert_macro')" @command="insertMacro">
-          <ElButton class="bg-white text-base font-bold" color="#e83ff4" plain :icon="ArrowRight" circle size="small" />
-          <template #dropdown>
-            <ElDropdownMenu @mouseenter="setLeftHintCode('insert_macro')">
-              <ElDropdownItem :command="0">
-                {{ t('button.left_button') }}
-              </ElDropdownItem>
-              <ElDropdownItem :command="1">
-                {{ t('button.right_button') }}
-              </ElDropdownItem>
-              <ElDropdownItem :command="2">
-                {{ t('button.middle_button') }}
-              </ElDropdownItem>
-              <ElDropdownItem :command="3">
-                {{ t('button.forward_button') }}
-              </ElDropdownItem>
-              <ElDropdownItem :command="4">
-                {{ t('button.back_button') }}
-              </ElDropdownItem>
-              <ElDropdownItem :command="5">
-                {{ t('button.keyboard_key') }}
-              </ElDropdownItem>
-            </ElDropdownMenu>
-          </template>
-        </ElDropdown>
-
-        <div ref="keyboardRecordingListRef" class="keyboard-recording-list hide-scrollbar absolute left-5% top-0 mt-2 h-full overflow-auto">
-          <ul class="relative text-start color-#fff leading-7" @mouseenter="setLeftHintCode('macro_revise')">
-            <!-- 拖拽时底部的蓝色的线 -->
-            <div v-if="isDragging" class="absolute z-10 h-[2px] w-full bg-blue-500 transition-all duration-200" :style="{ top: `${dropLinePosition}px` }" />
-
-            <li v-for="(item, index) in recordedKeys" :key="index" class="group relative mb-1 flex border-1 border-#000 rounded-lg px-2 hover:border-#fff" :class="{ 'border-#fff': recordedKeyHighlightIndex === index, 'border-blue-500': isDragging && dragIndex === index }" draggable="true" @click="recordedKeyHighlightIndex = index" @dragstart="onDragStart($event, index)" @dragover="onDragOver($event, index)" @dragenter.prevent @drop="onDrop($event, index)">
-              <ElIcon size="20" class="mr-2 mt-1">
-                <Download v-if="item.type" />
-                <Upload v-else />
-              </ElIcon>
-
-              <div>
-                <!-- 录制按键内容 & 毫秒, 双击可编辑 -->
-                <div @dblclick="onDblclicRecordedKey(item)">
-                  <input v-if="item._editable === 'KEY'" ref="inputRecordedKeyRef" type="text" :value="item.key" class="hide-focus-visible w-[70px] border-0 border-b-1" @keydown="(event) => onKeydownRecordedKey(event, item)" @blur="onblurRecordedKey(item)">
-                  <span v-else>{{ item.key }}</span>
-                </div>
-
-                <div @dblclick="onDblclicIntervalTime(item)">
-                  <input v-if="item._editable === 'INTERVAL_TIME'" ref="inputIntervalTimeRef" v-model.number="item.intervalTime" type="text" class="hide-focus-visible w-[70px] border-0 border-b-1" @blur="onblurRecordedKey(item)">
-                  <span v-else>{{ item.intervalTime }}ms</span>
-                </div>
-              </div>
-              <ElIcon size="20" class="absolute bottom--5px left-2 cursor-pointer opacity-0 -translate-y-1/2 hover:text-red-500 group-hover:opacity-100" @click.stop="recordedKeys.splice(index, 1)">
-                <Close />
-              </ElIcon>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <!-- 宏录制内容结束 -->
+    <div class="logo-box absolute right-90px top-50px" >
+      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
+      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
+      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
+      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
+      <img class="h-45px" src="/v9/china.png" alt="logo" style="margin-bottom: 5px;">
     </div>
 
-    <!-- 中间鼠标内容开始 -->
+    <div style="flex: 1;">
+      <div class="flex" style="flex-direction: column;align-items: center;margin-bottom: 20px;">
+        <div class="flex" style="align-items: center;font-size: 16px;">
+          40%
+          <!-- 电量图标 -->
+          <!-- v-if="chargingStatus === 1" -->
+          <!-- :class="profileInfo.battery_level == 100 ? 'color-green-500' : 'color-yellow-500'"  -->
+          <div class="h-6 w-6">
+            <svg
+              t="1751002332004" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="9714"
+            >
+              <path
+                d="M568 171.84v285.312h144.64a12.8 12.8 0 0 1 10.816 19.648l-243.84 382.208a12.8 12.8 0 0 1-23.616-6.848V566.848h-144.64a12.8 12.8 0 0 1-10.816-19.648l243.84-382.208a12.8 12.8 0 0 1 23.616 6.848z"
+                fill="currentColor" fill-opacity=".88" p-id="9715"
+              /></svg>
+          </div>
+        </div>
+        <!-- 电量 -->
+        <!-- :percentage="profileInfo.battery_level" -->
+        <ElProgress color="#67c23a" style="width: 115px;" :percentage="40" :show-text="false" />
+      </div>
 
-    <div class="middle-container relative h-full w-23% flex flex-col items-center">
-      <div class="relative h-60%">
+      <div style="position: relative;">
         <!-- 鼠标图片 -->
-        <img class="h-full pt-10%" :class="['', 'opacity-20', 'opacity-30'][profileInfo.sports_arena]" src="/mouse1.png" alt="mouse-card" draggable="false">
+        <!-- :class="['', 'opacity-20', 'opacity-30'][profileInfo.sports_arena]" -->
+        <img src="/v9/mouse1.png" alt="mouse-card" class="mouse">
 
         <!-- sports_arena 竞技模式图片 -->
-        <img class="absolute right-8px top-26% w-100%" :src="`/sports_arena_${profileInfo.sports_arena}.png`" alt="sports_arena" draggable="false">
+        <!-- ${profileInfo.sports_arena} -->
+        <!-- <img class="absolute" src="/sports_arena_1.png" alt="sports_arena" style="top: 75px;"> -->
 
         <!-- 鼠标后旋转背景图 -->
-        <img class="absolute top-0 h-full transform pt-10%" src="/mouse3.png" :class="['', 'opacity-20', 'opacity-30'][profileInfo.sports_arena]" alt="mouse-card" draggable="false" :style="{ transform: `rotate(${profileInfo.angle_slider}deg)` }">
+        <!-- :class="['', 'opacity-20', 'opacity-30'][profileInfo.sports_arena]" -->
+        <!-- <img
+          class="absolute top-0 transform" src="/mouse3.png" alt="mouse-card" draggable="false"
+          :style="{ transform: `rotate(0deg)` }"
+        > -->
 
-        <!-- 竞技模式下图片下文字 -->
-        <div v-if="[1, 2].includes(profileInfo.sports_arena)" class="custom-message-container absolute top-70.4% w-100%">
-          <div class="custom-message-container-text">
-            {{ t(`index.sports_arena_${profileInfo.sports_arena}`) }}
+        <!-- 鼠标左侧设置按钮功能 -->
+        <!-- @mouseenter="setLeftHintCode('button_ball')" -->
+        <!-- @change="onMouseButtonChange" -->
+        <!-- :value="mouseButtonValue" -->
+        <MouseButton
+          ref="mouseButtonRef" :value="mouseButtonValue" class="absolute right-0 h-full w-200%"
+          style="top: -16px;"
+        />
+      </div>
+    </div>
+    <div class="bottom-con relative">
+      <div class="config-box">
+        <div class="flex items-center" @click="bottomItemChange(0)">
+          <img src="/v9/Motion.png" alt="Motion" style="margin-right: 5px;">
+          <span>运动模式</span>
+        </div>
+        <div class="flex items-center"  @click="bottomItemChange(1)">
+          <img src="/v9/icon2.png" alt="Motion" style="margin-right: 5px;">
+          <span>竞技模式</span>
+        </div>
+        <div class="flex items-center"  @click="bottomItemChange(3)">
+          <img src="/v9/icon1.png" alt="Motion" style="margin-right: 5px;">
+          <span>配对</span>
+        </div>
+        <div class="flex items-center">
+          <img src="/v9/icon.png" alt="Motion" style="margin-right: 5px;">
+          <span>恢复出厂</span>
+        </div>
+      </div>
+
+      <Transition name="bottom-opacity">
+        <div class="bottom-box" v-if="bottomItem == 0" >
+          <div class="config-child-box">
+            <span class="ahover active">配置 1</span>
+            <span class="ahover">配置 2</span>
+            <span class="ahover">配置 3</span>
+            <span class="ahover">配置 4</span>
+          </div>
+          <div style="width: 100%;flex:1;align-items: center;" class="flex">
+            <div class="left-item-box">
+              <div :class="{ activeBg: activeBg == 'performance' }" @click="activeBgChange('performance')">
+                性能
+              </div>
+              <div :class="{ activeBg: activeBg == 'hong' }" style="margin-bottom: 10px;" @click="activeBgChange('hong')">
+                宏
+              </div>
+              <div :class="{ activeBg: activeBg == 'advanced' }" @click="activeBgChange('advanced')">
+                高级
+              </div>
+            </div>
+            <div style="position: relative;height: 100%; display: flex; align-items: center;">
+              <Transition name="slide-up">
+                <div v-if="activeBg == 'performance'"  class="flex absolute" >
+                  <div class="right-f-b h-100" style="padding: 50px 25px 25px 25px;position: relative;">
+                    <div class="flex items-center justify-between">
+                      <span style="font-size: 20px;">DPI设置</span>
+                      <div class="flex items-center">
+                        <span style="display: inline-block; font-size: 30px;">+</span>
+                        <span
+                          style="margin: 0 15px; width: 24px; height: 24px; border-radius: 50%;background-color: #DAFF00;color: #333;"
+                        >1</span>
+                        <span style="display: inline-block; font-size: 30px;">-</span>
+                      </div>
+                    </div>
+
+                    <div class="flex justify-between">
+                      <div>
+                        <div
+                          class="triangle-top flex items-center"
+                          style="width: 99.56px;height: 118px;border:1px dashed #fff;padding-top: 7px;flex-direction: column;"
+                        >
+                          <div style="font-size: 14px;margin-bottom: 30px;">
+                            等级1
+                          </div>
+                          <div
+                            style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                          >
+                            400
+                          </div>
+                        </div>
+                        <div class="triangle" />
+                      </div>
+                      <div>
+                        <div
+                          class="triangle-top active flex items-center"
+                          style="width: 99.56px;height: 118px;border:1px dashed #fff;padding-top: 7px;flex-direction: column;"
+                        >
+                          <div style="font-size: 14px;margin-bottom: 30px;">
+                            等级2
+                          </div>
+                          <div
+                            style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                          >
+                            400
+                          </div>
+                        </div>
+                        <div class="triangle triangle1" />
+                      </div>
+                      <div>
+                        <div
+                          class="triangle-top flex items-center"
+                          style="width: 99.56px;height: 118px;border:1px dashed #fff;padding-top: 7px;flex-direction: column;"
+                        >
+                          <div style="font-size: 14px;margin-bottom: 30px;">
+                            等级3
+                          </div>
+                          <div
+                            style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                          >
+                            400
+                          </div>
+                        </div>
+                        <div class="triangle triangle2" />
+                      </div>
+                      <div>
+                        <div
+                          class="triangle-top flex items-center"
+                          style="width: 99.56px;height: 118px;border:1px dashed #fff;padding-top: 7px;flex-direction: column;"
+                        >
+                          <div style="font-size: 14px;margin-bottom: 30px;">
+                            等级4
+                          </div>
+                          <div
+                            style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                          >
+                            400
+                          </div>
+                        </div>
+                        <div class="triangle triangle3" />
+                      </div>
+                      <div>
+                        <div
+                          class="triangle-top flex items-center"
+                          style="width: 99.56px;height: 118px;border:1px dashed #fff;padding-top: 7px;flex-direction: column;"
+                        >
+                          <div style="font-size: 14px;margin-bottom: 30px;">
+                            等级5
+                          </div>
+                          <div
+                            style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                          >
+                            400
+                          </div>
+                        </div>
+                        <div class="triangle triangle4" />
+                      </div>
+                    </div>
+
+                    <div class="flex" style="margin-top: 12px;">
+                      <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y <img @click="startXY"
+                        style="margin-left: 5px;" src="../../../public/v9/wenhao.png" alt="" srcset=""
+                      ></span>
+                      <div
+                        class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
+                        @click="radioChange"
+                      >
+                        <Transition name="right-fade">
+                          <div
+                            :key="radioActive" class="absolute" :class="[radioActive ? 'right-0.5' : 'left-0.5']"
+                            style="width: 19px;height: 19px;border-radius: 50%;"
+                            :style="{ &quot;background-color&quot;: radioActive ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
+                          />
+                        </Transition>
+                      </div>
+                    </div>
+                    <!-- @mouseenter="setRightHintCode('dpi')" -->
+                    <!-- <div class="transparent-slider" >
+
+    </div> -->
+
+                    <!-- @change="sendDpi(index)" -->
+                    <CustomSlider
+                      v-for="(_, index) in profileInfo.dpi_slider_list" :key="index"
+                      v-model="profileInfo.dpi_slider_list[index]" class="dpi_slider absolute bottom-6 w-90%"
+                      :bind="sliderOptions.dpi_slider" :default-select-options="sliderDefaultSelectOptions.dpi_slider"
+                      :double-click-edit="true" :marks="{
+                        [sliderOptions.dpi_slider.min]: `${sliderOptions.dpi_slider.min}`,
+                        [sliderOptions.dpi_slider.max]: `${sliderOptions.dpi_slider.max}`,
+                      }"
+                    />
+                  </div>
+
+                  <div style="flex:1;" class="relative">
+                    <Transition name="slide-right">
+                      <div  class="flex absolute" style="flex:1;" v-if="!startXYFlag" >
+                        <div  class="right-s-b" style="margin-left: 10px;padding: 50px 25px 25px 25px;position: relative;">
+                          <div class="flex items-center justify-between">
+                            <p style="font-size: 20px; width: 100px;text-align: right;">
+                              轮询率(Hz)
+                            </p>
+                            <div class="flex items-center justify-between" style="flex: 1;margin-left: 20px;">
+                              <div
+                                class="block_item active"
+                                style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              >
+                                400
+                              </div>
+                              <div
+                                class="block_item"
+                                style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              >
+                                400
+                              </div>
+                              <div
+                                class="block_item"
+
+                                style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              >
+                                400
+                              </div>
+                              <div
+                                class="block_item"
+
+                                style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              >
+                                400
+                              </div>
+                            </div>
+                          </div>
+                          <div class="flex items-center justify-between">
+                            <p style="font-size: 20px;width: 100px;text-align: right;">
+                              LOD 高度
+                            </p>
+                            <div class="flex items-center justify-between" style="flex: 1;margin-left: 20px;">
+                              <div
+                                class="block_item"
+
+                                style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              >
+                                0.7mm
+                              </div>
+                              <div
+
+                                class="block_item active"
+                                style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              >
+                                1mm
+                              </div>
+                              <div
+                                class="block_item"
+
+                                style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              >
+                                2mm
+                              </div>
+                            </div>
+                          </div>
+                          <div class="flex items-center justify-between">
+                            <p style="font-size: 20px;width: 100px;text-align: right;">
+                              响应时间
+                            </p>
+                            <CustomSlider
+                              v-for="(_, index) in profileInfo.dpi_slider_list" :key="index"
+                              v-model="profileInfo.dpi_slider_list[index]" class="dpi_slider absolute right-5 w-66%"
+                              :bind="sliderOptions.dpi_slider" :default-select-options="sliderDefaultSelectOptions.dpi_slider"
+                              :double-click-edit="true" :show-fixed="true"
+                            />
+                          </div>
+                          <div class="flex items-center justify-between">
+                            <p style="font-size: 20px;width: 100px;text-align: right;">
+                              休眠时间
+                            </p>
+                            <!-- @mouseenter="setRightHintCode('hibernation')"
+                            @change="sendHibernation" -->
+                            <CustomSlider
+                              v-model="profileInfo.hibernation_slider"
+                              class="transparent-slider absolute right-5 w-66%" :bind="sliderOptions.hibernation_slider"
+                              :default-select-options="sliderDefaultSelectOptions.hibernation_slider" :show-fixed="true"
+                            />
+                          </div>
+                        </div>
+                        <div
+                          class="right-t-b"
+                          style="margin-left: 10px;padding: 50px 25px 25px 25px;position: relative; flex-direction: column;"
+                        >
+                          <div class="flex" style="width: 100%;">
+                            <span style="font-size: 20px; text-align: left;">旋转角度</span>
+                          </div>
+                          <img
+                            class="absolute"
+                            style="left: 50%; top: 50%; margin-left: -42px; margin-top: -96px; width: 84px;height:152px;"
+                            src="../../../public/v9/mouse.png" alt="" srcset=""
+                          >
+                          <!-- @mouseenter="setRightHintCode('angle')"
+                      @change="sendAngle" -->
+                          <CustomSlider
+                            v-model="profileInfo.angle_slider" class="absolute bottom-6 w-85%"
+                            :bind="sliderOptions.angle_slider" :default-select-options="sliderDefaultSelectOptions.angle_slider"
+                            :marks="{
+                              [sliderOptions.angle_slider.min]: `${sliderOptions.angle_slider.min}`,
+                              [sliderOptions.angle_slider.max]: `${sliderOptions.angle_slider.max}`,
+                            }"
+                          />
+                        </div>
+                      </div>
+                      <div v-else style="width: 840px; margin-left: 30px; justify-content: center;align-items: center;  height:100%; flex-direction: column;background-image: linear-gradient(to right, #0E0E0D, #31350F, #A5AA5290);" class="absolute flex"  >
+                        <p style="font-size: 30px;margin-bottom: 10px;">启用X-Y</p>
+                        <span style="font-size: 16px;line-height: 24px;color: #FFFFFF;">开启该功能后可以分别设定鼠标在滑动时的x轴与y轴的灵敏度值。</span>
+                        <div style="height:197px;width:593px;margin-top: 50px;">
+                          <AnimateCanvas
+                            :width="593"
+                            :height="197"
+                            :img-length="91"
+                            :end-stop="false"
+                            url="/xy/启用X-Y轴_0"
+                          />
+                        </div>
+
+                        <ElIcon size="30" style="position: absolute; right: 10px; top: 10px;" @click="startXYFlag = false">
+                          <Close />
+                        </ElIcon>
+
+                        
+                      </div>
+                    </Transition>
+                  </div>
+                </div>
+                <div v-else-if="activeBg === 'hong'"  class="flex absolute" >
+                  <div style="width: 564px;">
+                    <div class="config-child-box">
+                      <span class="active">新建宏</span>
+                    </div>
+                    <div class="relative flex">
+                      <!-- @scroll="scroll" -->
+                      <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
+                        <div ref="innerRef">
+                          <div class="hover hong_active" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                            001
+                            <ElIcon size="20">
+                              <Delete />
+                            </ElIcon>
+                          </div>
+                          <div class="ahover" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
+                            002
+                            <ElIcon size="20">
+                              <Delete />
+                            </ElIcon>
+                          </div>
+                          <div class="ahover" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
+                            002
+                            <ElIcon size="20">
+                              <Delete />
+                            </ElIcon>
+                          </div>
+                          <div class="ahover" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
+                            002
+                            <ElIcon size="20">
+                              <Delete />
+                            </ElIcon>
+                          </div>
+                        </div>
+                      </ElScrollbar>
+                      <!-- <el-slider vertical height="367px" class="absolute" /> -->
+                    </div>
+                  </div>
+                  <div style="width: 617px;margin-left: 60px;">
+                    <div class="flex items-center justify-between">
+                      <!-- <span style="font-size: 20px;">DPI设置</span> -->
+                      <div class="config-child-box">
+                        <span style="border: 0; justify-content: flex-start; background: transparent">DPI设置</span>
+                      </div>
+
+                      <div  class="relative charu" style="overflow: hidden;">
+                        <div class="flex items-center justify-end" style="width: 122px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
+                          插入
+                          <ElIcon style="margin-left: 10px;" size="20" color="#DAFF00">
+                            <!-- <ArrowUpBold /> -->
+                            <ArrowDownBold />
+                          </ElIcon>
+                        </div>
+                        <ul class="absolute" style="width: 100%;background: #212121;margin-top: 3px;z-index: 10;padding: 10px 3px 0;border-radius: 10px;">
+                          <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                            延迟
+                          </li>
+                          <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                            右键
+                          </li>
+                          <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                            中键
+                          </li>
+                          <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                            前进键
+                          </li>
+                          <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                            后退键
+                          </li>
+                          <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                            键盘按键
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="relative flex">
+                      <!-- @scroll="scroll" -->
+                      <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
+                        <div ref="innerRef">
+                          <div class="hong_active" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
+                            <!-- v-if="item.type" -->
+                            <div class="flex items-center">
+                              <ElSpace>
+                                <ElIcon size="20">
+                                  <Download />
+                                  <!-- <Upload /> -->
+                                </ElIcon>
+                                Q
+                              </ElSpace>
+                            </div>
+
+                            <ElSpace>
+                              <ElIcon size="20">
+                                <ArrowUpBold />
+                              </ElIcon>
+                              <ElIcon size="20">
+                                <ArrowDownBold />
+                              </ElIcon>
+                              <ElIcon size="20">
+                                <Delete />
+                              </ElIcon>
+                            </ElSpace>
+                          </div>
+                          <div class="hong" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
+                            <!-- v-if="item.type" -->
+                            <div class="flex items-center">
+                              <ElSpace>
+                                <ElIcon size="20">
+                                  <Download />
+                                  <!-- <Upload /> -->
+                                </ElIcon>
+                                Q
+                              </ElSpace>
+                            </div>
+
+                            <ElSpace>
+                              <ElIcon size="20">
+                                <ArrowUpBold />
+                              </ElIcon>
+                              <ElIcon size="20">
+                                <ArrowDownBold />
+                              </ElIcon>
+                              <ElIcon size="20">
+                                <Delete />
+                              </ElIcon>
+                            </ElSpace>
+                          </div>
+                        </div>
+                      </ElScrollbar>
+                      <!-- <el-slider vertical height="367px" class="absolute" /> -->
+                    </div>
+                  </div>
+
+                  <div style="margin-left: 20px;flex-direction: column; justify-content: end;" class="flex">
+                    <div class="flex items-center" style="width: 123px;height: 123px; background-color: #242424;flex-direction: column; padding-top: 25px;border-radius: 10px;">
+                      <div style="width: 17px;height: 17px;border-radius: 50%; background: #FF0000; margin-bottom: 10px;" />
+                      <div>开始</div>
+                      <div>录制</div>
+                    </div>
+                    <div style="height: 63px; line-height: 63px; text-align: center; width: 123px;border: 1px solid #DAFF00; border-radius: 10px;margin-top: 20px;background:#242424 ;">
+                      保 存
+                    </div>
+                  </div>
+                </div>
+                <div v-else-if="activeBg === 'advanced'"  class="flex absolute justify-between" style="width: 1543px ;height: 433px; border-radius: 10px; border: 1px solid #333333;background: #0D0D0D; ">
+
+                  <div style="padding: 25px 25px 0 25px;">
+                    <div>
+                      <div style="font-size: 20px; display: flex; align-items: center;">
+                        <div style="width: 170px;" class="flex items-center">
+                          <div>动态灵敏度</div>
+                          <img @mouseenter="hover = true" @mouseleave="hover = false"  style=" margin-left: 5px;margin-right: 30px;" :src="imageToDisplay"  srcset="">
+                        </div>
+                        <div
+                          class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
+                          @click="radioChange"
+                        >
+                          <transition name="right-fade">
+                            <div
+                              :key="radioActive" class="absolute" :class="[radioActive ? 'right-0.5' : 'left-0.5']"
+                              style="width: 19px;height: 19px;border-radius: 50%;"
+                              :style="{ &quot;background-color&quot;: radioActive ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
+                            />
+                          </transition>
+                        </div>
+                      </div>
+                      <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 20px;">
+                        选择你喜欢的鼠标速度或 自定义加速输出。
+                      </div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                      <div style="font-size: 20px; display: flex; align-items: center;">
+                        <div style="width: 170px;" class="flex items-center">
+                          <div>20K FPS</div>
+                          <img @mouseenter="hover = true" @mouseleave="hover = false"  style=" margin-left: 5px;margin-right: 30px;" :src="imageToDisplay"  srcset="">
+                        </div>
+                        <div
+                          class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
+                          @click="radioChange"
+                        >
+                          <transition name="right-fade">
+                            <div
+                              :key="radioActive" class="absolute" :class="[radioActive ? 'right-0.5' : 'left-0.5']"
+                              style="width: 19px;height: 19px;border-radius: 50%;"
+                              :style="{ &quot;background-color&quot;: radioActive ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
+                            />
+                          </transition>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                  <Transition>
+                    <!-- <div style="padding: 25px 25px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290);" class="flex">
+                      <div>
+                        <div style="font-size: 20px;text-align: left">动态灵敏度</div>
+                        <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                          优化了精度和响应速度
+                        </div>
+                      </div>
+                      <div style="text-align: left;">
+                        <p>使用预设或你喜欢的自定义设置来调整鼠标的响应速度和加速度，使其适应你的需求。 </p>
+                        <p>· 经典:采用传统的灵敏度设置，非常适合在日常使用中进行精确控制。</p>
+                        <p>· 自然:光标移动可预测，最大灵敏度有上限。</p>
+                        <p>· 跳跃:缓慢移动时使用低灵敏度，快速移动时立即转换为高灵敏度。 </p>
+                        <p> &nbsp;&nbsp;是喜欢超低灵敏度的 FPS 玩家的理想之选，同时还能在快速移动中完成 180 度旋转，实现出色的控制。</p>
+                        <p>· 自定义:你自己的动态灵敏度设置。</p>
+                        <AnimateCanvas
+                          :width="593"
+                          :height="287"
+                          :img-length="91"
+                          :end-stop="false"
+                          url="/advanced/2_0"
+                        />
+                      </div>
+
+                      <ElIcon size="40" style="position: absolute; right: 10px; top: 10px;">
+                        <Close />
+                      </ElIcon>
+                    </div> -->
+                    <div class="flex justify-between relative" style="flex:1">
+                      <div class="h-100% w-100% absolute" style="z-index:1; background: #0D0D0D95;">蒙版</div>
+                      <div  style="padding: 25px 25px 0 25px; flex:1;" >
+                        <div class="flex items-center">
+                          <div class="icon-box">
+                            <ElIcon size="18">
+                              <Plus />
+                            </ElIcon>
+                            <ElIcon size="18">
+                              <Minus />
+                            </ElIcon>
+                          </div>
+                          <div class="flex items-center ml-15">
+                            <span class="mr-3">选择模板</span>
+                            <div class="relative charu" style="overflow: hidden;">
+                              <div class="flex items-center justify-end" style="width: 112px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
+                                经典
+                                <ElIcon style="margin-left: 10px;" size="20" color="#DAFF00">
+                                  <!-- <ArrowUpBold /> -->
+                                  <ArrowDownBold />
+                                </ElIcon>
+                              </div>
+                              <ul class="absolute" style="width: 100%;background: #212121;margin-top: 3px;z-index: 10;padding: 10px 3px 0;border-radius: 10px;">
+                                <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                                  经典
+                                </li>
+                                <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                                  自然
+                                </li>
+                                <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                                  跳跃
+                                </li>
+                                <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
+                                  自定义
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                        <div style="width:100%" class="relative">
+
+                          <div id="myChart" style="width:100%; height:350px;"></div>
+
+                          <div class="icon-box absolute bottom-0 right-0" >
+                            <ElIcon size="18">
+                              <Plus />
+                            </ElIcon>
+                            <ElIcon size="18">
+                              <Minus />
+                            </ElIcon>
+                          </div>
+                          <p class="absolute bottom-0 left-[50%] ml-[-64px]">输入速度(计数/毫秒)</p>
+                          <p class="absolute top-[50%] left-0 mt-[-49px]" style="transform: rotate(90deg);">输出与输入比率</p>
+
+
+                        </div>
+                          
+                      </div>
+                      <div class="config-child-box" style="height: 100%; flex-direction: column; margin-left: 30px; justify-content: center;">
+                        <span style="margin-bottom: 35px;">经典</span>
+                        <span style="margin-bottom: 35px;">自然</span>
+                        <span style="margin-bottom: 35px;">跳跃</span>
+                        <span style="margin-bottom: 35px;" class="active">自定义</span>
+                      </div>
+                    </div>
+                  </Transition>
+                </div>
+              </Transition>
+            </div>
+            
           </div>
         </div>
 
-        <!-- 鼠标左侧设置按钮功能 -->
-        <MouseButton ref="mouseButtonRef" :value="mouseButtonValue" class="absolute right-0 top-0 h-full w-160%" @mouseenter="setLeftHintCode('button_ball')" @change="onMouseButtonChange" />
-      </div>
-
-      <!-- 调整鼠标角度 -->
-
-      <CustomSlider
-        v-model="profileInfo.angle_slider"
-        class="relative mt-26 w-50%"
-        :bind="sliderOptions.angle_slider"
-        :default-select-options="sliderDefaultSelectOptions.angle_slider"
-        @mouseenter="setRightHintCode('angle')"
-        @change="sendAngle"
-      />
-
-      <!-- 电量 -->
-      <ElProgress class="mt-15 w-40%" color="#67c23a" :percentage="profileInfo.battery_level" />
-
-      <!-- 电量图标 -->
-      <div v-if="chargingStatus === 1" class="h-8 w-8" :class="profileInfo.battery_level == 100 ? 'color-green-500' : 'color-yellow-500'" draggable="false">
-        <svg t="1751002332004" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9714"><path d="M568 171.84v285.312h144.64a12.8 12.8 0 0 1 10.816 19.648l-243.84 382.208a12.8 12.8 0 0 1-23.616-6.848V566.848h-144.64a12.8 12.8 0 0 1-10.816-19.648l243.84-382.208a12.8 12.8 0 0 1 23.616 6.848z" fill="currentColor" fill-opacity=".88" p-id="9715" /></svg>
-      </div>
-
-      <div class="absolute bottom-[75px]">
-        <ElAlert v-if="userStore.alertTitle" :title="userStore.alertTitle" type="success" :closable="false" :center="true" />
-      </div>
-
-      <img class="mt-8 w-[50px] cursor-pointer" :class="profileInfo.sports_arena ? 'opacity-100' : 'opacity-30 hover:opacity-100'" :src="['/sports_arena_icon_0.png', '/sports_arena_icon_1.png', '/sports_arena_icon_2.png'][profileInfo.sports_arena]" alt="sports_arena" draggable="false" @mouseenter="setRightHintCode('sports_arena')" @click="onSportsMode">
-    </div>
-
-    <!-- 中间鼠标内容结束 -->
-
-    <div class="right-container relative h-full w-42%">
-      <div class="relative h-full w-full">
-        <!-- 右侧内容白色线开始 -->
-
-        <div class="absolute left-16% top-5% h-90% w-[1px] bg-white" />
-        <div class="absolute bottom-31% left-0 h-[1px] w-75% bg-white -translate-y-[15.5px]" />
-        <div class="absolute bottom-14% left-16% h-[1px] w-45% bg-white -translate-y-[15.5px]" />
-
-        <div class="hint-container absolute right-10% top-2% h-25% w-65%">
-          <div :class="rightHintCode ? 'w-full bg-white' : 'w-0'" class="absolute right-0% top-0% h-[1px] bg-gray transition-width duration-500" />
-          <div :class="rightHintCode ? 'h-full bg-white' : 'h-0'" class="absolute right-0% top-0% w-[1px] bg-gray transition-height duration-500" />
-          <div :class="rightHintCode ? 'opacity-100 bg-white right-full' : 'opacity-60 right-10px'" class="absolute top--10px h-20px w-20px rounded-50% bg-gray transition-all duration-500" />
-          <div :class="rightHintCode ? 'opacity-100 bg-white top-full' : 'opacity-60 top-10px'" class="absolute bottom--10px right--10px h-20px w-20px rounded-50% bg-gray transition-all duration-500" />
-          <div class="absolute right--10px top--10px h-20px w-20px rounded-50% bg-white" />
-
-          <transition v-if="rightHintCode" :key="rightHintCode" name="left-fade">
-            <div v-if="rightTransitionShow" class="hint-body p-4 text-start">
-              <div class="hint-title text-xl leading-8">
-                {{ t(`tips.${rightHintCode}.title`) }}
-              </div>
-              <div class="hint-description color-#606266" v-html="t(`tips.${rightHintCode}.description`).replace(/\\n/g, '<br/>')" />
-            </div>
-          </transition>
+        <div class="bottom-box bottom-box1 relative" v-else-if="bottomItem == 1">
+          <ElIcon size="50" style="position: absolute; margin-left: -15px; left: 50%; top: 50px;" @click="startXYFlag = false">
+            <Close />
+          </ElIcon>
+          <div class="config-child-box absolute" style=" margin-left: -50px; left: 50%; top: 150px;">
+            <span class="active">保存</span>
+          </div>
+          <p class="mt-3 mb-3" style="font-size: 18px;line-height: 40px;"> 开启此模式后，鼠标的各项参数将提升至竞技所需</p>
+          <p style="font-size: 18px;line-height: 40px; color: red;">在开启光学引擎的采样率将达到20K FPS，同时功耗将大幅度提升</p>
         </div>
 
-        <!-- 四个配置 1.2.3.4 开始 -->
+        <div class="bottom-box bottom-box1 relative" v-else-if="bottomItem == 2">
+          <ElIcon size="50" style="position: absolute; margin-left: -15px; left: 50%; top: 50px;" @click="startXYFlag = false">
+            <Close />
+          </ElIcon>
+          <div class="config-child-box absolute" style=" margin-left: -50px; left: 50%; top: 150px;">
+            <span class="active">保存</span>
+          </div>
 
-        <div class="profile-container absolute left-0 top-25% h-20% w-full" @mouseenter="setRightHintCode('profile_select')">
-          <ProfileList :value="profileInfo" :current-profile-index="active_profile_index" :profile-list="profileList" @mouseenter-share="setRightHintCode('clone')" @change="setProfile" />
+          <p class="mt-3 mb-3" style="font-size: 18px;line-height: 40px;"> 开启此模式后，鼠标的各项参数将提升至职业强化训练所需</p>
+          <p style="font-size: 18px;line-height: 40px; color: red;">同时功耗也会相应提升</p>
         </div>
 
-        <!-- 四个配置 1.2.3.4 结束 -->
+        <div class="bottom-box bottom-box1 relative" v-else-if="bottomItem == 3">
+          <ElIcon size="50" style="position: absolute; margin-left: -15px; left: 50%; top: 50px;" @click="startXYFlag = false">
+            <Close />
+          </ElIcon>
+      
 
-        <!-- 右侧内容白色线结束 -->
+          <p class="mt-10 mb-3" style="font-size: 18px;line-height: 40px;"> 与接收器配对说明</p>
 
-        <!-- top -->
+          <img class="h-300px" src="/slideshow/2_zh-CN.png" alt="item.title">
 
-        <!-- 右侧内容第一个白色点开始Y轴(抖动消除?) -->
-        <CustomSlider
-          v-model="profileInfo.jitter_elimination_slider"
-          class="transparent-slider absolute left-16% top-5% h-10% -translate-x-49%"
-          :bind="sliderOptions.jitter_elimination_slider"
-          :default-select-options="sliderDefaultSelectOptions.jitter_elimination_slider"
-          :vertical="true"
-          @mouseenter="setRightHintCode('jitter_elimination')"
-          @change="sendJitterElimination"
-        />
 
-        <!-- 右侧内容第一个白色点结束 -->
-
-        <!-- right -->
-
-        <!-- 右侧内容X轴白色点开始(DPI设置) -->
-
-        <div class="transparent-slider" @mouseenter="setRightHintCode('dpi')">
-          <CustomSlider
-            v-for="(_, index) in profileInfo.dpi_slider_list"
-            :key="index"
-            v-model="profileInfo.dpi_slider_list[index]"
-            class="dpi_slider absolute bottom-31% left-20% w-55%"
-            :class="{ 'dpi_slider-active': profileInfo.dpi_slider_active_index === index }"
-            :bind="sliderOptions.dpi_slider"
-            :default-select-options="sliderDefaultSelectOptions.dpi_slider"
-            :double-click-edit="true"
-            @change="sendDpi(index)"
-          />
-          <!-- 右侧内容X轴白色点结束(DPI条件) -->
-          <!-- 减去右边的DPI -->
-          <ElInputNumber v-model="profileInfo.dpi_length" class="dpi-edit-button absolute bottom-31.5% left-78%" :min="1" :max="5" size="small" :disabled="dpi_progress" @change="sendDpiLength" />
+          <div class="config-child-box absolute" style=" margin-left: -50px; left: 50%; bottom: 80px;">
+            <span class="active">确认</span>
+          </div>
         </div>
-
-        <!-- Y轴下左第一个白色的开始(回报率调节) -->
-        <CustomSliderLabel
-          v-model="profileInfo.polling_slider"
-          class="transparent-slider absolute bottom-31% left-0 w-12%"
-          :bind="sliderOptions.polling_slider"
-          :default-select-options="sliderDefaultSelectOptions.polling_slider"
-          @mouseenter="setRightHintCode('polling')"
-          @change="sendPolling"
-        />
-
-        <!-- Y轴下左第一个白色的结束(回报率调节) -->
-
-        <!-- bottom-right (休眠点)开始 -->
-
-        <CustomSlider
-          v-model="profileInfo.hibernation_slider"
-          class="transparent-slider absolute bottom-14% left-20% w-40%"
-          :bind="sliderOptions.hibernation_slider"
-          :default-select-options="sliderDefaultSelectOptions.hibernation_slider"
-          @mouseenter="setRightHintCode('hibernation')"
-          @change="sendHibernation"
-        />
-
-        <!-- bottom-right (休眠点)结束 -->
-
-        <!-- bottom (LOD设置)开始 -->
-        <CustomSliderLabel
-          v-model="profileInfo.lod_slider"
-          class="transparent-slider absolute bottom-5% left-16% h-8% -translate-x-49%"
-          :bind="sliderOptions.lod_slider"
-          :default-select-options="sliderDefaultSelectOptions.lod_slider"
-          :vertical="true"
-          @mouseenter="setRightHintCode('lod')"
-          @change="sendLod"
-        />
-
-        <!-- bottom (LOD设置)结束 -->
-
-        <!-- 下方操作区开始 -->
-
-        <div class="absolute bottom-3% right-5% w-50% flex justify-around">
-          <img src="/motion_sync.png" :class="profileInfo.motion_sync ? 'opacity-100' : 'opacity-30 hover:opacity-100'" class="drag-none h-[40px] w-[40px] cursor-pointer" alt="motion_sync" @mouseenter="setRightHintCode('motion_sync')" @click="onMotionSync">
-          <img src="/pairing_connection.png" alt="pairing_connection" class="drag-none h-[40px] w-[40px] color-#fff opacity-30 hover:opacity-100" @mouseenter="setRightHintCode('pairing_connection')" @click="onPairingConnection">
-          <img src="/restore_factory_settings.png" alt="restore_factory_settings" class="drag-none h-[40px] w-[40px] color-#fff opacity-30 hover:opacity-100" @mouseenter="setRightHintCode('restore_factory_settings')" @click="onRestoreFactorySettings">
-          <ElBadge :value="userStore.latestVersion.version > (`${profileInfo.version}`) ? 'new' : ''">
-            <ArrowRightBold class="w-[40px] color-#fff font-900 opacity-30 hover:opacity-100" @mouseenter="setRightHintCode('admin_page')" @click="toSettings" />
-          </ElBadge>
-        </div>
-        <!-- 下方操作区结束 -->
-      </div>
+      </Transition>
     </div>
   </div>
 </template>
 
 <style>
-.hid-container {
-  --el-color-primary: #fff;
+  .hid-container {
+  height: 1080px;
+  background-image: url('../../../public/v9/bg-w.png');
+  background-size: 100% 100%;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  /* backdrop-filter: blur(5px); */
+  padding: 32px 89px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  transform-origin: 0 0;
+  width: 100%;
+
+  .mouse {
+    width: 186px;
+    height: 352px;
+    top: 0;
+  }
+
+  .bottom-con {
+    width: 100%;
+    /* height: 544px; */
+    /* display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; */
+  }
+
+  .config-box {
+    width: 994px;
+    height: 60px;
+    display: flex;
+    justify-content: space-around;
+    border-radius: 27px;
+    border: 1px solid #ffffff;
+    align-items: center;
+    margin-bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    position: absolute;
+    bottom: 524px;
+    left: 50%;
+    margin-left: -497px;
+    
+  }
+
+  .bottom-box {
+    width: 1783px;
+    height: 524px;
+    border: 1px solid #333333;
+    border-radius: 30px;
+    background: #060606;
+    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+  }
+
+  .bottom-box1{
+    background-image: url('../../../public/v9/bg-b.png');
+    background-size: 100% 90%;
+    /* background-position: center center; */
+    background-repeat: no-repeat;
+    /* background-image: linear-gradient(to bottom, #5E6719 10px, #0E0E0D); */
+  }
+
+  .bottom-box .config-child-box {
+    display: flex;
+  }
+
+  .bottom-box .config-child-box span {
+    width: 123px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #333333;
+    border-radius: 30px;
+    margin-right: 30px;
+    font-size: 16px;
+    background-color: #242424;
+  }
+
+  .bottom-box .config-child-box span.active {
+    background-color: #daff00;
+    color: #060606;
+  }
+
+  .bottom-box .config-child-box span:last-child {
+    margin-right: 0px;
+  }
+
+  .left-item-box > div {
+    font-size: 20px;
+    width: 219px;
+    height: 107px;
+    line-height: 107px;
+    background-image: url('../../../public/v9/bg.png');
+    background-size: 84% 54%;
+    background-repeat: no-repeat;
+    background-position: -15px center;
+  }
+
+  .left-item-box > div.activeBg {
+    width: 219px;
+    height: 107px;
+    line-height: 100px;
+    background-size: 100% 100%;
+    background-image: url('../../../public/v9/active-bg.png');
+    background-position: -15px center;
+  }
+
+  .right-f-b {
+    border: 1px solid #333333;
+    width: 653px;
+    height: 433px;
+    border-radius: 15px;
+  }
+
+  .right-s-b {
+    border: 1px solid #333333;
+    width: 493px;
+    height: 433px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .block_item.active {
+      color: #333;
+      background-color: #daff00;
+    }
+    .block_item:hover {
+      color: #333;
+      background-color: #daff00;
+    }
+  }
+
+  .right-t-b {
+    border: 1px solid #333333;
+    width: 377px;
+    height: 433px;
+    border-radius: 15px;
+  }
+
+  .triangle {
+    margin: 10px auto;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 12px solid red;
+  }
+
+  .triangle1 {
+    border-bottom: 12px solid #34b4d7;
+  }
+
+  .triangle2 {
+    border-bottom: 12px solid #6cb461;
+  }
+
+  .triangle3 {
+    border-bottom: 12px solid #ffffff;
+  }
+
+  .triangle4 {
+    border-bottom: 12px solid #dfdc54;
+  }
+
+  .triangle-top > div:nth-child(2) {
+    background-color: #333;
+  }
+
+  .triangle-top.active {
+    background-color: #daff00;
+    color: #333333;
+  }
+
+  .triangle-top.active > div:nth-child(2) {
+    color: #fff;
+  }
+
+  .triangle-top:hover {
+    background-color: #daff00;
+    color: #333333;
+    > div:nth-child(2) {
+      color: #fff;
+    }
+  }
+
+  .hong_active {
+    background-color: #daff00 !important;
+    color: #333;
+  }
+
+  .ahover:hover {
+    background-color: #daff00 !important;
+    color: #333;
+  }
+
+  .logo-box{
+    padding: 3px;
+    border-radius: 50px;
+    transition: all 0.5s ease; /* 平滑过渡效果 */
+    border: 1px solid transparent; /* 初始无边框 */
+    cursor: pointer; /* 鼠标悬停样式 */
+    height: 54px;
+    overflow: hidden;
+  }
+
+  .logo-box:hover{
+    height: 254px;
+  }
+
+  .charu:hover{
+    overflow: visible !important;
+  }
+
+  .charu li:hover{
+    background-color: #DAFF00;
+    color: #333;
+  }
+
+  .icon-box{
+    width: 73px;
+    height: 29px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: #242424;
+    border-radius: 30px;
+  }
+
+
+
+  --el-color-primary: #b8e200;
 
   .el-slider {
-    --el-border-color-light: #fff;
-    --el-slider-height: 1px;
+    --el-border-color-light: #637806;
+    --el-slider-height: 4px;
   }
+
   .el-slider__button {
-    --el-slider-main-bg-color: #fff;
+    --el-slider-main-bg-color: #daff00;
+    background-color: #daff00;
   }
+
   /* 滑块颜色 */
   .el-slider__button-wrapper {
-    --el-slider-button-wrapper-offset: -17.5px;
+    --el-slider-button-wrapper-offset: -17px;
   }
 
-  .middle-container {
-    .el-progress__text {
-      position: absolute;
-      top: -30px;
-      left: 50%;
-      margin-left: 0;
-      transform: translateX(-50%);
-    }
+  .el-scrollbar {
+    /* --el-scrollbar-bg-color: transparent */
   }
 
-  .middle-container::after {
-    content: '';
-    display: table;
-    clear: both;
+  .slide-up-enter-active,
+  .slide-up-leave-active {
+    transition: all 0.25s ease-out;
+  }
+  .slide-up-enter-from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  .slide-up-leave-to {
+    opacity: 0;
+    transform: translateY(-30px);
   }
 
-  .dpi_slider {
-    /* .el-slider__stop {
-      width: 16px;
-      height: 16px;
-      transform: translate(-50%, -50%);
-      background-color: #9da3ae;
-    } */
-    .el-slider__button {
-      width: 20px;
-      height: 20px;
-      background-color: #9da3ae;
-    }
+  .slide-right-enter-active,
+  .slide-right-leave-active {
+    transition: all 0.25s ease-out;
   }
-  .dpi_slider-active {
-    .el-slider__button-wrapper {
-      z-index: 100;
-    }
-    .el-slider__button {
-      width: 20px;
-      height: 20px;
-      background-color: #fff;
-    }
+  .slide-right-enter-from {
+    opacity: 0;
+    transform: translateX(30px);
   }
-  .dpi-edit-button {
-    width: 80px;
-    .el-input {
-      width: 80px;
-      pointer-events: none;
-    }
+  .slide-right-leave-to {
+    opacity: 0;
+    transform: translateX(-30px);
   }
 
-  .transparent-slider {
-    .el-slider__runway {
-      background-color: transparent;
-    }
-    .el-slider__bar {
-      background-color: transparent;
-    }
+  .bottom-opacity-enter-active,
+  .bottom-right-leave-active {
+    transition: all 0.25s ease-out;
   }
-}
-
-.middle-container {
-  position: relative;
-
-  .el-message {
-    position: absolute;
-    width: 100%;
-    max-width: none;
-
-    .el-message__content {
-      width: 100%;
-    }
+  .bottom-opacity-enter-from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  .bottom-opacity-leave-to {
+    opacity: 0;
+    transform: translateY(-40px);
   }
 
-  .message-box-mask {
-    min-width: 1050px;
+ 
 
-    .custom-message-container {
-      width: 18%;
-      left: -4%;
-    }
-  }
-}
 
-.custom-dropdown-popper {
-  left: calc(100vw * 0.35 * 0.5) !important;
+
 }
 </style>

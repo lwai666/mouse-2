@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ElButton, ElCarousel, ElCarouselItem } from 'element-plus'
+
+import {  Plus } from '@element-plus/icons-vue'
+
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -121,7 +124,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center">
+  <div class="flex flex-col items-center justify-center contain-content">
     <a class="absolute left-30px top-30px" href="https://baidu.com" target="_blank">
       <img class="h-45px" src="/logo.png" alt="logo">
     </a>
@@ -158,11 +161,38 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="mb-5 h-50 min-w-[300px] w-36vw flex flex-col cursor-pointer items-center justify-center border-2 border-gray-600 rounded-2xl bg-#2d2d2d" @click="onNouseClick">
+      <!-- <div class="mb-5 h-50 min-w-[300px] w-36vw flex flex-col cursor-pointer items-center justify-center border-2 border-gray-600 rounded-2xl bg-#2d2d2d" @click="onNouseClick">
         <div class="mb-5">
           {{ t('index.rightClick') }}
         </div>
         <img class="h-60px" src="/logo.png" alt="logo">
+      </div> -->
+
+      <div class="mb-5 h-[251px] border-gray-600 w-[800px]" style="overflow: hidden;" >
+        <div class="mb-5 flex justify-center items-center relative" style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);">
+          <img style="width: 84px;height:162px;" src="../../../public/mouse.png" alt="" srcset="" />
+          <p class="absolute bottom-3" style="color: black; font-weight: bold;font-size: 20px;">V6</p>
+          <div class="absolute right-3 top-5">
+            <div class="mb-3" style="width: 18px;height: 18px;background: #333; border-radius: 50%;"></div>
+            <div style="width: 18px;height: 18px;background: #fff; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <div @click="onNouseClick" class="mb-5 flex justify-center items-center relative" style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;float: left;border: 1px solid rgba(255, 255, 255, 0.4);">
+          
+          <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">新增设备</p>
+          <ElIcon  size="20" color="#ffff">
+            <Plus />
+          </ElIcon>
+
+      
+        </div>
+        <!-- <div style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1);">
+
+        </div>
+        <div style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1);">
+
+        </div> -->
+
       </div>
 
       <div class="mb-10">
@@ -201,7 +231,15 @@ onMounted(() => {
   </div>
 </template>
 
-<style>
+<style scoped>
+.contain-content{
+  height: 100%;
+  width: 100%;
+  background-image: url('../../../public/v9/bg-s.png');
+  background-size: 100% 100%;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
 .slide-fade-enter-active {
   transition: all 0.3s ease-out;
 }
