@@ -341,6 +341,7 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
 
   // 获取组合按键宏: 0x08
   let uint8Array8: number[] = []
+
   const isCombinationMacroKeys: MouseButtonType[] = []
   mouseButton.forEach((item) => {
     const value = findParentValue(constants.mouseKeyOptions, profileInfo[item])
@@ -513,6 +514,8 @@ async function initProfile() {
   await sendChargingStatus() // 获取充电状态
 }
 
+// 四个配置的数据
+
 async function getProfile() {
   return new Promise(async (resolve, reject) => {
     let _active_profile_index = 0 // 当前 profile 下标
@@ -567,6 +570,7 @@ async function getProfile() {
 
 // 粘贴分享设置 Profile
 async function setProfile(data: { profileInfo: any, index: number }) {
+  console.log(data, 'datadata')
   // 重置选中的宏
   resetSelectedMacro()
 
@@ -666,6 +670,7 @@ async function sendKeyMacro(id: MouseButtonType, value: number) {
 const dpi_progress = ref(false)
 /** dpi设置 */
 async function sendDpi(index?: number) {
+  console.log(index, 'sendDpisendDpi')
   dpi_progress.value = true
   const dpi_length = profileInfo.dpi_slider_list.length
   const list = profileInfo.dpi_slider_list.reduce((arr: number[], item: number) => {
@@ -1370,7 +1375,6 @@ provide('createConnection', createConnection)
         </div>
 
         <!-- 四个配置 1.2.3.4 开始 -->
-
         <div class="profile-container absolute left-0 top-25% h-20% w-full" @mouseenter="setRightHintCode('profile_select')">
           <ProfileList :value="profileInfo" :current-profile-index="active_profile_index" :profile-list="profileList" @mouseenter-share="setRightHintCode('clone')" @change="setProfile" />
         </div>

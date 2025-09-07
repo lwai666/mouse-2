@@ -1,29 +1,28 @@
-type Option = {
-  value: number;
-  label: string;
-  children?: Option[];
+interface Option {
+  value: number
+  label: string
+  children?: Option[]
 }
 
 export function findParentValue(options: Option[], targetValue: number): number | undefined {
   for (const option of options) {
-      if (option.children) {
-          for (const child of option.children) {
-              if (child.value === targetValue) {
-                  return option.value; // 返回父级 value
-              }
-          }
-          // 递归查找子级
-          const parentValue = findParentValue(option.children, targetValue);
-          if (parentValue !== undefined) {
-              return parentValue;
-          }
+    if (option.children) {
+      for (const child of option.children) {
+        if (child.value === targetValue) {
+          return option.value // 返回父级 value
+        }
       }
+      // 递归查找子级
+      const parentValue = findParentValue(option.children, targetValue)
+      if (parentValue !== undefined) {
+        return parentValue
+      }
+    }
   }
-  return undefined; // 如果找不到父级，返回 false
+  return undefined // 如果找不到父级，返回 false
 }
 
-export const useConstants = (t: any) => {
-
+export function useConstants(t: any) {
   return {
     mouseKeyOptions: [
       // {
@@ -31,82 +30,86 @@ export const useConstants = (t: any) => {
       //   "label": t('mouseKeyOptions.switch_polling_rate'),
       // },
       {
-        "value": 11,
-        "label": t('mouseKeyOptions.disable')
+        value: 11,
+        label: t('mouseKeyOptions.disable'),
       },
       {
-        "value": 0,
-        "label": t('mouseKeyOptions.left_button')
+        value: 0,
+        label: t('mouseKeyOptions.left_button'),
       },
       {
-        "value": 2,
-        "label": t('mouseKeyOptions.middle_button')
+        value: 2,
+        label: t('mouseKeyOptions.middle_button'),
       },
       {
-        "value": 1,
-        "label": t('mouseKeyOptions.right_button')
+        value: 1,
+        label: t('mouseKeyOptions.right_button'),
       },
       {
-        "value": 3,
-        "label": t('mouseKeyOptions.forward_button')
+        value: 3,
+        label: t('mouseKeyOptions.forward_button'),
       },
       {
-        "value": 4,
-        "label": t('mouseKeyOptions.back_button')
+        value: 4,
+        label: t('mouseKeyOptions.back_button'),
       },
       {
-        "value": 1000,
-        "label": t('mouseKeyOptions.multimedia_functions'),
+        value: 5,
+        label: '宏',
+      },
+      {
+        value: 1000,
+        label: t('mouseKeyOptions.multimedia_functions'),
         children: [
           {
-            "value": 0x0223,
-            "label": t('mouseKeyOptions.homepage')
+            value: 0x0223,
+            label: t('mouseKeyOptions.homepage'),
           },
           {
-            "value": 0x00E2,
-            "label": t('mouseKeyOptions.mute')
+            value: 0x00E2,
+            label: t('mouseKeyOptions.mute'),
           },
           {
-            "value": 0x00E9,
-            "label": t('mouseKeyOptions.volume_up')
+            value: 0x00E9,
+            label: t('mouseKeyOptions.volume_up'),
           },
           {
-            "value": 0x00EA,
-            "label": t('mouseKeyOptions.volume_down')
+            value: 0x00EA,
+            label: t('mouseKeyOptions.volume_down'),
           },
           {
-            "value": 0x00B6,
-            "label": t('mouseKeyOptions.previous_track')
+            value: 0x00B6,
+            label: t('mouseKeyOptions.previous_track'),
           },
           {
-            "value": 0x00B5,
-            "label": t('mouseKeyOptions.next_track')
+            value: 0x00B5,
+            label: t('mouseKeyOptions.next_track'),
           },
-        ]
+        ],
       },
       {
-        "value": 1999,
-        "label": '录制宏',
+        value: 1999,
+        label: '录制宏',
         hidden: true, // 隐藏
         children: [
           {
-            "value": 2000,
-            "label": '录制宏1'
+            value: 2000,
+            label: '录制宏1',
           },
           {
-            "value": 2001,
-            "label": '录制宏2'
+            value: 2001,
+            label: '录制宏2',
           },
           {
-            "value": 2002,
-            "label": '录制宏3'
+            value: 2002,
+            label: '录制宏3',
           },
           {
-            "value": 2003,
-            "label": '录制宏4'
+            value: 2003,
+            label: '录制宏4',
           },
-        ]
-      }
+        ],
+      },
       // {
       //   "value": "scroll_wheel_tilt",
       //   "label": t('mouseKeyOptions.scroll_wheel_tilt'),
@@ -217,6 +220,6 @@ export const useConstants = (t: any) => {
       //     }
       //   ]
       // },
-    ]
-  };
-};
+    ],
+  }
+}

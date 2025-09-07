@@ -102,14 +102,29 @@ defineExpose({ mouseButtonCascaderRef })
 <template>
   <div class="mouse-button-item">
     <div :class="`${cursorClass} ${colorClass}`" class="mb-1 flex items-center">
-      <div :key="props.id" :class="`${bgClass} ${props.disabled ? '' : 'dot-b'}`" class="z-2 mr-2 h-18px w-18px rounded-50%" :data-key-id="props.id" />
+      <!-- <div :key="props.id" :class="`${bgClass} ${props.disabled ? '' : 'dot-b'}`" class="z-2 mr-2 h-18px w-18px rounded-50%" :data-key-id="props.id" /> -->
       <div v-if="props.status === 'connecting'" class="mouse-button-item-radio-group">
-        {{ t('mouseConnection.connecting') }}
-        <div class="absolute left-0 top--50px">
-          <ElRadioGroup v-model="sendData.cycleMode" class="flex-col items-start" @change="onChangeRadioGroup">
+        <div class="flex items-center justify-center">
+          <div class="absolute left-[-105px] flex items-center justify-center">
+            <p class="absolute left-[-190px]" style="color: #CF0EFF">
+              点击执行设置你设定的宏
+            </p>
+            <img
+              style="margin-right: 5px;"
+              src="/public/v9/wenhao.png" alt="" srcset=""
+            >
+            <div style="width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center">
+              执行
+            </div>
+          </div>
+          宏
+        </div>
+
+        <div class="absolute left-[-60px] top--100px">
+          <!-- <ElRadioGroup v-model="sendData.cycleMode" class="flex-col items-start" @change="onChangeRadioGroup">
             <ElRadio :value="4" @click="onEnterKey">
               <div @mouseenter="setLeftHintCode?.('macro_set')">
-                {{ t('mouseConnection.loop') }}
+                宏执行
                 <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
                 {{ t('mouseConnection.times') }}
               </div>
@@ -124,7 +139,44 @@ defineExpose({ mouseButtonCascaderRef })
             <ElRadio :value="3">
               {{ t('mouseConnection.loopUntilKeyPressAgain') }}
             </ElRadio>
-          </ElRadioGroup>
+          </ElRadioGroup> -->
+          <div class="flex items-center">
+            <p class="absolute left-[-315px]" style="color: #159FFF">
+              双击下划线输入你设定的宏想要执行的次数
+            </p>
+            <img
+              style="margin-right: 15px;"
+              src="/public/v9/wenhao.png" alt="" srcset=""
+            >
+            <div class="items-center justify-center" style="width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px">
+              宏执行
+              <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
+              {{ t('mouseConnection.times') }}
+            </div>
+            <div style="width: 49.06px;height: 21.68px;border-radius: 14px;background: #0E5383;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center">
+              确认
+            </div>
+          </div>
+          <div class="mb-3 ml-11 mt-5 flex items-center">
+            <div class="items-center justify-center" style="text-align: right; width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px">
+              宏执行
+              N
+              {{ t('mouseConnection.times') }}
+            </div>
+          </div>
+          <div class="h-60px w-50px" />
+
+          <div class="mb-3 flex items-center">
+            <div class="items-center justify-center" style="text-align: right; width: 195px;height: 30px;display: flex;background: #333;border-radius: 14px">
+              宏执行直至按键释放
+            </div>
+          </div>
+
+          <div class="mb-3 flex items-center">
+            <div class="items-center justify-center" style="text-align: right; width: 249px;height: 30px;display: flex;background: #333;border-radius: 14px">
+              宏执行直至按键再次被按下
+            </div>
+          </div>
         </div>
       </div>
       <MouseButtonCascader

@@ -30,11 +30,11 @@ const userStore = useUserStore()
 const macroIndex = ref<number>(0)
 
 const mouseButtonList = ref<mouseButton[]>([
-  { id: 'Left', show: true, value: 0, class: 'w-full absolute left--15% top-7%', width: '0%', cascaderTop: 2, disabled: true },
-  { id: 'Wheel', show: true, value: 2, class: 'w-full absolute top-17%', width: '0%', cascaderTop: 2 },
-  { id: 'Right', show: true, value: 1, class: 'w-full absolute top-27%', width: '0%', cascaderTop: 3 },
-  { id: 'Forward', show: true, value: 3, class: 'w-full absolute top-37%', width: '0%', cascaderTop: 4 },
-  { id: 'Back', show: true, value: 4, class: 'w-full absolute top-47%', width: '0%', cascaderTop: 5 },
+  { id: 'Left', show: true, value: 0, class: 'w-full absolute left--50px  top-11%', width: '0%', cascaderTop: 2, disabled: true },
+  { id: 'Wheel', show: true, value: 2, class: 'w-full absolute left--50px top-22%', width: '0%', cascaderTop: 2 },
+  { id: 'Right', show: true, value: 1, class: 'w-full absolute left--50px top-33%', width: '0%', cascaderTop: 3 },
+  { id: 'Forward', show: true, value: 3, class: 'w-full absolute left--50px top-43%', width: '0%', cascaderTop: 4 },
+  { id: 'Back', show: true, value: 4, class: 'w-full absolute left--50px top-58%', width: '0%', cascaderTop: 5 },
 ])
 
 watchEffect(() => {
@@ -46,14 +46,14 @@ watchEffect(() => {
 
 onMounted(() => {
   mouseButtonList.value[0].width = '75%'
-  mouseButtonList.value[1].width = '74%'
-  mouseButtonList.value[2].width = '86%'
-  mouseButtonList.value[3].width = '47%'
-  mouseButtonList.value[4].width = '47%'
+  mouseButtonList.value[1].width = '88%'
+  mouseButtonList.value[2].width = '96%'
+  mouseButtonList.value[3].width = '62%'
+  mouseButtonList.value[4].width = '62%'
 })
 
 function onClick(id?: string) {
-  if (id == 'Left') { return }
+  if (id === 'Left') { return }
 
   const showList = mouseButtonList.value.filter(i => i.show)
 
