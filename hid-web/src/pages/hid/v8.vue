@@ -1913,9 +1913,9 @@ provide('createHong', createHong)
                     <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
                       <div ref="innerRef">
                         <template v-for="(item, index) in profileInfo.macroList" :key="index">
-                          <div v-show="item.name" class="hover" :class="currentMacroButtonRecordedKeyIndex === index ? 'hong_active' : ''" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index)">
+                          <div v-show="item.name" class="hong_active" :class="[currentMacroButtonRecordedKeyIndex === index ? 'hong' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index)">
                             {{ item.name }}
-                            <ElIcon size="20" @click="deleteMacro(item)">
+                            <ElIcon size="20" @click.stop="deleteMacro(item)">
                               <Delete />
                             </ElIcon>
                           </div>
@@ -1998,7 +1998,7 @@ provide('createHong', createHong)
                     <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
                       <div ref="innerRef">
                         <!-- hong_active -->
-                        <div v-for="(item, index) in recordedKeys" :key="index" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
+                        <div v-for="(item, index) in recordedKeys" :key="index" class="hong_active" :class="[recordedKeyHighlightIndex === index ? 'hong' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;" @click="recordedKeyHighlightIndex = index">
                           <!-- v-if="item.type" -->
                           <div class="flex items-center">
                             <ElSpace>
@@ -2594,8 +2594,11 @@ provide('createHong', createHong)
       color: #fff;
     }
   }
-
-  .hong_active {
+  .hong {
+    background-color: #daff00 !important;
+    color: #333;
+  }
+  .hong_active:hover {
     background-color: #daff00 !important;
     color: #333;
   }
