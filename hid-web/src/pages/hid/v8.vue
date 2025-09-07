@@ -3,7 +3,7 @@ import type { DotConnection } from '~/composables/useDotsConnection'
 import type { ConnectionType, Macro, ProfileInfoType, ProfileType } from '~/types'
 
 import type { TransportWebHIDInstance } from '~/utils/hidHandle'
-import { ArrowDownBold, ArrowUpBold, Close, Delete, Download, Minus, Plus, Share } from '@element-plus/icons-vue'
+import { ArrowDownBold, ArrowUpBold, Close, Delete, Download, Minus, Plus, Share, Upload } from '@element-plus/icons-vue'
 
 import { useClipboard } from '@vueuse/core'
 
@@ -19,12 +19,15 @@ import * as echarts from 'echarts/core'
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 // 引入 Canvas 渲染器，注意引入 CanvasRenderer 或者 SVGRenderer 是必须的一步
 import { CanvasRenderer } from 'echarts/renderers'
-import { ElButton, ElIcon, ElInput, ElLoading, ElProgress, ElScrollbar, ElSpace } from 'element-plus'
+import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, ElLoading, ElProgress, ElScrollbar, ElSpace } from 'element-plus'
 
 import { messageBox } from '~/components/CustomMessageBox'
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, removeAt9th, removeItem, sleep } from '~/utils'
 
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+
+import wenhao from '/public/v9/wenhao.png'
+import wenhaoActive from '/public/v9/wenhao_active.png'
 
 const { t } = useI18n()
 
@@ -196,6 +199,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
   const profileInfo = initProfileInfo()
 
   uint8Array.forEach((res) => {
+    console.log(res, 'resres')
     // 获取 profile 基础配置信息
     if (res[0] === 1) {
       const start_index = 3
@@ -434,6 +438,8 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
       uint8Array.push(transport.value.generatePacket(new Uint8Array([0x19, 0, macroName.length, macroIndex + 6, ...macroName])))
     }
   })
+
+  console.log(profileInfo.macroList, 'profileInfo.macroList')
 
   // 当前第几个配置
   // uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1E, 0x00, 0x01, active_profile_index.value])))
@@ -1252,8 +1258,8 @@ provide('dotsCleanup', dotsCleanup)
 provide('createConnection', createConnection)
 
 const hover = ref(false)
-const hoverSrc = ref('/public/v9/wenhao_active.png')
-const originalSrc = ref('/public/v9/wenhao.png')
+const hoverSrc = ref(wenhaoActive)
+const originalSrc = ref(wenhao)
 
 const imageToDisplay = computed(() => {
   return hover.value ? hoverSrc.value : originalSrc.value
@@ -1482,6 +1488,19 @@ function setProfileYS() {
   }
 }
 
+async function deleteMacro(macro: Macro) {
+  console.log(macro, 'macro')
+  if (profileInfo.macroList.connections && profileInfo.macroList.connections.length > 0) {
+    showMessage(t('message.delete_macro_error'))
+    return
+  }
+
+  const macroIndex = profileInfo.macroList.findIndex(item => item === macro)
+  console.log('删除组合键宏========', macroIndex)
+  await transport?.value.send([0x08, 0x00, 1, 1, 1, 0xFF, macroIndex])
+  profileInfo.macroList[macroIndex] = { name: '', connections: [], value: [] }
+}
+
 provide('createHong', createHong)
 
 // function createHong() {
@@ -1592,8 +1611,8 @@ provide('createHong', createHong)
         <!-- @change="onMouseButtonChange" -->
         <!-- :value="mouseButtonValue" -->
         <MouseButton
-          ref="mouseButtonRef" :value="mouseButtonValue" class="absolute right-0 h-full w-200%"
-          style="top: -16px;"
+          ref="mouseButtonRef" :value="mouseButtonValue" class="absolute right-0 h-full w-200%" style="top: -16px;"
+          @change="onMouseButtonChange"
         />
 
         <div class="absolute right-[-50px] top-0">
@@ -1893,30 +1912,14 @@ provide('createHong', createHong)
                     <!-- @scroll="scroll" -->
                     <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
                       <div ref="innerRef">
-                        <div class="hover hong_active" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                          001
-                          <ElIcon size="20">
-                            <Delete />
-                          </ElIcon>
-                        </div>
-                        <div class="ahover" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
-                          002
-                          <ElIcon size="20">
-                            <Delete />
-                          </ElIcon>
-                        </div>
-                        <div class="ahover" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
-                          002
-                          <ElIcon size="20">
-                            <Delete />
-                          </ElIcon>
-                        </div>
-                        <div class="ahover" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
-                          002
-                          <ElIcon size="20">
-                            <Delete />
-                          </ElIcon>
-                        </div>
+                        <template v-for="(item, index) in profileInfo.macroList" :key="index">
+                          <div v-show="item.name" class="hover" :class="currentMacroButtonRecordedKeyIndex === index ? 'hong_active' : ''" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index)">
+                            {{ item.name }}
+                            <ElIcon size="20" @click="deleteMacro(item)">
+                              <Delete />
+                            </ElIcon>
+                          </div>
+                        </template>
                       </div>
                     </ElScrollbar>
                     <!-- <el-slider vertical height="367px" class="absolute" /> -->
@@ -1929,11 +1932,10 @@ provide('createHong', createHong)
                       <span style="border: 0; justify-content: flex-start; background: transparent">灵敏度设置</span>
                     </div>
 
-                    <div class="charu relative" style="overflow: hidden;">
+                    <!-- <div class="charu relative" style="overflow: hidden;">
                       <div class="flex items-center justify-end" style="width: 122px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
                         插入
                         <ElIcon style="margin-left: 10px;" size="20" color="#DAFF00">
-                          <!-- <ArrowUpBold /> -->
                           <ArrowDownBold />
                         </ElIcon>
                       </div>
@@ -1957,56 +1959,76 @@ provide('createHong', createHong)
                           键盘按键
                         </li>
                       </ul>
-                    </div>
+                    </div> -->
+                    <ElDropdown class="" trigger="click" popper-class="custom-popper custom-dropdown-popper" @command="insertMacro">
+                      <!-- <ElButton class="bg-white text-base font-bold" color="#e83ff4" plain :icon="ArrowRight" circle size="small" /> -->
+                      <div class="flex items-center justify-end" style="width: 122px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
+                        插入
+                        <ElIcon style="margin-left: 10px;" size="20" color="#DAFF00">
+                          <!-- <ArrowUpBold /> -->
+                          <ArrowDownBold />
+                        </ElIcon>
+                      </div>
+                      <template #dropdown>
+                        <ElDropdownMenu @mouseenter="setLeftHintCode('insert_macro')">
+                          <ElDropdownItem :command="0">
+                            {{ t('button.left_button') }}
+                          </ElDropdownItem>
+                          <ElDropdownItem :command="1">
+                            {{ t('button.right_button') }}
+                          </ElDropdownItem>
+                          <ElDropdownItem :command="2">
+                            {{ t('button.middle_button') }}
+                          </ElDropdownItem>
+                          <ElDropdownItem :command="3">
+                            {{ t('button.forward_button') }}
+                          </ElDropdownItem>
+                          <ElDropdownItem :command="4">
+                            {{ t('button.back_button') }}
+                          </ElDropdownItem>
+                          <ElDropdownItem :command="5">
+                            {{ t('button.keyboard_key') }}
+                          </ElDropdownItem>
+                        </ElDropdownMenu>
+                      </template>
+                    </ElDropdown>
                   </div>
                   <div class="relative flex">
                     <!-- @scroll="scroll" -->
                     <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
                       <div ref="innerRef">
-                        <div class="hong_active" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
+                        <!-- hong_active -->
+                        <div v-for="(item, index) in recordedKeys" :key="index" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
                           <!-- v-if="item.type" -->
                           <div class="flex items-center">
                             <ElSpace>
-                              <ElIcon size="20">
-                                <Download />
-                                <!-- <Upload /> -->
+                              <ElIcon size="20" class="mr-2 mt-1">
+                                <Download v-if="item.type" />
+                                <Upload v-else />
                               </ElIcon>
-                              Q
+                              <div class="flex">
+                                <!-- 录制按键内容 & 毫秒, 双击可编辑 -->
+                                <div @dblclick="onDblclicRecordedKey(item)">
+                                  <input v-if="item._editable === 'KEY'" ref="inputRecordedKeyRef" type="text" :value="item.key" class="hide-focus-visible w-[70px] border-0 border-b-1" @keydown="(event) => onKeydownRecordedKey(event, item)" @blur="onblurRecordedKey(item)">
+                                  <span v-else>{{ item.key }}</span>
+                                </div>
+
+                                <div class="ml-5" @dblclick="onDblclicIntervalTime(item)">
+                                  <input v-if="item._editable === 'INTERVAL_TIME'" ref="inputIntervalTimeRef" v-model.number="item.intervalTime" type="text" class="hide-focus-visible w-[70px] border-0 border-b-1" @blur="onblurRecordedKey(item)">
+                                  <span v-else>{{ item.intervalTime }}ms</span>
+                                </div>
+                              </div>
                             </ElSpace>
                           </div>
 
                           <ElSpace>
-                            <ElIcon size="20">
+                            <!-- <ElIcon size="20">
                               <ArrowUpBold />
                             </ElIcon>
                             <ElIcon size="20">
                               <ArrowDownBold />
-                            </ElIcon>
-                            <ElIcon size="20">
-                              <Delete />
-                            </ElIcon>
-                          </ElSpace>
-                        </div>
-                        <div class="hong" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;">
-                          <!-- v-if="item.type" -->
-                          <div class="flex items-center">
-                            <ElSpace>
-                              <ElIcon size="20">
-                                <Download />
-                                <!-- <Upload /> -->
-                              </ElIcon>
-                              Q
-                            </ElSpace>
-                          </div>
-
-                          <ElSpace>
-                            <ElIcon size="20">
-                              <ArrowUpBold />
-                            </ElIcon>
-                            <ElIcon size="20">
-                              <ArrowDownBold />
-                            </ElIcon>
-                            <ElIcon size="20">
+                            </ElIcon> -->
+                            <ElIcon size="20" @click.stop="recordedKeys.splice(index, 1)">
                               <Delete />
                             </ElIcon>
                           </ElSpace>
@@ -2018,12 +2040,12 @@ provide('createHong', createHong)
                 </div>
 
                 <div style="margin-left: 20px;flex-direction: column; justify-content: end;" class="flex">
-                  <div class="flex items-center" style="width: 123px;height: 123px; background-color: #242424;flex-direction: column; padding-top: 25px;border-radius: 10px;">
+                  <div class="flex items-center" style="width: 123px;height: 123px; background-color: #242424;flex-direction: column; padding-top: 25px;border-radius: 10px;" :style="{ background: isRecording ? '#DAFF00' : '#242424', color: isRecording ? '#333' : '#fff' }" @click="onClickPecordBtn">
                     <div style="width: 17px;height: 17px;border-radius: 50%; background: #FF0000; margin-bottom: 10px;" />
                     <div>开始</div>
                     <div>录制</div>
                   </div>
-                  <div style="height: 63px; line-height: 63px; text-align: center; width: 123px;border: 1px solid #DAFF00; border-radius: 10px;margin-top: 20px;background:#242424 ;">
+                  <div style="height: 63px; line-height: 63px; text-align: center; width: 123px;border: 1px solid #DAFF00; border-radius: 10px;margin-top: 20px;background:#242424 ;" @click="addMacro">
                     保 存
                   </div>
                 </div>
@@ -2696,5 +2718,13 @@ provide('createHong', createHong)
     --el-input-hover-border-color: transparent;
     --el-input-text-color: #fff;
   }
+}
+.el-dropdown-menu__item:not(.is-disabled):focus {
+  background-color: #daff00;
+  color: #333;
+}
+.el-dropdown-menu__item:hover {
+  background-color: #daff00 !important;
+  color: #333 !important;
 }
 </style>

@@ -25,7 +25,9 @@ interface Props {
 
 const base64 = useVModel(props, 'modelValue', emit)
 const title = useVModel(props, 'title', emit)
+
 const { copied, copy } = useClipboard({ source: base64 })
+
 watch(copied, (newV) => {
   if (newV) {
     showMessage(t('message.profile_copied'))
