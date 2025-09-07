@@ -1425,7 +1425,19 @@ function bottomItemChange(type) {
   }
   bottomItem.value = type
 }
+
+const imgActive = ref(false)
 const showMouseenter = ref('show')
+
+function showMouseenterChange(type) {
+  if (imgActive.value) {
+    imgActive.value = false
+    showMouseenter.value = 'show'
+    return
+  }
+  imgActive.value = true
+  showMouseenter.value = type
+}
 
 const isEditingProfile = ref(false)
 const tempBase64 = ref('')
@@ -2058,7 +2070,7 @@ provide('createHong', createHong)
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
                         <div>动态灵敏度</div>
-                        <img style=" margin-left: 5px;margin-right: 30px;" :src="imageToDisplay" srcset="" @mouseenter="mouseenter" @click="showMouseenter = 'showMouseenter'">
+                        <img style=" margin-left: 5px;margin-right: 30px;" :src="imgActive ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'" srcset="" @click="showMouseenterChange('showMouseenter')">
                       </div>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
