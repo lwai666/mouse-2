@@ -2314,9 +2314,6 @@ provide('createHong', createHong)
 
       <Transition name="bottom-opacity">
         <div v-if="bottomItem === 1" class="bottom-box bottom-box1 relative">
-          <ElIcon size="50" style="position: absolute; margin-left: -15px; left: 50%; top: 50px;" @click="startXYFlag = false">
-            <Close />
-          </ElIcon>
           <div class="config-child-box absolute" style=" margin-left: -50px; left: 50%; top: 150px;">
             <span class="active">保存</span>
           </div>
@@ -2342,13 +2339,13 @@ provide('createHong', createHong)
         </div>
 
         <div v-else-if="bottomItem === 3" class="bottom-box bottom-box1 relative">
-          <p class="mb-3 mt-10" style="font-size: 18px;line-height: 40px;">
+          <p class="mb-3" style="font-size: 18px;line-height: 40px;">
             与接收器配对说明
           </p>
 
-          <img class="h-300px" src="/slideshow/2_zh-CN.png" alt="item.title">
+          <img class="mb-10 h-240px" src="/slideshow/2_zh-CN.png" alt="item.title">
 
-          <div class="config-child-box absolute" style=" margin-left: -50px; left: 50%; bottom: 80px;">
+          <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 60px;">
             <span class="active">确认</span>
           </div>
         </div>

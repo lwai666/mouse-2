@@ -212,7 +212,7 @@ onMounted(() => {
           indicator-position="none"
           @change="onChangeCarousel"
         >
-          <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="h-300px flex items-center justify-center">
+          <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="h-240px flex items-center justify-center">
             <img class="h-100%" :src="item.img" alt="item.title">
           </ElCarouselItem>
         </ElCarousel>
