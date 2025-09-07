@@ -26,8 +26,8 @@ import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeA
 
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
-import wenhao from '/public/v9/wenhao.png'
-import wenhaoActive from '/public/v9/wenhao_active.png'
+// import wenhao from '/public/v9/wenhao.png'
+// import wenhaoActive from '/public/v9/wenhao_active.png'
 
 const { t } = useI18n()
 
@@ -1257,13 +1257,21 @@ provide<Ref<TransportWebHIDInstance>>('transport', transport)
 provide('dotsCleanup', dotsCleanup)
 provide('createConnection', createConnection)
 
-const hover = ref(false)
-const hoverSrc = ref(wenhaoActive)
-const originalSrc = ref(wenhao)
+const hover = ref('')
+// const hoverSrc = ref(wenhaoActive)
+// const originalSrc = ref(wenhao)
 
-const imageToDisplay = computed(() => {
-  return hover.value ? hoverSrc.value : originalSrc.value
-})
+function mouseenter(type) {
+  if (hover.value === type) {
+    hover.value = ''
+    return
+  }
+  hover.value = type
+}
+
+// const imageToDisplay = computed(() => {
+//   return hover.value ? hoverSrc.value : originalSrc.value
+// })
 
 const radioActive = ref(false)
 
@@ -1419,10 +1427,6 @@ function bottomItemChange(type) {
 }
 const showMouseenter = ref('show')
 
-function mouseenter() {
-  hover.value = true
-}
-
 const isEditingProfile = ref(false)
 const tempBase64 = ref('')
 const base64 = ref('')
@@ -1538,8 +1542,6 @@ provide('createHong', createHong)
 
     <div class="profile-item absolute right-190px top-260px w-24% flex items-center">
       <template v-if="isEditingProfile">
-        <!-- @input="onInput" -->
-        <!-- @blur="onProfileBlur" -->
         <ElInput
           ref="profileInputField"
           v-model="tempBase64"
@@ -1561,9 +1563,9 @@ provide('createHong', createHong)
         应用
       </ElButton>
 
-      <img style=" margin-left: 10px;" :src="imageToDisplay" srcset="" @mouseenter="mouseenter">
+      <img style="margin-left: 10px;" :src="hover === 'share' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'" srcset="" @click="mouseenter('share')">
 
-      <p v-if="false" class="absolute top-11 w-[401px]" style="font-size:16px; color:#DAFF00">
+      <p v-if="hover === 'share'" class="absolute top-11 w-[401px]" style="font-size:16px; color:#DAFF00">
         已复制当前模式所有设置，可以通过粘贴分享给好友应用
         应用时双击横杠上代码点击鼠标右键粘贴替换，应用即可
       </p>
@@ -1703,7 +1705,7 @@ provide('createHong', createHong)
                   <div class="flex" style="margin-top: 12px;">
                     <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y <img
                       style="margin-left: 5px;"
-                      src="/public/v9/wenhao.png" alt="" srcset="" @click="startXY"
+                      :src="startXYFlag ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'" alt="" srcset="" @click="startXY"
                     ></span>
                     <div
                       class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
