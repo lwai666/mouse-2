@@ -4,7 +4,7 @@ import { ElIcon } from 'element-plus'
 
 const props = withDefaults(defineProps<Props>(), {})
 
-const emit = defineEmits(['click', 'change'])
+const emit = defineEmits(['click', 'change', 'setName'])
 
 const createHong = inject<() => void>('createHong', () => {})
 
@@ -18,6 +18,7 @@ interface Option {
 }
 
 interface Props {
+  id: string
   value: number
   cascaderTop: number // 上面放多少个
   disabled?: boolean
@@ -29,6 +30,13 @@ const cascaderTopMapp: Record<number, string> = {
   3: 'top--150px',
   4: 'top--190px',
   5: 'top--230px',
+} as const
+
+const cascaderTopMapp1: Record<number, string> = {
+  2: 'top--204px',
+  3: 'top--158px',
+  4: 'top--158px',
+  5: 'top--88px',
 } as const
 
 const show = ref(false)
@@ -72,20 +80,33 @@ function cascaderListClass(item: Option) {
     return item.value === showChildren.value ? 'opacity-100 pointer-events-auto' : 'opacity-0'
   }
   else {
-    return currentOption.value?.value == item.value ? 'opacity-100 pointer-events-auto' : (show.value ? 'opacity-30 hover:opacity-100 pointer-events-auto' : 'opacity-0')
+    return currentOption.value?.value === item.value ? 'opacity-100 pointer-events-auto' : (show.value ? 'opacity-30 hover:opacity-100 pointer-events-auto' : 'opacity-0')
   }
 }
 
 function onClick() {
   emit('click')
 }
+
+const hidden = ref(true)
+
 function onSelect(item: Option, parentValue?: number) {
-  if (item.value === 5) {
-    createHong(1, 'Right')
-    return
-  }
+  console.log(item, 'item')
+  // if (item.value === 1999) {
+  //   createHong(1, 'Right')
+  //   return
+  // }
   if (item.children && item.children.length) {
     showChildren.value = showChildren.value === item.value ? undefined : item.value
+    if (item.value === 1999) {
+      hidden.value = false
+    }
+    return
+  }
+
+  if (parentValue === 1999) {
+    createHong(props.id)
+    emit('setName', item.label)
     return
   }
 
@@ -99,6 +120,7 @@ function open() {
 function close() {
   showChildren.value = undefined
   show.value = false
+  hidden.value = true
 }
 
 defineExpose({ show, open, close })
@@ -107,7 +129,7 @@ defineExpose({ show, open, close })
 <template>
   <div class="mouse-button-cascader pointer-events-none" :class="cascaderTopMapp[cascaderTop]">
     <div class="mouse-button-cascader-menu">
-      <!-- <ul class="mouse-button-cascader__list">
+      <ul class="mouse-button-cascader__list">
         <li
           v-for="(item) in currentOptions"
           :key="item.value"
@@ -115,12 +137,11 @@ defineExpose({ show, open, close })
           class="relative transition-all duration-500"
           @click="disabled ? () => {} : (value === item.value ? onClick() : onSelect(item))"
         >
-          <template v-if="!item.hidden">
+          <template v-if="!item.hidden && item.value !== 1999">
             <span>{{ t(item.label) }}</span>
             <ElIcon v-if="item.children && item.children.length" size="16" class="absolute left--15px top-12px transform transition-transform" :class="{ 'rotate-90': showChildren === item.value }">
               <CaretLeft />
             </ElIcon>
-
             <ul v-if="show && showChildrenDelay === item.value && item.children && item.children.length" class="mouse-button-cascader__list absolute bottom-40px">
               <li
                 v-for="child in item.children"
@@ -132,18 +153,22 @@ defineExpose({ show, open, close })
               </li>
             </ul>
           </template>
-        </li>
-      </ul> -->
-      <ul class="mouse-button-cascader__list">
-        <li
-          v-for="(item) in currentOptions"
-          :key="item.value"
-          :class="cascaderListClass(item)"
-          class="relative transition-all duration-500"
-          @click="disabled ? () => {} : (value === item.value ? onClick() : onSelect(item))"
-        >
-          <template v-if="!item.hidden">
-            <span>{{ t(item.label) }}</span>
+
+          <template v-if="!item.hidden && item.value === 1999">
+            <span v-if="hidden">{{ t(item.label) }}</span>
+            <ElIcon v-if="item.children && item.children.length && hidden" size="16" class="absolute left--15px top-12px transform transition-transform" :class="{ 'rotate-90': showChildren === item.value }">
+              <CaretLeft />
+            </ElIcon>
+            <ul v-if="show && showChildrenDelay === item.value && item.children && item.children.length" class="mouse-button-cascader__list absolute" :class="cascaderTopMapp1[cascaderTop]">
+              <li
+                v-for="child in item.children"
+                :key="child.value"
+                class="pointer-events-auto opacity-30 transition-all duration-500 hover:opacity-100"
+                @click.stop="disabled ? () => {} : onSelect(child, item.value)"
+              >
+                {{ t(child.label) }}
+              </li>
+            </ul>
           </template>
         </li>
       </ul>

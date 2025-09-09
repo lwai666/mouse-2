@@ -53,10 +53,16 @@ export function useConstants(t: any) {
         value: 4,
         label: t('mouseKeyOptions.back_button'),
       },
-      {
-        value: 5,
-        label: '宏',
-      },
+      // {
+      //   value: 5,
+      //   label: '宏',
+      //   children: [
+      //     {
+      //       value: 0x0223,
+      //       label: t('mouseKeyOptions.homepage'),
+      //     },
+      //   ],
+      // },
       {
         value: 1000,
         label: t('mouseKeyOptions.multimedia_functions'),
@@ -90,7 +96,7 @@ export function useConstants(t: any) {
       {
         value: 1999,
         label: '录制宏',
-        hidden: true, // 隐藏
+        // hidden: true, // 隐藏
         children: [
           {
             value: 2000,

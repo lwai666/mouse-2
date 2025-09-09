@@ -713,6 +713,7 @@ async function sendDpiLength(newLength: number | undefined, oldLength: number | 
 
 /** 设置进入休眠时间 */
 async function sendPolling() {
+  console.log(profileInfo.polling_slider, 'profileInfo.polling_slider')
   await transport.value.send([0x0C, 0x00, 0x01, profileInfo.polling_slider])
   onExecutionSuccess()
 }

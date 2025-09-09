@@ -131,6 +131,6 @@ defineExpose({ onConnection, resetConnection })
 
 <template>
   <div class="mouse-button-container">
-    <MouseButtonItem v-for="item in mouseButtonList" ref="mouseButtonItemRef" :key="item.id" :class="{ hidden: !item.show }" v-bind="item" :status="userStore.mouseButtonStatus" :macro-index="macroIndex" @click="onClick(item.id)" @change="onChange" />
+    <MouseButtonItem v-for="item in mouseButtonList" :id="item.id" ref="mouseButtonItemRef" :key="item.id" :class="{ hidden: !item.show }" v-bind="item" :status="userStore.mouseButtonStatus" :macro-index="macroIndex" @click="onClick(item.id)" @change="onChange" />
   </div>
 </template>

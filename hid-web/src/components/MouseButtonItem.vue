@@ -40,6 +40,7 @@ watch(() => profileInfo?.macroList, () => {
     item.label = profileInfo?.macroList[index]?.name!
   })
   options.value = deepClone(constants.mouseKeyOptions)
+  console.log(options.value, 'options.value')
 }, { immediate: true, deep: true })
 
 const sendData = ref({
@@ -96,6 +97,32 @@ function validateInput() {
   }
 }
 
+const hongName = ref('')
+
+function setName(name) {
+  hongName.value = name
+}
+
+const active = ref('')
+
+function changeActive(type) {
+  if (active.value === type) {
+    active.value = ''
+    return
+  }
+  active.value = type
+}
+
+const active1 = ref('')
+
+function changeActive1(type) {
+  if (active1.value === type) {
+    active1.value = ''
+    return
+  }
+  active1.value = type
+}
+
 defineExpose({ mouseButtonCascaderRef })
 </script>
 
@@ -106,18 +133,19 @@ defineExpose({ mouseButtonCascaderRef })
       <div v-if="props.status === 'connecting'" class="mouse-button-item-radio-group">
         <div class="flex items-center justify-center">
           <div class="absolute left-[-105px] flex items-center justify-center">
-            <p class="absolute left-[-190px]" style="color: #CF0EFF">
+            <p v-if="active1 === 'active1'" class="absolute left-[-190px]" style="color: #CF0EFF">
               点击执行设置你设定的宏
             </p>
             <img
               style="margin-right: 5px;"
-              src="/public/v9/wenhao.png" alt="" srcset=""
+              :src="active1 === 'active1' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
+              alt="" srcset="" @click="changeActive1('active1')"
             >
             <div style="width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center">
               执行
             </div>
           </div>
-          宏
+          {{ hongName }}
         </div>
 
         <div class="absolute left-[-60px] top--100px">
@@ -141,12 +169,13 @@ defineExpose({ mouseButtonCascaderRef })
             </ElRadio>
           </ElRadioGroup> -->
           <div class="flex items-center">
-            <p class="absolute left-[-315px]" style="color: #159FFF">
+            <p v-if="active === 'active'" class="absolute left-[-315px]" style="color: #159FFF">
               双击下划线输入你设定的宏想要执行的次数
             </p>
             <img
               style="margin-right: 15px;"
-              src="/public/v9/wenhao.png" alt="" srcset=""
+              :src="active === 'active' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
+              alt="" srcset="" @click="changeActive('active')"
             >
             <div class="items-center justify-center" style="width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px">
               宏执行
@@ -181,6 +210,7 @@ defineExpose({ mouseButtonCascaderRef })
       </div>
       <MouseButtonCascader
         v-else
+        :id="props.id"
         ref="mouseButtonCascaderRef"
         :value="value"
         :options="options"
@@ -188,6 +218,7 @@ defineExpose({ mouseButtonCascaderRef })
         :disabled="props.disabled || value > 1999"
         @click="onClick"
         @change="(value, parentValue) => emit('change', id, value, parentValue)"
+        @set-name="setName"
       />
     </div>
     <div :class="bgClass" class="h-[0.5px] w-0 transition-all duration-500" :style="{ width: props.width }" />

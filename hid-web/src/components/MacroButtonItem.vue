@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import type { Macro } from './MacroButton.vue'
+import type { TransportWebHIDInstance } from '~/utils/hidHandle'
 import { Close } from '@element-plus/icons-vue'
+
 import { ElButton, ElInput } from 'element-plus'
+import { ref } from 'vue'
+import { encodeStringToArrayBuffer } from '~/utils'
 
+const props = withDefaults(defineProps<Props>(), {})
 
-import { Macro } from './MacroButton.vue';
-import { TransportWebHIDInstance } from '~/utils/hidHandle';
-import { encodeStringToArrayBuffer } from '~/utils';
+const emit = defineEmits(['update:modelValue', 'deleteMacro', 'mouseup'])
 
 const userStore = useUserStore()
 
@@ -16,27 +19,24 @@ interface Props {
   modelValue: string
   showName: boolean
 }
-const props = withDefaults(defineProps<Props>(), {})
-const emit = defineEmits(['update:modelValue', 'deleteMacro', 'mouseup'])
+const transport = inject<Ref<TransportWebHIDInstance>>('transport')
 
-const transport = inject<Ref<TransportWebHIDInstance>>('transport');
-
-const macroName = useVModel(props, "modelValue", emit);
-const isHovered = ref(false);
+const macroName = useVModel(props, 'modelValue', emit)
+const isHovered = ref(false)
 
 async function onChange(macroName: string) {
-  console.log("设置宏按键名字=======", macroName)
+  console.log('设置宏按键名字=======', macroName)
   const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
-  await transport?.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + props.index, ...macroNameArrayBuffer]);
+  await transport?.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + props.index, ...macroNameArrayBuffer])
 }
 </script>
 
 <template>
-<div class="macro-button-item flex items-center cursor-pointer justify-end" :class="macro.value.length > 0 ? '' : 'opacity-0'" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
-  <el-button v-if="userStore.mouseButtonStatus !== 'connecting'" class="action-btn" :icon="Close" circle size="small" @click="emit('deleteMacro', props.macro)" />
-  <el-input v-show="isHovered || showName" class="mx-1 macro-button-item-input" :placeholder="macro.name" v-model="macroName" style="width: 100px" :input-style="{ textAlign: 'right' }" @change="onChange" />
-  <div class="w-26px h-26px rounded-50% dot-a z-10" :class="showName ? 'bg-#d64dec' : 'bg-white'" :key="`dot-a-${macro.name}`" :data-macro-index="index" @mouseup="emit('mouseup', index)"></div>
-</div>
+  <div class="macro-button-item flex cursor-pointer items-center justify-end" :class="macro.value.length > 0 ? '' : 'opacity-0'" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
+    <ElButton v-if="userStore.mouseButtonStatus !== 'connecting'" class="action-btn" :icon="Close" circle size="small" @click="emit('deleteMacro', props.macro)" />
+    <ElInput v-show="isHovered || showName" v-model="macroName" class="macro-button-item-input mx-1" :placeholder="macro.name" style="width: 100px" :input-style="{ textAlign: 'right' }" @change="onChange" />
+    <div :key="`dot-a-${macro.name}`" class="dot-a z-10 h-26px w-26px rounded-50%" :class="showName ? 'bg-#d64dec' : 'bg-white'" :data-macro-index="index" @mouseup="emit('mouseup', index)" />
+  </div>
 </template>
 
 <style>
@@ -78,7 +78,6 @@ async function onChange(macroName: string) {
       border-color: #e77975;
     }
   }
-
 
   &:hover {
     .action-btn {

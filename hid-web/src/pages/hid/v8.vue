@@ -75,13 +75,14 @@ const sliderDefaultSelectOptions = {
     { label: '0ms', value: 0 },
   ],
   polling_slider: [
-    { label: '8000', value: 6 },
-    { label: '4000', value: 5 },
-    { label: '2000', value: 4 },
     { label: '1000', value: 3 },
-    { label: '500', value: 2 },
-    { label: '250', value: 1 },
-    { label: '125', value: 0 },
+    { label: '2000', value: 4 },
+    { label: '4000', value: 5 },
+    { label: '8000', value: 6 },
+
+    // { label: '500', value: 2 },
+    // { label: '250', value: 1 },
+    // { label: '125', value: 0 },
   ],
   dpi_slider: [
     { label: '3200', value: 3200 },
@@ -679,11 +680,11 @@ async function setProfile(index: number, type: string) {
 
   Object.assign(profileInfo, JSON.parse(JSON.stringify(newProfileInfo)))
   setProfileInfo(active_profile_index.value)
-  showMessage(t('message.profile_success'))
+  setLoadingStatus(t('message.profile_success'))
 }
 
 function onExecutionSuccess() {
-  showMessage(t('message.execution_success'))
+  setLoadingStatus(t('message.execution_success'))
 }
 
 /**
@@ -698,9 +699,9 @@ async function onMouseButtonChange(id: MouseButtonType, value: number, parentVal
     if (parentValue === 1000) {
       await sendMultimediaMacro(id, value)
     }
-    else if (parentValue === 1999 && connectionData) {
-      await sendConnectionMacro(id, value, connectionData)
-    }
+    // else if (parentValue === 1999 && connectionData) {
+    //   await sendConnectionMacro(id, value, connectionData)
+    // }
   }
   else {
     await sendKeyMacro(id, value)
@@ -711,20 +712,18 @@ async function onMouseButtonChange(id: MouseButtonType, value: number, parentVal
 }
 
 /** 发送设置组合键宏 */
-async function sendConnectionMacro(id: MouseButtonType, value: number, data: { cycleTimes: number, cycleMode: number, macroIndex: number }) {
-  const index = mouseButton.indexOf(id)
-  console.log('设置组合键宏========')
-  await transport.value.send([0x08, 0x00, 1, data.cycleMode, data.cycleTimes, index, data.macroIndex])
-  profileInfo[id] = value
-  profileInfo.macroList[data.macroIndex].connections.push({
-    cycleMode: data.cycleMode,
-    cycleTimes: data.cycleTimes,
-    keyid: id,
-  })
-  console.log('组合键宏已设置======', profileInfo)
-
-  // loading = ElLoading.service({ lock: true, text: '', spinner: 'none', background: 'rgba(0, 0, 0, 0)' })
-}
+// async function sendConnectionMacro(id: MouseButtonType, value: number, data: { cycleTimes: number, cycleMode: number, macroIndex: number }) {
+//   const index = mouseButton.indexOf(id)
+//   console.log('设置组合键宏========')
+//   await transport.value.send([0x08, 0x00, 1, data.cycleMode, data.cycleTimes, index, data.macroIndex])
+//   profileInfo[id] = value
+//   profileInfo.macroList[data.macroIndex].connections.push({
+//     cycleMode: data.cycleMode,
+//     cycleTimes: data.cycleTimes,
+//     keyid: id,
+//   })
+//   console.log('组合键宏已设置======', profileInfo)
+// }
 
 // 发送多媒体宏
 function sendMultimediaMacro(id: MouseButtonType, value: number) {
@@ -799,7 +798,8 @@ async function sendDpiLength(type) {
 }
 
 /** 设置回报率 */
-async function sendPolling() {
+async function sendPolling(value) {
+  profileInfo.polling_slider = value
   await transport.value.send([0x0C, 0x00, 0x01, profileInfo.polling_slider])
   onExecutionSuccess()
 }
@@ -831,11 +831,12 @@ async function sendAngle() {
 }
 
 /** 设置性能模式（电竞模式） */
-async function onSportsMode() {
-  const sports_arena = profileInfo.sports_arena + 1
-  profileInfo.sports_arena = sports_arena > 2 ? 0 : sports_arena
-
+async function onSportsMode(type) {
+  // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
+  profileInfo.sports_arena = type
   await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
+  // eslint-disable-next-line ts/no-use-before-define
+  bottomItem.value = 0
   onExecutionSuccess()
 }
 
@@ -884,7 +885,7 @@ function onClickPecordBtn() {
 
 function recordedKeyMaxCheck() {
   if (recordedKeys.value.length >= 12) {
-    showMessage(t('index.record_macro_warning'))
+    setLoadingStatus(t('index.record_macro_warning'))
     return false
   }
   return true
@@ -1006,7 +1007,9 @@ async function onPairingConnection() {
   const connection = async () => {
     const res = await transport.value.send([0x14])
     console.log('配对链接成功===========', res)
-    showMessage(t('message.pairing_connection_success'))
+    setLoadingStatus(t('message.pairing_connection_success'))
+    // eslint-disable-next-line ts/no-use-before-define
+    window.removeEventListener('keydown', handleSpaceKey)
   }
   // 监听空格键按下执行配对方法
   const handleSpaceKey = async (event: any) => {
@@ -1015,6 +1018,9 @@ async function onPairingConnection() {
     }
   }
   window.addEventListener('keydown', handleSpaceKey)
+
+  // connection()
+
   messageBox.confirm(t('message.pairing_connection'), { container: '.middle-container' })
     .then(connection)
     .finally(() => {
@@ -1023,21 +1029,61 @@ async function onPairingConnection() {
 }
 
 async function onRestoreFactorySettings() {
-  messageBox.confirm(t('message.restore_factory_settings'), { container: '.middle-container' })
-    .then(async () => {
-      await transport.value.send([0x10])
-      showMessage(t('message.restore_factory_settings_success'))
-      setTimeout(() => {
-        location.reload()
-      }, 1000)
-    })
+  await transport.value.send([0x10])
+  setLoadingStatus(t('message.restore_factory_settings_success'))
+  setTimeout(() => {
+    location.reload()
+  }, 1000)
+  // messageBox.confirm(t('message.restore_factory_settings'), { container: '.middle-container' })
+  //   .then(async () => {
+
+  //   })
 }
 
 function toSettings() {
   router.push('/hid/settings')
 }
 
-// 添加宏
+// 新建宏
+async function addMacroFn() {
+  // 停止录制
+  if (isRecording.value) {
+    onClickPecordBtn()
+  }
+
+  // 添加第几个宏录制
+  const macroIndex = profileInfo.macroList.findIndex(item => !item.name)
+
+  if (macroIndex === -1) {
+    setLoadingStatus(t('index.add_macro_warning'))
+    return
+  }
+
+  const macroName = `Macro ${macroIndex + 1}`
+
+  // const data = recordedKeys.value.map((item) => {
+  //   const [_low, _high] = getLowAndHigh8Bits(item.intervalTime)
+  //   return [item.keyCode, item.keyStatus, _high, _low]
+  // })
+
+  // console.log('添加组合键宏球=======', macroIndex + 1)
+  // await transport.value.send([0x1A + macroIndex, 0x00, recordedKeys.value.length, ...data.flat()])
+
+  // console.log('设置宏按键名字=======', macroName)
+  // const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
+  // await transport.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + macroIndex, ...macroNameArrayBuffer])
+
+  profileInfo.macroList[macroIndex].name = macroName
+  profileInfo.macroList[macroIndex].value = []
+
+  nextTick(() => {
+    restartConnection()
+    onExecutionSuccess()
+    // currentMacroButtonRecordedKeyIndex.value = macroIndex
+  })
+}
+
+// 保存宏
 async function addMacro() {
   // 停止录制
   if (isRecording.value) {
@@ -1045,7 +1091,7 @@ async function addMacro() {
   }
 
   if (recordedKeys.value.length === 0) {
-    showMessage(t('index.add_macro_warning_1'))
+    setLoadingStatus(t('index.add_macro_warning_1'))
     return
   }
 
@@ -1057,7 +1103,7 @@ async function addMacro() {
   }
 
   if (macroIndex === -1) {
-    showMessage(t('index.add_macro_warning'))
+    setLoadingStatus(t('index.add_macro_warning'))
     return
   }
 
@@ -1086,6 +1132,7 @@ async function addMacro() {
   nextTick(() => {
     restartConnection()
     onExecutionSuccess()
+    onMacroButtonMouseUp(currentMacroButtonRecordedKeyIndex.value, false)
   })
 }
 
@@ -1109,8 +1156,8 @@ function resetSelectedMacro() {
   recordedKeys.value = []
 }
 
-function onMacroButtonMouseUp(index: number) {
-  if (currentMacroButtonRecordedKeyIndex.value === index) {
+function onMacroButtonMouseUp(index: number, flag) {
+  if (currentMacroButtonRecordedKeyIndex.value === index && flag) {
     resetSelectedMacro()
   }
   else {
@@ -1229,10 +1276,10 @@ function onInputReport(uint8ArrayRes: Uint8Array) {
 useTransportWebHID('v8', async (instance) => {
   transport.value = instance
   console.log('transport.value ======', transport.value)
-  if (!transport.value) {
-    router.push('/')
-    return
-  }
+  // if (!transport.value) {
+  //   router.push('/')
+  //   return
+  // }
 
   // 监听鼠标主动事件: 如 DPI 物理按钮变化
   transport.value.on('input-all', onInputReport)
@@ -1243,7 +1290,7 @@ useTransportWebHID('v8', async (instance) => {
 })
 
 onMounted(() => {
-  // userStore.fetchLatestVersion()
+  userStore.fetchLatestVersion()
 })
 
 onUnmounted(() => {
@@ -1416,10 +1463,6 @@ function initEcharts() {
 const bottomItem = ref(0)
 
 function bottomItemChange(type) {
-  if (bottomItem.value === 1 && type === 1) {
-    bottomItem.value = 2
-    return
-  }
   if (bottomItem.value === type) {
     return
   }
@@ -1464,8 +1507,8 @@ function onProfileBlur() {
   isEditingProfile.value = false
 }
 
-function createHong() {
-  mouseButtonRef.value.onConnection(1, 'Right')
+function createHong(buttonType) {
+  mouseButtonRef.value.onConnection(1, buttonType)
 }
 
 const dpi_slider_edit = ref(null)
@@ -1480,7 +1523,7 @@ const { copied, copy } = useClipboard({ source: base64 })
 
 watch(copied, (newV) => {
   if (newV) {
-    showMessage(t('message.profile_copied'))
+    setLoadingStatus(t('message.profile_copied'))
   }
 })
 
@@ -1499,7 +1542,7 @@ function setProfileYS() {
     setProfile()
   }
   else {
-    showMessage(t('message.format_error'))
+    setLoadingStatus(t('message.format_error'))
     buttonType.value = 'share'
   }
 }
@@ -1507,7 +1550,7 @@ function setProfileYS() {
 async function deleteMacro(macro: Macro) {
   console.log(macro, 'macro')
   if (profileInfo.macroList.connections && profileInfo.macroList.connections.length > 0) {
-    showMessage(t('message.delete_macro_error'))
+    setLoadingStatus(t('message.delete_macro_error'))
     return
   }
 
@@ -1515,6 +1558,17 @@ async function deleteMacro(macro: Macro) {
   console.log('删除组合键宏========', macroIndex)
   await transport?.value.send([0x08, 0x00, 1, 1, 1, 0xFF, macroIndex])
   profileInfo.macroList[macroIndex] = { name: '', connections: [], value: [] }
+}
+
+const loadingShow = ref(false)
+const loadingText = ref('')
+
+function setLoadingStatus(text) {
+  loadingShow.value = true
+  loadingText.value = text
+  setTimeout(() => {
+    loadingShow.value = false
+  }, 1500)
 }
 
 provide('createHong', createHong)
@@ -1642,23 +1696,25 @@ provide('createHong', createHong)
           <span>运动模式</span>
         </div>
         <div class="flex items-center" @click="bottomItemChange(1)">
-          <img src="/v9/icon2.png" alt="Motion" style="margin-right: 5px;">
+          <img :src="`/v9/icon2${profileInfo.sports_arena === 0 ? '' : '_active'}.png`" alt="Motion" style="margin-right: 5px;">
           <span>竞技模式</span>
         </div>
         <div class="flex items-center" @click="bottomItemChange(3)">
           <img src="/v9/icon1.png" alt="Motion" style="margin-right: 5px;">
           <span>配对</span>
         </div>
-        <div class="flex items-center" @click="onRestoreFactorySettings">
+        <div class="flex items-center" @click="bottomItem = 4">
           <img src="/v9/icon.png" alt="Motion" style="margin-right: 5px;">
           <span>恢复出厂</span>
         </div>
       </div>
       <div class="absolute right-[50px] top-[-35px] flex items-center">
-        <p style="font-size: 16px;color: #DAFF00;" class="mr-3">
-          设置已保存
-        </p>
-        <AnimateLoading />
+        <div v-if="loadingShow" class="flex items-center">
+          <p style="font-size: 16px;color: #DAFF00;" class="mr-3">
+            设置已保存
+          </p>
+          <AnimateLoading />
+        </div>
 
         <img src="/v9/setting.png" alt="mouse-card" class="ml-6" @click="toSettings">
       </div>
@@ -1768,14 +1824,28 @@ provide('createHong', createHong)
                           <p style="font-size: 20px; width: 100px;text-align: right;">
                             轮询率(Hz)
                           </p>
+
+                          <!-- <CustomSliderLabel
+                            v-model="profileInfo.polling_slider"
+                            class="transparent-slider dpi_slider absolute right-5 w-66%"
+                            :bind="sliderOptions.polling_slider"
+                            :default-select-options="sliderDefaultSelectOptions.polling_slider"
+                            :show-fixed="true"
+                            @change="sendPolling"
+                          /> -->
+
                           <div class="flex items-center justify-between" style="flex: 1;margin-left: 20px;">
                             <div
-                              class="block_item active"
-                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              v-for="(item, index) in sliderDefaultSelectOptions.polling_slider"
+                              :key="index"
+                              class="block_item"
+                              :class="[profileInfo.polling_slider === item.value ? 'active' : '']"
+                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #3D3D3D;background:#242424"
+                              @click="sendPolling(item.value)"
                             >
-                              400
+                              {{ item.label }}
                             </div>
-                            <div
+                            <!-- <div
                               class="block_item"
                               style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
                             >
@@ -1794,7 +1864,7 @@ provide('createHong', createHong)
                               style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
                             >
                               400
-                            </div>
+                            </div> -->
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
@@ -1802,37 +1872,16 @@ provide('createHong', createHong)
                             LOD 高度
                           </p>
                           <div class="flex items-center justify-between" style="flex: 1;margin-left: 20px;">
-                            <!--
-                            <CustomSliderLabel
-          v-model="profileInfo.lod_slider"
-          class="transparent-slider absolute bottom-5% left-16% h-8% -translate-x-49%"
-          :default-select-options="sliderDefaultSelectOptions.lod_slider"
-          :vertical="true"
-          @mouseenter="setRightHintCode('lod')"
-          @change="sendLod"
-        /> -->
                             <div
                               v-for="(item, index) in sliderDefaultSelectOptions.lod_slider"
                               :key="index"
                               class="block_item"
                               :class="index === profileInfo.lod_slider ? 'active' : ''"
-                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
+                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #3D3D3D;background:#242424"
                               @click="sendLod(index)"
                             >
                               {{ item.label }}
                             </div>
-                            <!-- <div
-                              class="block_item active"
-                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
-                            >
-                              1mm
-                            </div>
-                            <div
-                              class="block_item"
-                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
-                            >
-                              2mm
-                            </div> -->
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
@@ -1840,13 +1889,13 @@ provide('createHong', createHong)
                             响应时间
                           </p>
 
-                          <CustomSliderLabel
-                            v-model="profileInfo.polling_slider"
+                          <CustomSlider
+                            v-model="profileInfo.jitter_elimination_slider"
                             class="transparent-slider dpi_slider absolute right-5 w-66%"
-                            :bind="sliderOptions.polling_slider"
-                            :default-select-options="sliderDefaultSelectOptions.polling_slider"
+                            :bind="sliderOptions.jitter_elimination_slider"
+                            :default-select-options="sliderDefaultSelectOptions.jitter_elimination_slider"
                             :show-fixed="true"
-                            @change="sendPolling"
+                            @change="sendJitterElimination"
                           />
                         </div>
                         <div class="flex items-center justify-between">
@@ -1919,7 +1968,7 @@ provide('createHong', createHong)
               </div>
               <div v-else-if="activeBg === 'hong'" class="absolute flex">
                 <div style="width: 564px;">
-                  <div class="config-child-box">
+                  <div class="config-child-box" @click="addMacroFn">
                     <span class="active">新建宏</span>
                   </div>
                   <div class="relative flex">
@@ -1927,7 +1976,7 @@ provide('createHong', createHong)
                     <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
                       <div ref="innerRef">
                         <template v-for="(item, index) in profileInfo.macroList" :key="index">
-                          <div v-show="item.name" class="hong_active" :class="[currentMacroButtonRecordedKeyIndex === index ? 'hong' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index)">
+                          <div v-show="item.name" class="hong_active" :class="[currentMacroButtonRecordedKeyIndex === index ? 'hong' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index, true)">
                             {{ item.name }}
                             <ElIcon size="20" @click.stop="deleteMacro(item)">
                               <Delete />
@@ -1946,34 +1995,6 @@ provide('createHong', createHong)
                       <span style="border: 0; justify-content: flex-start; background: transparent">灵敏度设置</span>
                     </div>
 
-                    <!-- <div class="charu relative" style="overflow: hidden;">
-                      <div class="flex items-center justify-end" style="width: 122px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
-                        插入
-                        <ElIcon style="margin-left: 10px;" size="20" color="#DAFF00">
-                          <ArrowDownBold />
-                        </ElIcon>
-                      </div>
-                      <ul class="absolute" style="width: 100%;background: #212121;margin-top: 3px;z-index: 10;padding: 10px 3px 0;border-radius: 10px;">
-                        <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                          延迟
-                        </li>
-                        <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                          右键
-                        </li>
-                        <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                          中键
-                        </li>
-                        <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                          前进键
-                        </li>
-                        <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                          后退键
-                        </li>
-                        <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                          键盘按键
-                        </li>
-                      </ul>
-                    </div> -->
                     <ElDropdown class="" trigger="click" popper-class="custom-popper custom-dropdown-popper" @command="insertMacro">
                       <!-- <ElButton class="bg-white text-base font-bold" color="#e83ff4" plain :icon="ArrowRight" circle size="small" /> -->
                       <div class="flex items-center justify-end" style="width: 122px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
@@ -2314,15 +2335,21 @@ provide('createHong', createHong)
 
       <Transition name="bottom-opacity">
         <div v-if="bottomItem === 1" class="bottom-box bottom-box1 relative">
-          <div class="config-child-box absolute" style=" margin-left: -50px; left: 50%; top: 150px;">
-            <span class="active">保存</span>
-          </div>
           <p class="mb-3 mt-3" style="font-size: 18px;line-height: 40px;">
             开启此模式后，鼠标的各项参数将提升至竞技所需
           </p>
           <p style="font-size: 18px;line-height: 40px; color: red;">
-            在开启光学引擎的采样率将达到20K FPS，同时功耗将大幅度提升
+            同时功耗将大幅度提升
           </p>
+
+          <div class="flex" style="margin-top: 30px;">
+            <div class="config-child-box config-child-box1 mr-2" @click="onSportsMode(0)">
+              <span>取消</span>
+            </div>
+            <div class="config-child-box" @click="onSportsMode(1)">
+              <span class="active">确认</span>
+            </div>
+          </div>
         </div>
 
         <div v-else-if="bottomItem === 2" class="bottom-box bottom-box1 relative">
@@ -2345,7 +2372,20 @@ provide('createHong', createHong)
 
           <img class="mb-10 h-240px" src="/slideshow/2_zh-CN.png" alt="item.title">
 
-          <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 60px;">
+          <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 60px;" @click="onPairingConnection">
+            <span class="active">确认</span>
+          </div>
+        </div>
+
+        <div v-else-if="bottomItem === 4" class="bottom-box bottom-box1 relative">
+          <p style="font-size: 18px;line-height: 40px;">
+            点击 "确认" 后，
+          </p>
+          <p class="mb-3" style="font-size: 18px;line-height: 40px;">
+            鼠标将恢复出厂时的默认设置。
+          </p>
+
+          <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 100px;" @click="onRestoreFactorySettings">
             <span class="active">确认</span>
           </div>
         </div>
@@ -2433,6 +2473,11 @@ provide('createHong', createHong)
 
   .bottom-box .config-child-box {
     display: flex;
+  }
+
+  .config-child-box1 span {
+    border: 1px solid #daff00 !important;
+    background-color: #333333 !important;
   }
 
   .bottom-box .config-child-box span {
@@ -2540,11 +2585,11 @@ provide('createHong', createHong)
 
     .block_item.active {
       color: #333;
-      background-color: #daff00;
+      background-color: #daff00 !important;
     }
     .block_item:hover {
       color: #333;
-      background-color: #daff00;
+      background-color: #daff00 !important;
     }
   }
 
