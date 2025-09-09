@@ -1276,10 +1276,10 @@ function onInputReport(uint8ArrayRes: Uint8Array) {
 useTransportWebHID('v8', async (instance) => {
   transport.value = instance
   console.log('transport.value ======', transport.value)
-  // if (!transport.value) {
-  //   router.push('/')
-  //   return
-  // }
+  if (!transport.value) {
+    router.push('/')
+    return
+  }
 
   // 监听鼠标主动事件: 如 DPI 物理按钮变化
   transport.value.on('input-all', onInputReport)
