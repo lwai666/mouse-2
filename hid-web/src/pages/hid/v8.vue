@@ -1200,7 +1200,7 @@ onMounted(() => {
   autofit.init({
     dh: 1080,
     dw: 1920,
-    el: '#app',
+    el: '.hid-container',
     resize: true,
     allowScroll: true,
   })
