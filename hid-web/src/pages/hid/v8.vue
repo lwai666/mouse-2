@@ -2340,7 +2340,7 @@ provide('createHong', createHong)
   background-repeat: no-repeat;
 
   /* backdrop-filter: blur(5px); */
-  padding: 32px 89px;
+  padding: 32px 0px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -2361,6 +2361,8 @@ provide('createHong', createHong)
   .bottom-con {
     width: 100%;
     height: 544px;
+    display: flex;
+    justify-content: center;
     /* display: flex;
     flex-direction: column;
     justify-content: center;
@@ -2396,7 +2398,7 @@ provide('createHong', createHong)
     justify-content: center;
     position: absolute;
     bottom: 0px;
-    left: 0;
+    /* left: 0; */
   }
 
   .bottom-box1 {
