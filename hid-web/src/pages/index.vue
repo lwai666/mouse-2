@@ -39,7 +39,7 @@ const languageShow = ref(false)
 
 const slideshowList = computed(() => [
   { title: t('index.pairingGuide'), img: `/slideshow/2_${locale.value}.png` },
-  { title: t('index.schematicGuide'), img: `/slideshow/1_${locale.value}.png` },
+  { title: t('index.schematicGuide'), img: `/slideshow/2.png` },
 ])
 
 const carouselRef = ref(null)

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { DotConnection } from '~/composables/useDotsConnection'
+
 import type { ConnectionType, Macro, ProfileInfoType, ProfileType } from '~/types'
-
 import type { TransportWebHIDInstance } from '~/utils/hidHandle'
-import { ArrowDownBold, ArrowUpBold, Close, Delete, Download, Minus, Plus, Share, Upload } from '@element-plus/icons-vue'
 
+import { ArrowDownBold, ArrowUpBold, Close, Delete, Download, Minus, Plus, Share, Upload } from '@element-plus/icons-vue'
 import { useClipboard } from '@vueuse/core'
+
+import autofit from 'autofit.js'
 
 // 引入柱状图图表，图表后缀都为 Chart
 import { LineChart } from 'echarts/charts'
@@ -200,7 +202,6 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
   const profileInfo = initProfileInfo()
 
   uint8Array.forEach((res) => {
-    console.log(res, 'resres')
     // 获取 profile 基础配置信息
     if (res[0] === 1) {
       const start_index = 3
@@ -454,119 +455,20 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
 /** **************** 连线逻辑 start */
 
 const mouseButtonRef = ref()
-const dotsConnections = ref()
+// const dotsConnections = ref()
 // let dotsAddConnection: any = () => {}
 // let dotsRemoveConnection: any = () => {}
 // let dotsCleanup = ref(() => {})
 
 // 离开页面删除连线
 onBeforeRouteLeave(() => {
-  dotsCleanup.value()
+  // dotsCleanup.value()
 })
 
 function restartConnection() {
   // dotsCleanup.value()
   // createConnection()
 }
-
-// function setConnectionLineOpacity(opacity: string, exclude: number = 0) {
-//   for (let i = 0; i < dotsConnections.value.length - exclude; i++) {
-//     dotsConnections.value[i].line.style.opacity = opacity
-//   }
-// }
-
-/** 创建连线 */
-// function createConnection() {
-//   let connectioning = false
-//   let _oldConnection: ConnectionType | undefined
-//   const { connections, addConnection, removeConnection, cleanup } = useDotsConnection({
-//     rules: [
-//       // 支持 class 包含 dot-a 的标签连接到 dot-b 的标签
-//       { from: '.dot-a', to: ['.dot-b'], maxConnections: { from: 4, to: 1 } },
-//       // { from: '.dot-b', to: ['.dot-a'], maxConnections: { from: 1, to: 1 } },
-//     ],
-//     onConnection: (connection: DotConnection) => {
-//       if (!connectioning) {
-//         mouseButtonRef.value.onConnection(Number(connection.start.dataset.macroIndex), connection.end.dataset.keyId)
-//         setConnectionLineOpacity('0', 1)
-//       }
-//     },
-//     onConnectionUpdate: async (newConnection: DotConnection, oldConnection: DotConnection) => {
-//       // const _oldMacro = profileInfo.macroList[Number(oldConnection.start.dataset.macroIndex)]
-//       // const _oldConnection = removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === oldConnection.end.dataset.keyId))
-
-//       // console.log("_oldConnection========", _oldConnection)
-//       // console.log('修改连线-恢复默认按键===========', _oldConnection)
-//       // const oldKeyId = oldConnection.end.dataset.keyId as MouseButtonType
-//       // await onMouseButtonChange(oldKeyId, mouseButton.indexOf(oldKeyId))
-
-//       console.log('修改连线-添加组合宏键===========', Number(newConnection.start.dataset.macroIndex), newConnection.end.dataset.keyId)
-//       if (_oldConnection) {
-//         const newKeyId = newConnection.end.dataset.keyId as MouseButtonType
-//         const newKeyValue = 2000 + Number(newConnection.start.dataset.macroIndex)
-//         await onMouseButtonChange(newKeyId, newKeyValue, 1999, {
-//           cycleMode: _oldConnection.cycleMode,
-//           cycleTimes: _oldConnection.cycleTimes,
-//           macroIndex: Number(newConnection.start.dataset.macroIndex),
-//         })
-//       }
-//       else {
-//         if (!connectioning) {
-//           mouseButtonRef.value.onConnection(Number(newConnection.start.dataset.macroIndex), newConnection.end.dataset.keyId)
-//           setConnectionLineOpacity('0', 1)
-//         }
-//       }
-//     },
-//     onConnectionLeave: async (connection: DotConnection) => {
-//       console.log('离开连线-恢复默认按键===========', connection)
-//       const oldKeyId = connection.end.dataset.keyId as MouseButtonType
-//       const _oldMacro = profileInfo.macroList[Number(connection.start.dataset.macroIndex)]
-//       const removeIndex = _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId)
-
-//       if (userStore.mouseButtonStatus === 'connecting') {
-//         mouseButtonRef.value.resetConnection()
-//         setConnectionLineOpacity('1', 1)
-//         return
-//       }
-
-//       if (removeIndex !== -1) {
-//         _oldConnection = removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId))
-//         await sendKeyMacro(oldKeyId, mouseButton.indexOf(oldKeyId))
-//       }
-//     },
-//     // onConnectionRemove: async (connection: DotConnection) => {
-//     //   console.log('删除连线-恢复默认按键===========', connection)
-//     //   const oldKeyId = connection.end.dataset.keyId as MouseButtonType
-//     //   const _oldMacro = profileInfo.macroList[Number(connection.start.dataset.macroIndex)]
-//     //   const removeIndex = _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId)
-
-//     //   // 删除连线中
-//     //   if (removeIndex === -1) {
-//     //     mouseButtonRef.value.resetConnection()
-//     //     nextTick(() => setTimeout(restartConnection, 200))
-//     //   }
-//     //   // 删除已连线
-//     //   else {
-//     //     removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId))
-//     //     await onMouseButtonChange(oldKeyId, mouseButton.indexOf(oldKeyId))
-//     //   }
-//     // },
-//   })
-//   dotsConnections.value = connections.value
-//   dotsAddConnection = addConnection
-//   dotsRemoveConnection = removeConnection
-//   dotsCleanup.value = cleanup
-
-//   connectioning = true
-//   profileInfo.macroList.forEach((macro, macroIndex) => {
-//     macro.connections.forEach(({ keyid }) => {
-//       addConnection(`[data-macro-index="${macroIndex}"]`, `[data-key-id="${keyid}"]`)
-//     })
-//   })
-//   connectioning = false
-// }
-
-/** **************** 连线逻辑 end */
 
 async function initProfile() {
   await getProfile()
@@ -762,7 +664,9 @@ async function sendDpi(index?: number) {
 
   dpi_progress.value = false
 
+  // eslint-disable-next-line ts/no-use-before-define
   dpi_slider_edit.value = null
+  // eslint-disable-next-line ts/no-use-before-define
   dpi_slider_value.value = ''
   onExecutionSuccess()
 }
@@ -1063,17 +967,17 @@ async function addMacroFn() {
 
   const macroName = `Macro ${macroIndex + 1}`
 
-  // const data = recordedKeys.value.map((item) => {
-  //   const [_low, _high] = getLowAndHigh8Bits(item.intervalTime)
-  //   return [item.keyCode, item.keyStatus, _high, _low]
-  // })
+  const data = recordedKeys.value.map((item) => {
+    const [_low, _high] = getLowAndHigh8Bits(item.intervalTime)
+    return [item.keyCode, item.keyStatus, _high, _low]
+  })
 
-  // console.log('添加组合键宏球=======', macroIndex + 1)
-  // await transport.value.send([0x1A + macroIndex, 0x00, recordedKeys.value.length, ...data.flat()])
+  console.log('添加组合键宏球=======', macroIndex + 1)
+  await transport.value.send([0x1A + macroIndex, 0x00, recordedKeys.value.length, ...data.flat()])
 
-  // console.log('设置宏按键名字=======', macroName)
-  // const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
-  // await transport.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + macroIndex, ...macroNameArrayBuffer])
+  console.log('设置宏按键名字=======', macroName)
+  const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
+  await transport.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + macroIndex, ...macroNameArrayBuffer])
 
   profileInfo.macroList[macroIndex].name = macroName
   profileInfo.macroList[macroIndex].value = []
@@ -1293,6 +1197,12 @@ useTransportWebHID('v8', async (instance) => {
 
 onMounted(() => {
   userStore.fetchLatestVersion()
+  autofit.init({
+    designHeight: 1080,
+    designWidth: 1920,
+    renderDom: '.hid-container',
+    resize: true,
+  })
 })
 
 onUnmounted(() => {
@@ -1509,8 +1419,9 @@ function onProfileBlur() {
   isEditingProfile.value = false
 }
 
-function createHong(buttonType) {
-  mouseButtonRef.value.onConnection(1, buttonType)
+function createHong(index, buttonType) {
+  console.log(index, 'indexindex')
+  mouseButtonRef.value.onConnection(index, buttonType)
 }
 
 const dpi_slider_edit = ref(null)
@@ -1595,7 +1506,7 @@ provide('createHong', createHong)
 </script>
 
 <template>
-  <div :style="{ width: '1920px', transform: scale }" class="hid-container">
+  <div class="hid-container">
     <a class="absolute left-30px top-30px" href="https://baidu.com" target="_blank">
       <img class="h-45px" src="/logo.png" alt="logo">
     </a>

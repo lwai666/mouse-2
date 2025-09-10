@@ -222,7 +222,7 @@ defineExpose({ mouseButtonCascaderRef })
         :value="value"
         :options="options"
         :cascader-top="cascaderTop"
-        :disabled="props.disabled || value > 1999"
+        :disabled="props.disabled"
         @click="onClick"
         @change="(value, parentValue) => emit('change', id, value, parentValue)"
         @set-name="setName"

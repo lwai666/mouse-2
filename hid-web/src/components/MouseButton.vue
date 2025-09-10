@@ -80,6 +80,7 @@ function onClick(id?: string) {
 }
 
 function onChange(id: MouseButtonType, value: number, parentValue: number, connectionData: number[]) {
+  console.log(id, value, parentValue, connectionData, 'connectionDataconnectionData')
   emit('change', id, value, parentValue, connectionData)
   setTimeout(() => {
     onClick()
@@ -106,7 +107,8 @@ function resetConnection() {
 function handleClickOutside(event: MouseEvent) {
   const cascaderElement = document.querySelector('.mouse-button-container')
   if (cascaderElement && !cascaderElement.contains(event.target as Node)) {
-    if (mouseButtonItemRef.value && userStore.mouseButtonStatus === 'normal') {
+    console.log(mouseButtonItemRef.value, userStore.mouseButtonStatus)
+    if (mouseButtonItemRef.value) {
       mouseButtonItemRef.value.forEach((item: any) => {
         item.mouseButtonCascaderRef?.close()
       })

@@ -85,12 +85,13 @@ function cascaderListClass(item: Option) {
 }
 
 function onClick() {
+  console.log(111)
   emit('click')
 }
 
 const hidden = ref(true)
 
-function onSelect(item: Option, parentValue?: number) {
+function onSelect(item: Option, parentValue?: number, index?: number) {
   console.log(item, 'item')
   // if (item.value === 1999) {
   //   createHong(1, 'Right')
@@ -105,7 +106,7 @@ function onSelect(item: Option, parentValue?: number) {
   }
 
   if (parentValue === 1999) {
-    createHong(props.id)
+    createHong(index, props.id)
     emit('setName', item.label)
     return
   }
@@ -161,10 +162,10 @@ defineExpose({ show, open, close })
             </ElIcon>
             <ul v-if="show && showChildrenDelay === item.value && item.children && item.children.length" class="mouse-button-cascader__list absolute" :class="cascaderTopMapp1[cascaderTop]">
               <li
-                v-for="child in item.children"
+                v-for="(child, kIndex) in item.children"
                 :key="child.value"
                 class="pointer-events-auto opacity-30 transition-all duration-500 hover:opacity-100"
-                @click.stop="disabled ? () => {} : onSelect(child, item.value)"
+                @click.stop="disabled ? () => {} : onSelect(child, item.value, kIndex)"
               >
                 {{ t(child.label) }}
               </li>
