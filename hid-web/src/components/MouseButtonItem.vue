@@ -40,7 +40,6 @@ watch(() => profileInfo?.macroList, () => {
     item.label = profileInfo?.macroList[index]?.name
   })
   options.value = deepClone(constants.mouseKeyOptions)
-  console.log(options.value, 'options.value')
 }, { immediate: true, deep: true })
 
 const sendData = ref({

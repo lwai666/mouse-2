@@ -1484,6 +1484,16 @@ function setLoadingStatus(text) {
   }, 1500)
 }
 
+const isHovered = ref('')
+
+async function onChange(macroName: string, index: number) {
+  console.log('设置宏按键名字=======', macroName, index)
+  const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
+  await transport?.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + index, ...macroNameArrayBuffer])
+  isHovered.value = ''
+  setLoadingStatus()
+}
+
 provide('createHong', createHong)
 
 // function createHong() {
@@ -1887,8 +1897,14 @@ provide('createHong', createHong)
                     <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
                       <div ref="innerRef">
                         <template v-for="(item, index) in profileInfo.macroList" :key="index">
-                          <div v-show="item.name" class="hong_active" :class="[currentMacroButtonRecordedKeyIndex === index ? 'hong' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index, true)">
-                            {{ item.name }}
+                          <div v-show="item.name || isHovered === index" :class="[currentMacroButtonRecordedKeyIndex === index ? 'hong' : '', isHovered != index ? 'hong_active' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index, true)">
+                            <div v-show="isHovered !== index" @dblclick.stop="isHovered = index">
+                              {{ item.name }}
+                            </div>
+                            <!--  -->
+                            <!-- v-show="isHovered" -->
+                            <ElInput v-show="isHovered === index" v-model="item.name" class="macro-button-item-input mx-1" :placeholder="item.name" style="width: 100px" :input-style="{ textAlign: 'right' }" @change="onChange(item.name, index)" />
+
                             <ElIcon size="20" @click.stop="deleteMacro(item)">
                               <Delete />
                             </ElIcon>
