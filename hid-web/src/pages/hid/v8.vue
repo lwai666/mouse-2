@@ -33,7 +33,7 @@ import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 const { t } = useI18n()
 
-const scale = ref(`scale(${document.body.clientWidth / 1920})`)
+// const scale = ref(`scale(${document.body.clientWidth / 1920})`)
 
 // 注册必须的组件
 echarts.use([
