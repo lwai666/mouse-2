@@ -1182,10 +1182,10 @@ function onInputReport(uint8ArrayRes: Uint8Array) {
 useTransportWebHID('v8', async (instance) => {
   transport.value = instance
   console.log('transport.value ======', transport.value)
-  if (!transport.value) {
-    router.push('/')
-    return
-  }
+  // if (!transport.value) {
+  //   router.push('/')
+  //   return
+  // }
 
   // 监听鼠标主动事件: 如 DPI 物理按钮变化
   transport.value.on('input-all', onInputReport)
@@ -1198,10 +1198,11 @@ useTransportWebHID('v8', async (instance) => {
 onMounted(() => {
   userStore.fetchLatestVersion()
   autofit.init({
-    designHeight: 1080,
-    designWidth: 1920,
-    renderDom: '.hid-container',
+    dh: 1080,
+    dw: 1920,
+    el: '#app',
     resize: true,
+    allowScroll: true,
   })
 })
 
