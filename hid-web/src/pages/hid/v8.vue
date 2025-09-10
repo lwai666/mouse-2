@@ -1906,8 +1906,7 @@ provide('createHong', createHong)
                       <span style="border: 0; justify-content: flex-start; background: transparent">灵敏度设置</span>
                     </div>
 
-                    <ElDropdown class="" trigger="click" popper-class="custom-popper custom-dropdown-popper" @command="insertMacro">
-                      <!-- <ElButton class="bg-white text-base font-bold" color="#e83ff4" plain :icon="ArrowRight" circle size="small" /> -->
+                    <ElDropdown :teleported="false" class="" trigger="click" popper-class="custom-popper custom-dropdown-popper" @command="insertMacro">
                       <div class="flex items-center justify-end" style="width: 122px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
                         插入
                         <ElIcon style="margin-left: 10px;" size="20" color="#DAFF00">
