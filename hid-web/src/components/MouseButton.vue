@@ -8,8 +8,8 @@ const props = withDefaults(defineProps<Props>(), {})
 const emit = defineEmits(['change'])
 // const { t } = useI18n()
 
-const dotsCleanup = inject<Ref<() => void>>('dotsCleanup', ref(() => {}))
-const createConnection = inject<() => void>('createConnection', () => {})
+// const dotsCleanup = inject<Ref<() => void>>('dotsCleanup', ref(() => {}))
+// const createConnection = inject<() => void>('createConnection', () => {})
 
 interface Props {
   value: Record<string, number>
@@ -59,12 +59,12 @@ function onClick(id?: string) {
 
   // 如果 showList 有就显示连线， 如果没有就隐藏连线
   if (id) {
-    if (showList && showList[0].id === id) {
-      nextTick(() => setTimeout(createConnection, 100))
-    }
-    else {
-      dotsCleanup.value()
-    }
+    // if (showList && showList[0].id === id) {
+    //   nextTick(() => setTimeout(createConnection, 100))
+    // }
+    // else {
+    //   dotsCleanup.value()
+    // }
   }
 
   if (showList && showList.length === 1 && showList[0].id === id) {

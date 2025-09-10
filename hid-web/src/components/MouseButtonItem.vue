@@ -37,7 +37,7 @@ const options = ref()
 watch(() => profileInfo?.macroList, () => {
   const children = constants.mouseKeyOptions.find(item => item.value === 1999)?.children
   children?.forEach((item, index) => {
-    item.label = profileInfo?.macroList[index]?.name!
+    item.label = profileInfo?.macroList[index]?.name
   })
   options.value = deepClone(constants.mouseKeyOptions)
   console.log(options.value, 'options.value')
@@ -123,6 +123,13 @@ function changeActive1(type) {
   active1.value = type
 }
 
+const cascaderTopMapp: Record<number, string> = {
+  2: '204px',
+  3: '158px',
+  4: '158px',
+  5: '88px',
+} as const
+
 defineExpose({ mouseButtonCascaderRef })
 </script>
 
@@ -130,7 +137,7 @@ defineExpose({ mouseButtonCascaderRef })
   <div class="mouse-button-item">
     <div :class="`${cursorClass} ${colorClass}`" class="mb-1 flex items-center">
       <!-- <div :key="props.id" :class="`${bgClass} ${props.disabled ? '' : 'dot-b'}`" class="z-2 mr-2 h-18px w-18px rounded-50%" :data-key-id="props.id" /> -->
-      <div v-if="props.status === 'connecting'" class="mouse-button-item-radio-group">
+      <div v-if="props.status === 'connecting'" class="absolute top-[-20px]">
         <div class="flex items-center justify-center">
           <div class="absolute left-[-105px] flex items-center justify-center">
             <p v-if="active1 === 'active1'" class="absolute left-[-190px]" style="color: #CF0EFF">
@@ -141,7 +148,7 @@ defineExpose({ mouseButtonCascaderRef })
               :src="active1 === 'active1' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
               alt="" srcset="" @click="changeActive1('active1')"
             >
-            <div style="width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center">
+            <div style="z-index: 1; width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click.stop="onChangeRadioGroup">
               执行
             </div>
           </div>
@@ -177,17 +184,17 @@ defineExpose({ mouseButtonCascaderRef })
               :src="active === 'active' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
               alt="" srcset="" @click="changeActive('active')"
             >
-            <div class="items-center justify-center" style="width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 4 }" style="width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px">
               宏执行
               <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
               {{ t('mouseConnection.times') }}
             </div>
-            <div style="width: 49.06px;height: 21.68px;border-radius: 14px;background: #0E5383;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center">
+            <div style="width: 49.06px;height: 21.68px;border-radius: 14px;background: #0E5383;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click="onEnterKey">
               确认
             </div>
           </div>
           <div class="mb-3 ml-11 mt-5 flex items-center">
-            <div class="items-center justify-center" style="text-align: right; width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 1 }" style="text-align: right; width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 1">
               宏执行
               N
               {{ t('mouseConnection.times') }}
@@ -196,13 +203,13 @@ defineExpose({ mouseButtonCascaderRef })
           <div class="h-60px w-50px" />
 
           <div class="mb-3 flex items-center">
-            <div class="items-center justify-center" style="text-align: right; width: 195px;height: 30px;display: flex;background: #333;border-radius: 14px">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 2 }" style="text-align: right; width: 195px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 2">
               宏执行直至按键释放
             </div>
           </div>
 
           <div class="mb-3 flex items-center">
-            <div class="items-center justify-center" style="text-align: right; width: 249px;height: 30px;display: flex;background: #333;border-radius: 14px">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 3 }" style="text-align: right; width: 249px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 3">
               宏执行直至按键再次被按下
             </div>
           </div>
@@ -227,7 +234,15 @@ defineExpose({ mouseButtonCascaderRef })
 
 <style>
 .mouse-button-item {
-  .mouse-button-item-radio-group .el-radio {
+  .hover:hover {
+    background: #daff00 !important;
+    color: #333 !important;
+  }
+  .hover_active {
+    background: #daff00 !important;
+    color: #333 !important;
+  }
+  /* .mouse-button-item-radio-group .el-radio {
     --el-radio-text-color: #fff;
 
     &:hover {
@@ -236,7 +251,7 @@ defineExpose({ mouseButtonCascaderRef })
     .el-radio__input.is-checked + .el-radio__label:hover {
       color: #e83ff4 !important;
     }
-  }
+  } */
   /* .el-input.is-disabled .el-input__inner {
     -webkit-text-fill-color: #fff;
     cursor: not-allowed;

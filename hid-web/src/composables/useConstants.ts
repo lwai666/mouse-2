@@ -95,7 +95,7 @@ export function useConstants(t: any) {
       },
       {
         value: 1999,
-        label: '录制宏',
+        label: '宏',
         // hidden: true, // 隐藏
         children: [
           {

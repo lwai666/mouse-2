@@ -455,9 +455,9 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
 
 const mouseButtonRef = ref()
 const dotsConnections = ref()
-let dotsAddConnection: any = () => {}
-let dotsRemoveConnection: any = () => {}
-let dotsCleanup = ref(() => {})
+// let dotsAddConnection: any = () => {}
+// let dotsRemoveConnection: any = () => {}
+// let dotsCleanup = ref(() => {})
 
 // 离开页面删除连线
 onBeforeRouteLeave(() => {
@@ -465,106 +465,106 @@ onBeforeRouteLeave(() => {
 })
 
 function restartConnection() {
-  dotsCleanup.value()
-  createConnection()
+  // dotsCleanup.value()
+  // createConnection()
 }
 
-function setConnectionLineOpacity(opacity: string, exclude: number = 0) {
-  for (let i = 0; i < dotsConnections.value.length - exclude; i++) {
-    dotsConnections.value[i].line.style.opacity = opacity
-  }
-}
+// function setConnectionLineOpacity(opacity: string, exclude: number = 0) {
+//   for (let i = 0; i < dotsConnections.value.length - exclude; i++) {
+//     dotsConnections.value[i].line.style.opacity = opacity
+//   }
+// }
 
 /** 创建连线 */
-function createConnection() {
-  let connectioning = false
-  let _oldConnection: ConnectionType | undefined
-  const { connections, addConnection, removeConnection, cleanup } = useDotsConnection({
-    rules: [
-      // 支持 class 包含 dot-a 的标签连接到 dot-b 的标签
-      { from: '.dot-a', to: ['.dot-b'], maxConnections: { from: 4, to: 1 } },
-      // { from: '.dot-b', to: ['.dot-a'], maxConnections: { from: 1, to: 1 } },
-    ],
-    onConnection: (connection: DotConnection) => {
-      if (!connectioning) {
-        mouseButtonRef.value.onConnection(Number(connection.start.dataset.macroIndex), connection.end.dataset.keyId)
-        setConnectionLineOpacity('0', 1)
-      }
-    },
-    onConnectionUpdate: async (newConnection: DotConnection, oldConnection: DotConnection) => {
-      // const _oldMacro = profileInfo.macroList[Number(oldConnection.start.dataset.macroIndex)]
-      // const _oldConnection = removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === oldConnection.end.dataset.keyId))
+// function createConnection() {
+//   let connectioning = false
+//   let _oldConnection: ConnectionType | undefined
+//   const { connections, addConnection, removeConnection, cleanup } = useDotsConnection({
+//     rules: [
+//       // 支持 class 包含 dot-a 的标签连接到 dot-b 的标签
+//       { from: '.dot-a', to: ['.dot-b'], maxConnections: { from: 4, to: 1 } },
+//       // { from: '.dot-b', to: ['.dot-a'], maxConnections: { from: 1, to: 1 } },
+//     ],
+//     onConnection: (connection: DotConnection) => {
+//       if (!connectioning) {
+//         mouseButtonRef.value.onConnection(Number(connection.start.dataset.macroIndex), connection.end.dataset.keyId)
+//         setConnectionLineOpacity('0', 1)
+//       }
+//     },
+//     onConnectionUpdate: async (newConnection: DotConnection, oldConnection: DotConnection) => {
+//       // const _oldMacro = profileInfo.macroList[Number(oldConnection.start.dataset.macroIndex)]
+//       // const _oldConnection = removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === oldConnection.end.dataset.keyId))
 
-      // console.log("_oldConnection========", _oldConnection)
-      // console.log('修改连线-恢复默认按键===========', _oldConnection)
-      // const oldKeyId = oldConnection.end.dataset.keyId as MouseButtonType
-      // await onMouseButtonChange(oldKeyId, mouseButton.indexOf(oldKeyId))
+//       // console.log("_oldConnection========", _oldConnection)
+//       // console.log('修改连线-恢复默认按键===========', _oldConnection)
+//       // const oldKeyId = oldConnection.end.dataset.keyId as MouseButtonType
+//       // await onMouseButtonChange(oldKeyId, mouseButton.indexOf(oldKeyId))
 
-      console.log('修改连线-添加组合宏键===========', Number(newConnection.start.dataset.macroIndex), newConnection.end.dataset.keyId)
-      if (_oldConnection) {
-        const newKeyId = newConnection.end.dataset.keyId as MouseButtonType
-        const newKeyValue = 2000 + Number(newConnection.start.dataset.macroIndex)
-        await onMouseButtonChange(newKeyId, newKeyValue, 1999, {
-          cycleMode: _oldConnection.cycleMode,
-          cycleTimes: _oldConnection.cycleTimes,
-          macroIndex: Number(newConnection.start.dataset.macroIndex),
-        })
-      }
-      else {
-        if (!connectioning) {
-          mouseButtonRef.value.onConnection(Number(newConnection.start.dataset.macroIndex), newConnection.end.dataset.keyId)
-          setConnectionLineOpacity('0', 1)
-        }
-      }
-    },
-    onConnectionLeave: async (connection: DotConnection) => {
-      console.log('离开连线-恢复默认按键===========', connection)
-      const oldKeyId = connection.end.dataset.keyId as MouseButtonType
-      const _oldMacro = profileInfo.macroList[Number(connection.start.dataset.macroIndex)]
-      const removeIndex = _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId)
+//       console.log('修改连线-添加组合宏键===========', Number(newConnection.start.dataset.macroIndex), newConnection.end.dataset.keyId)
+//       if (_oldConnection) {
+//         const newKeyId = newConnection.end.dataset.keyId as MouseButtonType
+//         const newKeyValue = 2000 + Number(newConnection.start.dataset.macroIndex)
+//         await onMouseButtonChange(newKeyId, newKeyValue, 1999, {
+//           cycleMode: _oldConnection.cycleMode,
+//           cycleTimes: _oldConnection.cycleTimes,
+//           macroIndex: Number(newConnection.start.dataset.macroIndex),
+//         })
+//       }
+//       else {
+//         if (!connectioning) {
+//           mouseButtonRef.value.onConnection(Number(newConnection.start.dataset.macroIndex), newConnection.end.dataset.keyId)
+//           setConnectionLineOpacity('0', 1)
+//         }
+//       }
+//     },
+//     onConnectionLeave: async (connection: DotConnection) => {
+//       console.log('离开连线-恢复默认按键===========', connection)
+//       const oldKeyId = connection.end.dataset.keyId as MouseButtonType
+//       const _oldMacro = profileInfo.macroList[Number(connection.start.dataset.macroIndex)]
+//       const removeIndex = _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId)
 
-      if (userStore.mouseButtonStatus === 'connecting') {
-        mouseButtonRef.value.resetConnection()
-        setConnectionLineOpacity('1', 1)
-        return
-      }
+//       if (userStore.mouseButtonStatus === 'connecting') {
+//         mouseButtonRef.value.resetConnection()
+//         setConnectionLineOpacity('1', 1)
+//         return
+//       }
 
-      if (removeIndex !== -1) {
-        _oldConnection = removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId))
-        await sendKeyMacro(oldKeyId, mouseButton.indexOf(oldKeyId))
-      }
-    },
-    // onConnectionRemove: async (connection: DotConnection) => {
-    //   console.log('删除连线-恢复默认按键===========', connection)
-    //   const oldKeyId = connection.end.dataset.keyId as MouseButtonType
-    //   const _oldMacro = profileInfo.macroList[Number(connection.start.dataset.macroIndex)]
-    //   const removeIndex = _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId)
+//       if (removeIndex !== -1) {
+//         _oldConnection = removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId))
+//         await sendKeyMacro(oldKeyId, mouseButton.indexOf(oldKeyId))
+//       }
+//     },
+//     // onConnectionRemove: async (connection: DotConnection) => {
+//     //   console.log('删除连线-恢复默认按键===========', connection)
+//     //   const oldKeyId = connection.end.dataset.keyId as MouseButtonType
+//     //   const _oldMacro = profileInfo.macroList[Number(connection.start.dataset.macroIndex)]
+//     //   const removeIndex = _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId)
 
-    //   // 删除连线中
-    //   if (removeIndex === -1) {
-    //     mouseButtonRef.value.resetConnection()
-    //     nextTick(() => setTimeout(restartConnection, 200))
-    //   }
-    //   // 删除已连线
-    //   else {
-    //     removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId))
-    //     await onMouseButtonChange(oldKeyId, mouseButton.indexOf(oldKeyId))
-    //   }
-    // },
-  })
-  dotsConnections.value = connections.value
-  dotsAddConnection = addConnection
-  dotsRemoveConnection = removeConnection
-  dotsCleanup.value = cleanup
+//     //   // 删除连线中
+//     //   if (removeIndex === -1) {
+//     //     mouseButtonRef.value.resetConnection()
+//     //     nextTick(() => setTimeout(restartConnection, 200))
+//     //   }
+//     //   // 删除已连线
+//     //   else {
+//     //     removeItem(_oldMacro.connections, _oldMacro.connections.findIndex(item => item.keyid === connection.end.dataset.keyId))
+//     //     await onMouseButtonChange(oldKeyId, mouseButton.indexOf(oldKeyId))
+//     //   }
+//     // },
+//   })
+//   dotsConnections.value = connections.value
+//   dotsAddConnection = addConnection
+//   dotsRemoveConnection = removeConnection
+//   dotsCleanup.value = cleanup
 
-  connectioning = true
-  profileInfo.macroList.forEach((macro, macroIndex) => {
-    macro.connections.forEach(({ keyid }) => {
-      addConnection(`[data-macro-index="${macroIndex}"]`, `[data-key-id="${keyid}"]`)
-    })
-  })
-  connectioning = false
-}
+//   connectioning = true
+//   profileInfo.macroList.forEach((macro, macroIndex) => {
+//     macro.connections.forEach(({ keyid }) => {
+//       addConnection(`[data-macro-index="${macroIndex}"]`, `[data-key-id="${keyid}"]`)
+//     })
+//   })
+//   connectioning = false
+// }
 
 /** **************** 连线逻辑 end */
 
@@ -699,31 +699,32 @@ async function onMouseButtonChange(id: MouseButtonType, value: number, parentVal
     if (parentValue === 1000) {
       await sendMultimediaMacro(id, value)
     }
-    // else if (parentValue === 1999 && connectionData) {
-    //   await sendConnectionMacro(id, value, connectionData)
-    // }
+    else if (parentValue === 1999 && connectionData) {
+      await sendConnectionMacro(id, value, connectionData)
+    }
   }
   else {
     await sendKeyMacro(id, value)
   }
 
   onExecutionSuccess()
-  nextTick(() => setTimeout(restartConnection, 400))
+  // nextTick(() => setTimeout(restartConnection, 400))
 }
 
 /** 发送设置组合键宏 */
-// async function sendConnectionMacro(id: MouseButtonType, value: number, data: { cycleTimes: number, cycleMode: number, macroIndex: number }) {
-//   const index = mouseButton.indexOf(id)
-//   console.log('设置组合键宏========')
-//   await transport.value.send([0x08, 0x00, 1, data.cycleMode, data.cycleTimes, index, data.macroIndex])
-//   profileInfo[id] = value
-//   profileInfo.macroList[data.macroIndex].connections.push({
-//     cycleMode: data.cycleMode,
-//     cycleTimes: data.cycleTimes,
-//     keyid: id,
-//   })
-//   console.log('组合键宏已设置======', profileInfo)
-// }
+async function sendConnectionMacro(id: MouseButtonType, value: number, data: { cycleTimes: number, cycleMode: number, macroIndex: number }) {
+  console.log(id, value, data, 'datadata')
+  const index = mouseButton.indexOf(id)
+  console.log('设置组合键宏========')
+  await transport.value.send([0x08, 0x00, 1, data.cycleMode, data.cycleTimes, index, data.macroIndex])
+  profileInfo[id] = value
+  profileInfo.macroList[data.macroIndex].connections.push({
+    cycleMode: data.cycleMode,
+    cycleTimes: data.cycleTimes,
+    keyid: id,
+  })
+  console.log('组合键宏已设置======', profileInfo)
+}
 
 // 发送多媒体宏
 function sendMultimediaMacro(id: MouseButtonType, value: number) {
@@ -735,6 +736,7 @@ function sendMultimediaMacro(id: MouseButtonType, value: number) {
 
 // 发送鼠标宏
 async function sendKeyMacro(id: MouseButtonType, value: number) {
+  console.log(id, value, '1112')
   const index = mouseButton.indexOf(id)
   console.log('发送鼠标宏======')
   await transport.value.send([0x09, 0x00, 0x01, index, value])
@@ -923,7 +925,7 @@ function handleKeyUp(event: any) {
   }
 }
 
-const keyboardRecordingListRef = ref()
+// const keyboardRecordingListRef = ref()
 
 // watch(() => recordedKeys.value.length, () => {
 //   if (isRecording.value) {
@@ -1132,7 +1134,7 @@ async function addMacro() {
   nextTick(() => {
     restartConnection()
     onExecutionSuccess()
-    onMacroButtonMouseUp(currentMacroButtonRecordedKeyIndex.value, false)
+    onMacroButtonMouseUp(macroIndex, false)
   })
 }
 
@@ -1162,7 +1164,7 @@ function onMacroButtonMouseUp(index: number, flag) {
   }
   else {
     currentMacroButtonRecordedKeyIndex.value = index
-    recordedKeys.value = profileInfo.macroList[index].value.map(item => ({
+    recordedKeys.value = profileInfo.macroList[index]?.value.map(item => ({
       key: keyCodeToText(item.keyCode, item.keyStatus),
       type: [0x01, 0xA1, 0xB1].includes(item.keyStatus) ? 1 : 0,
       keyCode: item.keyCode,
@@ -1301,8 +1303,8 @@ onUnmounted(() => {
 // 使用 provide 提供数据
 provide<Ref<TransportWebHIDInstance>>('transport', transport)
 // 选择鼠标键设置连线透明度0
-provide('dotsCleanup', dotsCleanup)
-provide('createConnection', createConnection)
+// provide('dotsCleanup', dotsCleanup)
+// provide('createConnection', createConnection)
 
 const hover = ref('')
 // const hoverSrc = ref(wenhaoActive)
@@ -1642,8 +1644,6 @@ provide('createHong', createHong)
         <div class="flex" style="align-items: center;font-size: 16px;">
           {{ profileInfo.battery_level }}%
           <!-- 电量图标 -->
-          <!-- v-if="chargingStatus === 1" -->
-          <!-- :class="profileInfo.battery_level == 100 ? 'color-green-500' : 'color-yellow-500'"  -->
           <div v-if="chargingStatus === 1" class="h-6 w-6" :class="profileInfo.battery_level === 100 ? 'color-green-500' : 'color-yellow-500'">
             <svg
               t="1751002332004" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
@@ -2031,10 +2031,21 @@ provide('createHong', createHong)
                   <div class="relative flex">
                     <!-- @scroll="scroll" -->
                     <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
-                      <div ref="innerRef">
-                        <!-- hong_active -->
-                        <div v-for="(item, index) in recordedKeys" :key="index" class="hong_active" :class="[recordedKeyHighlightIndex === index ? 'hong' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;" @click="recordedKeyHighlightIndex = index">
-                          <!-- v-if="item.type" -->
+                      <ul ref="innerRef" class="relative">
+                        <!-- <div v-if="isDragging" class="absolute z-10 h-[2px] w-full bg-blue-500 transition-all duration-200" :style="{ top: `${dropLinePosition}px` }" /> -->
+                        <li
+                          v-for="(item, index) in recordedKeys"
+                          :key="index"
+                          class="hong_active"
+                          :class="[recordedKeyHighlightIndex === index ? 'hong' : '']"
+                          style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;"
+                          draggable="true"
+                          @click="recordedKeyHighlightIndex = index"
+                          @dragstart="onDragStart($event, index)"
+                          @dragover="onDragOver($event, index)"
+                          @dragenter.prevent
+                          @drop="onDrop($event, index)"
+                        >
                           <div class="flex items-center">
                             <ElSpace>
                               <ElIcon size="20" class="mr-2 mt-1">
@@ -2067,8 +2078,8 @@ provide('createHong', createHong)
                               <Delete />
                             </ElIcon>
                           </ElSpace>
-                        </div>
-                      </div>
+                        </li>
+                      </ul>
                     </ElScrollbar>
                     <!-- <el-slider vertical height="367px" class="absolute" /> -->
                   </div>
