@@ -4,7 +4,7 @@ import type { DotConnection } from '~/composables/useDotsConnection'
 import type { ConnectionType, Macro, ProfileInfoType, ProfileType } from '~/types'
 import type { TransportWebHIDInstance } from '~/utils/hidHandle'
 
-import { ArrowDownBold, ArrowUpBold, Close, Delete, Download, Minus, Plus, Share, Upload } from '@element-plus/icons-vue'
+import { ArrowDownBold, ArrowRightBold, Close, Delete, Download, Minus, Plus, Share, Upload } from '@element-plus/icons-vue'
 import { useClipboard } from '@vueuse/core'
 
 import autofit from 'autofit.js'
@@ -1200,7 +1200,7 @@ onMounted(() => {
   autofit.init({
     dh: 1080,
     dw: 1920,
-    el: '.hid-container',
+    el: '#app',
     resize: true,
     allowScroll: true,
   })
@@ -1234,10 +1234,16 @@ function mouseenter(type) {
 // })
 
 const radioActive = ref(false)
-
 function radioChange() {
   radioActive.value = !radioActive.value
 }
+
+// 动态灵敏度
+const radioActive1 = ref(false)
+function radioChange1() {
+  radioActive1.value = !radioActive1.value
+}
+
 const activeBg = ref('performance')
 
 function activeBgChange(type) {
@@ -1495,25 +1501,39 @@ async function onChange(macroName: string, index: number) {
   setLoadingStatus()
 }
 
-provide('createHong', createHong)
+const currentActive = ref(0)
+const modeShow = ref(false)
 
-// function createHong() {
-//   let connectioning = false
-//   let _oldConnection: ConnectionType | undefined
-//   const { connections, addConnection, removeConnection, cleanup } = useDotsConnection({
-//     rules: [
-//       // 支持 class 包含 dot-a 的标签连接到 dot-b 的标签
-//       { from: '.dot-a', to: ['.dot-b'], maxConnections: { from: 4, to: 1 } },
-//       // { from: '.dot-b', to: ['.dot-a'], maxConnections: { from: 1, to: 1 } },
-//     ],
-//     onConnection: (connection: DotConnection) => {
-//       if (!connectioning) {
-//         mouseButtonRef.value.onConnection(Number(connection.start.dataset.macroIndex), connection.end.dataset.keyId)
-//         setConnectionLineOpacity('0', 1)
-//       }
-//     }
-//   },
-// }
+function observeWidthChange(element) {
+  // 检查浏览器是否支持ResizeObserver
+  if (typeof ResizeObserver !== 'undefined') {
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width
+
+        if (width < 200) {
+          modeShow.value = false
+        }
+        if (width > 200) {
+          modeShow.value = true
+        }
+      }
+    })
+    // 开始观察元素
+    observer.observe(element)
+    // 返回一个用于停止观察的函数
+    return () => observer.disconnect()
+  }
+}
+
+function changeModeShow() {
+  observeWidthChange(document.querySelector('.mode-box'))
+  // setTimeout(() => {
+  //   modeShow.value = !modeShow.value
+  // }, 250)
+}
+
+provide('createHong', createHong)
 </script>
 
 <template>
@@ -1630,7 +1650,7 @@ provide('createHong', createHong)
           <span>恢复出厂</span>
         </div>
       </div>
-      <div class="absolute right-[50px] top-[-35px] flex items-center">
+      <div class="absolute right-[90px] top-[-35px] flex items-center">
         <div v-if="loadingShow" class="flex items-center">
           <p style="font-size: 16px;color: #DAFF00;" class="mr-3">
             设置已保存
@@ -1650,7 +1670,7 @@ provide('createHong', createHong)
             <div :class="{ activeBg: activeBg === 'performance' }" @click="activeBgChange('performance')">
               性能
             </div>
-            <div :class="{ activeBg: activeBg === 'hong' }" style="margin-bottom: 10px;" @click="activeBgChange('hong')">
+            <div :class="{ activeBg: activeBg === 'hong' }" @click="activeBgChange('hong')">
               宏
             </div>
             <div :class="{ activeBg: activeBg === 'advanced' }" @click="activeBgChange('advanced')">
@@ -1924,9 +1944,9 @@ provide('createHong', createHong)
                     </div>
 
                     <ElDropdown :teleported="false" class="" trigger="click" popper-class="custom-popper custom-dropdown-popper" @command="insertMacro">
-                      <div class="flex items-center justify-end" style="width: 122px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
+                      <div class="flex items-center justify-center" style="width: 122px;height: 36px;  background-color: #242424;;border-radius: 30px">
                         插入
-                        <ElIcon style="margin-left: 10px;" size="20" color="#DAFF00">
+                        <ElIcon class="absolute right-3" style="margin-left: 10px;" size="20" color="#DAFF00">
                           <!-- <ArrowUpBold /> -->
                           <ArrowDownBold />
                         </ElIcon>
@@ -2015,7 +2035,7 @@ provide('createHong', createHong)
                 <div style="margin-left: 20px;flex-direction: column; justify-content: end;" class="flex">
                   <div class="flex items-center" style="width: 123px;height: 123px; background-color: #242424;flex-direction: column; padding-top: 25px;border-radius: 10px;" :style="{ background: isRecording ? '#DAFF00' : '#242424', color: isRecording ? '#333' : '#fff' }" @click="onClickPecordBtn">
                     <div style="width: 17px;height: 17px;border-radius: 50%; background: #FF0000; margin-bottom: 10px;" />
-                    <div>开始</div>
+                    <div>{{ isRecording ? '停止' : '开始' }}</div>
                     <div>录制</div>
                   </div>
                   <div style="height: 63px; line-height: 63px; text-align: center; width: 123px;border: 1px solid #DAFF00; border-radius: 10px;margin-top: 20px;background:#242424 ;" @click="addMacro">
@@ -2033,13 +2053,13 @@ provide('createHong', createHong)
                       </div>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
-                        @click="radioChange"
+                        @click="radioChange1"
                       >
                         <transition name="right-fade">
                           <div
-                            :key="radioActive" class="absolute" :class="[radioActive ? 'right-0.5' : 'left-0.5']"
+                            :key="radioActive1" class="absolute" :class="[radioActive1 ? 'right-0.5' : 'left-0.5']"
                             style="width: 19px;height: 19px;border-radius: 50%;"
-                            :style="{ &quot;background-color&quot;: radioActive ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
+                            :style="{ &quot;background-color&quot;: radioActive1 ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
                           />
                         </transition>
                       </div>
@@ -2090,9 +2110,9 @@ provide('createHong', createHong)
                   </div>
                 </div>
                 <div v-show="showMouseenter === 'show'" class="absolute right-0 flex justify-between" style="width:1250px">
-                  <!-- <div class="h-100% w-100% absolute" style="z-index:1; background: #0D0D0D95;"></div> -->
+                  <div v-if="!radioActive1" class="absolute h-100% w-100%" style="z-index:1; background: #0D0D0D;" />
                   <div style="padding: 25px 25px 0 25px; flex:1;">
-                    <div class="flex items-center">
+                    <div class="ml-25 flex items-center">
                       <div class="icon-box">
                         <ElIcon size="18">
                           <Plus />
@@ -2103,28 +2123,15 @@ provide('createHong', createHong)
                       </div>
                       <div class="ml-15 flex items-center">
                         <span class="mr-3">选择模板</span>
-                        <div class="charu relative" style="overflow: hidden;">
-                          <div class="flex items-center justify-end" style="width: 112px;height: 36px; padding-right: 10px; background-color: #242424;;border-radius: 30px">
-                            经典
-                            <ElIcon style="margin-left: 10px;" size="20" color="#DAFF00">
-                              <!-- <ArrowUpBold /> -->
-                              <ArrowDownBold />
-                            </ElIcon>
-                          </div>
-                          <ul class="absolute" style="width: 100%;background: #212121;margin-top: 3px;z-index: 10;padding: 10px 3px 0;border-radius: 10px;">
-                            <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                              经典
-                            </li>
-                            <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                              自然
-                            </li>
-                            <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                              跳跃
-                            </li>
-                            <li style="width: 115px; height: 30px; text-align: center;line-height: 30px;border-radius: 5px;margin-bottom: 10px;">
-                              自定义
-                            </li>
-                          </ul>
+                        <div class="mode-box relative flex items-center pl-10" style="width:123px; height: 32px;  background-color: #242424;border-radius: 30px" @mouseenter="changeModeShow">
+                          <span v-if="currentActive === 0 || modeShow" class="mr-5">经典</span>
+                          <span v-if="currentActive === 1 || modeShow" class="mr-5">自然</span>
+                          <span v-if="currentActive === 2 || modeShow" class="mr-5">跳跃</span>
+                          <span v-if="currentActive === 3 || modeShow" class="mr-5">无</span>
+                          <ElIcon class="absolute right-3" style="margin-left: 10px;" size="20" color="#DAFF00">
+                            <ArrowDownBold v-if="!modeShow" />
+                            <ArrowRightBold v-else />
+                          </ElIcon>
                         </div>
                       </div>
                     </div>
@@ -2523,6 +2530,10 @@ provide('createHong', createHong)
     flex-direction: column;
     justify-content: space-between;
 
+    .block_item {
+      border-radius: 5px;
+    }
+
     .block_item.active {
       color: #333;
       background-color: #daff00 !important;
@@ -2616,6 +2627,18 @@ provide('createHong', createHong)
 
   .logo-box:hover {
     height: 254px;
+  }
+
+  .mode-box {
+    transition: all 0.5s ease; /* 平滑过渡效果 */
+  }
+
+  .mode-box:hover {
+    width: 260px !important;
+  }
+
+  .mode-box span:hover {
+    color: #daff00;
   }
 
   .charu:hover {
