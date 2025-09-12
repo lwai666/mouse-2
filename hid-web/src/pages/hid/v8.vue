@@ -21,17 +21,16 @@ import * as echarts from 'echarts/core'
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 // 引入 Canvas 渲染器，注意引入 CanvasRenderer 或者 SVGRenderer 是必须的一步
 import { CanvasRenderer } from 'echarts/renderers'
-import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, ElLoading, ElProgress, ElScrollbar, ElSpace } from 'element-plus'
+import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, ElLoading, ElProgress, ElScrollbar, ElSlider, ElSpace } from 'element-plus'
 
 import { messageBox } from '~/components/CustomMessageBox'
+import { loadLanguageAsync } from '~/modules/i18n'
+
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, removeAt9th, removeItem, sleep } from '~/utils'
 
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
-// import wenhao from '/public/v9/wenhao.png'
-// import wenhaoActive from '/public/v9/wenhao_active.png'
-
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // const scale = ref(`scale(${document.body.clientWidth / 1920})`)
 
@@ -55,8 +54,6 @@ const mouseButton: MouseButtonType[] = ['Left', 'Right', 'Wheel', 'Forward', 'Ba
 
 const router = useRouter()
 const userStore = useUserStore()
-
-const macroButtonRef = ref()
 
 const transport = ref()
 
@@ -828,20 +825,29 @@ function handleKeyUp(event: any) {
     })
   }
 }
+const keyboardRecordingListScrollPercentage = ref(0)
 
-// const keyboardRecordingListRef = ref()
+const keyboardRecordingListRef = ref()
 
-// watch(() => recordedKeys.value.length, () => {
-//   if (isRecording.value) {
-//     keyboardRecordingListScrollPercentage.value = 0
-//     if (keyboardRecordingListRef.value) {
-//       const maxScrollTop = keyboardRecordingListRef.value.scrollHeight - keyboardRecordingListRef.value.clientHeight
-//       keyboardRecordingListRef.value.scrollTo({
-//         top: ((100 - keyboardRecordingListScrollPercentage.value) / 100) * maxScrollTop,
-//       })
-//     }
-//   }
-// })
+watch(keyboardRecordingListScrollPercentage, () => {
+  if (keyboardRecordingListRef.value) {
+    const maxScrollTop = keyboardRecordingListRef.value.scrollHeight - keyboardRecordingListRef.value.clientHeight
+    keyboardRecordingListRef.value.scrollTo({
+      top: ((100 - keyboardRecordingListScrollPercentage.value) / 100) * maxScrollTop,
+    })
+  }
+})
+watch(() => recordedKeys.value.length, () => {
+  if (isRecording.value) {
+    keyboardRecordingListScrollPercentage.value = 0
+    if (keyboardRecordingListRef.value) {
+      const maxScrollTop = keyboardRecordingListRef.value.scrollHeight - keyboardRecordingListRef.value.clientHeight
+      keyboardRecordingListRef.value.scrollTo({
+        top: ((100 - keyboardRecordingListScrollPercentage.value) / 100) * maxScrollTop,
+      })
+    }
+  }
+})
 
 const inputRecordedKeyRef = ref()
 const inputIntervalTimeRef = ref()
@@ -925,13 +931,14 @@ async function onPairingConnection() {
   }
   window.addEventListener('keydown', handleSpaceKey)
 
-  // connection()
+  connection()
+  window.removeEventListener('keydown', handleSpaceKey)
 
-  messageBox.confirm(t('message.pairing_connection'), { container: '.middle-container' })
-    .then(connection)
-    .finally(() => {
-      window.removeEventListener('keydown', handleSpaceKey)
-    })
+  // messageBox.confirm(t('message.pairing_connection'), { container: '.middle-container' })
+  //   .then(connection)
+  //   .finally(() => {
+  //     window.removeEventListener('keydown', handleSpaceKey)
+  //   })
 }
 
 async function onRestoreFactorySettings() {
@@ -1528,9 +1535,26 @@ function observeWidthChange(element) {
 
 function changeModeShow() {
   observeWidthChange(document.querySelector('.mode-box'))
-  // setTimeout(() => {
-  //   modeShow.value = !modeShow.value
-  // }, 250)
+}
+
+const selectLanguageList = ref([
+  { title: '简体中文', img: '/flag/CN.png', language: 'zh-CN' },
+  { title: 'Deutsch', img: '/flag/DE.png', language: 'de-DE' },
+  { title: 'English', img: '/flag/US.png', language: 'en-US' },
+  { title: '한국어', img: '/flag/KR.png', language: 'ko-KR' },
+  { title: '日本語', img: '/flag/JP.png', language: 'ja-JP' },
+])
+
+toggleLocales(locale.value)
+async function toggleLocales(language: string) {
+  await loadLanguageAsync(language)
+  locale.value = language
+  const list = JSON.parse(JSON.stringify(selectLanguageList.value))
+  const index = list.findIndex((item) => {
+    return item.language === language
+  })
+  list.splice(0, 0, list.splice(index, 1)[0])
+  selectLanguageList.value = list
 }
 
 provide('createHong', createHong)
@@ -1543,11 +1567,11 @@ provide('createHong', createHong)
     </a>
 
     <div class="logo-box absolute right-90px top-50px">
-      <img class="h-38px w-38px" src="/flag/CN.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; ">
-      <img class="h-38px w-38px" src="/flag/DE.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover; ">
-      <img class="h-38px w-38px" src="/flag/JP.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;">
-      <img class="h-38px w-38px" src="/flag/KR.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;">
-      <img class="h-38px w-38px" src="/flag/US.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;;">
+      <img v-for="item in selectLanguageList" :key="item.title" class="h-38px w-38px" :src="item.img" :alt="item.title" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales(item.language)">
+      <!-- <img class="h-38px w-38px" src="/flag/DE.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover; " @click="toggleLocales('de-DE')">
+      <img class="h-38px w-38px" src="/flag/JP.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales('ja-JP')">
+      <img class="h-38px w-38px" src="/flag/KR.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales('ko-KR')">
+      <img class="h-38px w-38px" src="/flag/US.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales('en-US')"> -->
     </div>
 
     <div class="profile-item absolute right-190px top-260px w-24% flex items-center">
@@ -1634,8 +1658,8 @@ provide('createHong', createHong)
     <div class="bottom-con relative">
       <div class="config-box">
         <div class="flex items-center" @click="bottomItemChange(0)">
-          <img src="/v9/Motion.png" alt="Motion" style="margin-right: 5px;">
-          <span>运动模式</span>
+          <img :src="`/v9/Motion${bottomItem === 0 ? '_active' : ''}.png`" alt="Motion" style="margin-right: 5px;">
+          <span :style="{ color: bottomItem === 0 ? '#DAFF00' : '' }">运动模式</span>
         </div>
         <div class="flex items-center" @click="bottomItemChange(1)">
           <img :src="`/v9/icon2${profileInfo.sports_arena === 0 ? '' : '_active'}.png`" alt="Motion" style="margin-right: 5px;">
@@ -1650,18 +1674,8 @@ provide('createHong', createHong)
           <span>恢复出厂</span>
         </div>
       </div>
-      <div class="absolute right-[90px] top-[-35px] flex items-center">
-        <div v-if="loadingShow" class="flex items-center">
-          <p style="font-size: 16px;color: #DAFF00;" class="mr-3">
-            设置已保存
-          </p>
-          <AnimateLoading />
-        </div>
 
-        <img src="/v9/setting.png" alt="mouse-card" class="ml-6" @click="toSettings">
-      </div>
-
-      <div class="bottom-box">
+      <div class="bottom-box relative">
         <div class="config-child-box">
           <span v-for="(item, index) in profileList" :key="index" class="ahover" :class="active_profile_index === index ? 'active' : ''" @click="setProfile(index, 'top')">{{ item.title }}</span>
         </div>
@@ -1918,13 +1932,11 @@ provide('createHong', createHong)
                     <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
                       <div ref="innerRef">
                         <template v-for="(item, index) in profileInfo.macroList" :key="index">
-                          <div v-show="item.name || isHovered === index" :class="[currentMacroButtonRecordedKeyIndex === index ? 'hong' : '', isHovered != index ? 'hong_active' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index, true)">
+                          <div v-show="item.name || isHovered === index" class="hong_active" :class="[currentMacroButtonRecordedKeyIndex === index ? 'hong' : '']" style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;" @click="onMacroButtonMouseUp(index, true)">
                             <div v-show="isHovered !== index" @dblclick.stop="isHovered = index">
                               {{ item.name }}
                             </div>
-                            <!--  -->
-                            <!-- v-show="isHovered" -->
-                            <ElInput v-show="isHovered === index" v-model="item.name" class="macro-button-item-input mx-1" :placeholder="item.name" style="width: 100px" :input-style="{ textAlign: 'right' }" @change="onChange(item.name, index)" />
+                            <ElInput v-show="isHovered === index" v-model="item.name" class="macro-button-item-input mx-1" :placeholder="item.name" style="width: 100px" :input-style="{ textAlign: 'right' }" :maxlength="10" @blur="onChange(item.name, index)" />
 
                             <ElIcon size="20" @click.stop="deleteMacro(item)">
                               <Delete />
@@ -1933,7 +1945,6 @@ provide('createHong', createHong)
                         </template>
                       </div>
                     </ElScrollbar>
-                    <!-- <el-slider vertical height="367px" class="absolute" /> -->
                   </div>
                 </div>
                 <div style="width: 617px;margin-left: 60px;">
@@ -1976,9 +1987,8 @@ provide('createHong', createHong)
                     </ElDropdown>
                   </div>
                   <div class="relative flex">
-                    <!-- @scroll="scroll" -->
-                    <ElScrollbar ref="scrollbarRef" height="387px" always style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;" class="right-s-b">
-                      <ul ref="innerRef" class="relative">
+                    <div ref="keyboardRecordingListRef" class="hide-scrollbar right-s-b relative overflow-auto" style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;">
+                      <ul ref="innerRef">
                         <!-- <div v-if="isDragging" class="absolute z-10 h-[2px] w-full bg-blue-500 transition-all duration-200" :style="{ top: `${dropLinePosition}px` }" /> -->
                         <li
                           v-for="(item, index) in recordedKeys"
@@ -2027,7 +2037,10 @@ provide('createHong', createHong)
                           </ElSpace>
                         </li>
                       </ul>
-                    </ElScrollbar>
+                    </div>
+                    <div class="hiddinbg absolute right-[-18px] top-11px h-95%">
+                      <ElSlider v-model="keyboardRecordingListScrollPercentage" vertical :show-tooltip="false" />
+                    </div>
                     <!-- <el-slider vertical height="367px" class="absolute" /> -->
                   </div>
                 </div>
@@ -2162,7 +2175,7 @@ provide('createHong', createHong)
                   </div>
                 </div>
                 <Transition name="slide-right">
-                  <div v-if="showMouseenter === 'showMouseenter'" style="padding: 25px 25px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
+                  <div v-if="showMouseenter === 'showMouseenter'" style="padding: 25px 100px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
                     <div>
                       <div style="font-size: 20px;text-align: left">
                         动态灵敏度
@@ -2187,9 +2200,9 @@ provide('createHong', createHong)
                       />
                     </div>
 
-                    <ElIcon size="40" style="position: absolute; right: 10px; top: 10px;" @click="showMouseenter = 'show'">
+                    <!-- <ElIcon size="40" style="position: absolute; right: 10px; top: 10px;" @click="showMouseenter = 'show'">
                       <Close />
-                    </ElIcon>
+                    </ElIcon> -->
                   </div>
                   <div v-else-if="showMouseenter === 'FPS'" style="width: 50%; padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
                     <div>
@@ -2275,6 +2288,16 @@ provide('createHong', createHong)
               </div>
             </Transition>
           </div>
+        </div>
+        <div class="absolute right-[25px] top-[-56px] flex items-center">
+          <div v-if="loadingShow" class="flex items-center">
+            <p style="font-size: 16px;color: #DAFF00;" class="mr-3">
+              设置已保存
+            </p>
+            <AnimateLoading />
+          </div>
+
+          <img src="/v9/setting.png" alt="mouse-card" class="ml-6" @click="toSettings">
         </div>
       </div>
 
@@ -2368,9 +2391,12 @@ provide('createHong', createHong)
 
   .bottom-con {
     width: 100%;
-    height: 544px;
+    height: 614cm;
     display: flex;
     justify-content: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     /* display: flex;
     flex-direction: column;
     justify-content: center;
@@ -2387,10 +2413,10 @@ provide('createHong', createHong)
     align-items: center;
     margin-bottom: 10px;
     background-color: rgba(255, 255, 255, 0.1);
-    position: absolute;
+    /* position: absolute;
     bottom: 524px;
     left: 50%;
-    margin-left: -497px;
+    margin-left: -497px; */
   }
 
   .bottom-box {
@@ -2404,8 +2430,8 @@ provide('createHong', createHong)
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    bottom: 0px;
+    /* position: absolute;
+    bottom: 0px; */
     /* left: 0; */
   }
 
@@ -2621,7 +2647,7 @@ provide('createHong', createHong)
     transition: all 0.5s ease; /* 平滑过渡效果 */
     border: 1px solid transparent; /* 初始无边框 */
     cursor: pointer; /* 鼠标悬停样式 */
-    height: 54px;
+    height: 46px;
     overflow: hidden;
   }
 
@@ -2665,6 +2691,16 @@ provide('createHong', createHong)
   }
 
   --el-color-primary: #b8e200;
+
+  .hiddinbg {
+    .el-slider {
+      --el-border-color-light: transparent;
+      --el-slider-height: 4px;
+    }
+    .el-slider__bar {
+      background-color: transparent;
+    }
+  }
 
   .el-slider {
     --el-border-color-light: #637806;
