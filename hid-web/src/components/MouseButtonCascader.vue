@@ -8,6 +8,8 @@ const emit = defineEmits(['click', 'change', 'setName'])
 
 const createHong = inject<() => void>('createHong', () => {})
 
+const mouseButtonClickFn = inject<() => void>('mouseButtonClickFn', () => {})
+
 const { t } = useI18n()
 
 interface Option {
@@ -92,7 +94,7 @@ function onClick() {
 const hidden = ref(true)
 
 function onSelect(item: Option, parentValue?: number, index?: number) {
-  console.log(item, 'item')
+  console.log(item, parentValue, index, 'item')
   // if (item.value === 1999) {
   //   createHong(1, 'Right')
   //   return
@@ -124,6 +126,16 @@ function close() {
   hidden.value = true
 }
 
+function mouseButtonClick() {
+  mouseButtonClickFn()
+}
+
+function executeFn(item){
+  let kIndex = props.options.findIndex((k)=>k.value == 1999)
+  let cIndex = props.options[kIndex].children.findIndex((j)=>j.value == item.value)
+  onSelect(item,1999,cIndex)
+}
+
 defineExpose({ show, open, close })
 </script>
 
@@ -136,10 +148,20 @@ defineExpose({ show, open, close })
           :key="item.value"
           :class="cascaderListClass(item)"
           class="relative transition-all duration-500"
-          @click="disabled ? () => {} : (value === item.value ? onClick() : onSelect(item))"
+          @click="disabled ? mouseButtonClick() : (value === item.value ? onClick() : onSelect(item))"
         >
           <template v-if="!item.hidden && item.value !== 1999">
-            <span>{{ t(item.label) }}</span>
+            <div class="relative flex items-center">
+              <div 
+                v-if="item.value > 1999" 
+                class="ml-3 flex items-center justify-center absolute left-[-76px] backgroundHover"  
+                @click="executeFn(item)"
+                style="z-index: 1; width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A8280;color: #fff; font-size: 14px;"  @click.stop="onChangeRadioGroup">
+                执行
+              </div>
+              <span :class="[!disabled ? 'hover_text' : '']">{{ t(item.label) }}</span>
+            </div>
+
             <ElIcon v-if="item.children && item.children.length" size="16" class="absolute left--15px top-12px transform transition-transform" :class="{ 'rotate-90': showChildren === item.value }">
               <CaretLeft />
             </ElIcon>
@@ -166,6 +188,7 @@ defineExpose({ show, open, close })
                 :key="child.value"
                 class="pointer-events-auto opacity-30 transition-all duration-500 hover:opacity-100"
                 @click.stop="disabled ? () => {} : onSelect(child, item.value, kIndex)"
+                :class="[!disabled ? 'hover_text' : '']"
               >
                 {{ t(child.label) }}
               </li>
@@ -188,6 +211,13 @@ defineExpose({ show, open, close })
       text-align: start;
       white-space: nowrap;
     }
+  }
+  .backgroundHover:hover{
+    background: #6A0A82 !important;
+  }
+
+  .hover_text:hover{
+    color: #DAFF00 !important; 
   }
 }
 </style>

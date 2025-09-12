@@ -1557,7 +1557,14 @@ async function toggleLocales(language: string) {
   selectLanguageList.value = list
 }
 
+function mouseButtonClickFn() {
+  console.log(111)
+  bottomItem.value = 5
+}
+
 provide('createHong', createHong)
+
+provide('mouseButtonClickFn', mouseButtonClickFn)
 </script>
 
 <template>
@@ -1627,7 +1634,7 @@ provide('createHong', createHong)
 
       <div style="position: relative;">
         <!-- 鼠标图片 -->
-        <img src="/v9/mouse1.png" alt="mouse-card" class="mouse">
+        <img src="/mouse4.png" alt="mouse-card" class="mouse">
 
         <!-- sports_arena 竞技模式图片 -->
         <!-- ${profileInfo.sports_arena} -->
@@ -2357,6 +2364,19 @@ provide('createHong', createHong)
             <span class="active">确认</span>
           </div>
         </div>
+
+        <div v-else-if="bottomItem === 5" class="bottom-box bottom-box1 relative">
+          <p style="font-size: 18px;line-height: 40px;">
+            必须保留左键
+          </p>
+          <p class="mb-3" style="font-size: 18px;line-height: 40px;">
+            左键在选择时起关键的决定性,所以不可更改
+          </p>
+
+          <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 100px;" @click="bottomItem = 0">
+            <span class="active">确认</span>
+          </div>
+        </div>
       </Transition>
     </div>
   </div>
@@ -2385,7 +2405,7 @@ provide('createHong', createHong)
 
   .mouse {
     width: 186px;
-    height: 360px;
+    height: 352px;
     top: 0;
   }
 
@@ -2441,6 +2461,9 @@ provide('createHong', createHong)
     /* background-position: center center; */
     background-repeat: no-repeat;
     z-index: 1;
+    position: absolute;
+    bottom: 0;
+    height: 533px;
     /* background-image: linear-gradient(to bottom, #5E6719 10px, #0E0E0D); */
   }
 
