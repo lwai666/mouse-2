@@ -1604,7 +1604,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
         应用
       </ElButton>
 
-      <img style="margin-left: 10px;width: 20px ;height: 20px;" :src="`/public/v9/wenhao${hover === 'share' ? '_active' : ''}.png`" srcset="" @mouseenter="mouseenter('share')" @mouseleave="mouseenter('share')">
+      <img style="margin-left: 10px;width: 20px ;height: 20px;" :src="`/v9/wenhao${hover === 'share' ? '_active' : ''}.png`" srcset="" @mouseenter="mouseenter('share')" @mouseleave="mouseenter('share')">
 
       <p v-if="hover === 'share'" class="absolute top-11 w-[401px]" style="font-size:16px; color:#DAFF00">
         已复制当前模式所有设置，可以通过粘贴分享给好友应用
@@ -1739,7 +1739,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         style="margin-left: 5px;"
                         @mouseenter="startXY"
                         @mouseleave="startXY"
-                        :src="`/public/v9/wenhao${startXYFlag?'_active':''}.png`"
+                        :src="`/v9/wenhao${startXYFlag?'_active':''}.png`"
                         alt="" srcset=""
                     ></span>
                     <div
@@ -2073,7 +2073,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
                         <div>动态灵敏度</div>
-                        <img style=" margin-left: 5px;margin-right: 30px;" :src="`/public/v9/wenhao${imgActive ? '_active' :''}.png`" srcset="" 
+                        <img style=" margin-left: 5px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' :''}.png`" srcset="" 
                         @mouseenter="showMouseenterChange('showMouseenter')"
                         @mouseleave="showMouseenterChange('showMouseenter')">
                       </div>
