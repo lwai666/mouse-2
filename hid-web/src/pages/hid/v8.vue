@@ -295,6 +295,19 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
         dpi: ${profileInfo.dpi}
       `)
     }
+    // 灵敏度&速度开关
+    else if (res[0] == 0x24) {
+      console.log(res,'0x240x24')
+      // const macroName = decodeArrayBufferToString(new Uint8Array(res.slice(4, 4 + res[2])))
+      // // 0-5 （左，右，中，前进，后退，dpi）   6-9 录制宏（球1-球4）
+      // if ([6, 7, 8, 9].includes(res[3])) {
+      //   profileInfo.macroList[res[3] - 6].name = macroName
+      // }
+      // // 0x0a-0x0d（profile 名字）
+      // else if ([10, 11, 12, 13].includes(res[3])) {
+      //   profileList[res[3] - 10].title = macroName
+      // }
+    }
     // 获取宏录制名字 profile 名字
     else if (res[0] === 25) {
       const macroName = decodeArrayBufferToString(new Uint8Array(res.slice(4, 4 + res[2])))
