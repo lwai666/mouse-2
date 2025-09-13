@@ -1604,7 +1604,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
         应用
       </ElButton>
 
-      <img style="margin-left: 10px;" :src="hover === 'share' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'" srcset="" @click="mouseenter('share')">
+      <img style="margin-left: 10px;width: 20px ;height: 20px;" :src="`/public/v9/wenhao${hover === 'share' ? '_active' : ''}.png`" srcset="" @mouseenter="mouseenter('share')" @mouseleave="mouseenter('share')">
 
       <p v-if="hover === 'share'" class="absolute top-11 w-[401px]" style="font-size:16px; color:#DAFF00">
         已复制当前模式所有设置，可以通过粘贴分享给好友应用
@@ -1734,9 +1734,13 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </div>
 
                   <div class="flex" style="margin-top: 12px;">
-                    <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y <img
-                      style="margin-left: 5px;"
-                      :src="startXYFlag ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'" alt="" srcset="" @click="startXY"
+                    <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y 
+                      <img
+                        style="margin-left: 5px;"
+                        @mouseenter="startXY"
+                        @mouseleave="startXY"
+                        :src="`/public/v9/wenhao${startXYFlag?'_active':''}.png`"
+                        alt="" srcset=""
                     ></span>
                     <div
                       class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
@@ -2069,7 +2073,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
                         <div>动态灵敏度</div>
-                        <img style=" margin-left: 5px;margin-right: 30px;" :src="imgActive ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'" srcset="" @click="showMouseenterChange('showMouseenter')">
+                        <img style=" margin-left: 5px;margin-right: 30px;" :src="`/public/v9/wenhao${imgActive ? '_active' :''}.png`" srcset="" 
+                        @mouseenter="showMouseenterChange('showMouseenter')"
+                        @mouseleave="showMouseenterChange('showMouseenter')">
                       </div>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
