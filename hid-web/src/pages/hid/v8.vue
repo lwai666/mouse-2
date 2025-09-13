@@ -1750,14 +1750,14 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         <div
                           :key="radioActive" class="absolute" :class="[radioActive ? 'right-0.5' : 'left-0.5']"
                           style="width: 19px;height: 19px;border-radius: 50%;"
-                          :style="{ &quot;background-color&quot;: radioActive ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
+                          :style="{ 'background-color': radioActive ? '#DAFF00' : '#8B8A8A' }"
                         />
                       </Transition>
                     </div>
                   </div>
 
                   <!-- <CustomSlider
-                    v-for="(_, index) in profileInfo.dpi_slider_list"
+                    v-for="(_, index) in profileInfo.dpi_slider_list"`
                     :key="index"
                     v-model="profileInfo.dpi_slider_list[index]"
                     class="dpi_slider absolute bottom-20 w-90%"
