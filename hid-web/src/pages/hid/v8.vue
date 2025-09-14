@@ -146,6 +146,14 @@ function initProfileInfo() {
       { name: '', connections: [], value: [] },
       { name: '', connections: [], value: [] },
     ], // cycleTimes: 0-40（循环次数）, cycleMode: 1-4(循环直到此按键松开，循环直到任意按键按下，循环直到此按键再次按下，循环次数模式)      // { name: '鼠标宏名称1', connections: [{keyid: 'Left', cycleTimes: 40, cycleMode: 1}], value: [{ keyCode: 1, keyStatus: 0, intervalTime: 200 }] },    ] as Macro[],
+
+    // 高级-灵敏度开关
+    sensitivity: 0,
+    // 直线修正
+    lineUpdate: 0,
+
+    // 20K采样率 
+    FPS: 0
   }
 }
 
@@ -295,22 +303,31 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
         dpi: ${profileInfo.dpi}
       `)
     }
-    // 灵敏度&速度开关
-    else if (res[0] == 0x24) {
-      console.log(res,'0x240x24')
-      // const macroName = decodeArrayBufferToString(new Uint8Array(res.slice(4, 4 + res[2])))
-      // // 0-5 （左，右，中，前进，后退，dpi）   6-9 录制宏（球1-球4）
-      // if ([6, 7, 8, 9].includes(res[3])) {
-      //   profileInfo.macroList[res[3] - 6].name = macroName
-      // }
-      // // 0x0a-0x0d（profile 名字）
-      // else if ([10, 11, 12, 13].includes(res[3])) {
-      //   profileList[res[3] - 10].title = macroName
-      // }
+    // 灵敏度&速度开关 0 为关，1 为开
+    else if (res[0] == 36) {
+      const start_index = 3
+      let sensitivity = res[start_index]
+      profileInfo.sensitivity = sensitivity
     }
+
+     // 20K采样率开关 0 为关，1 为开
+     else if (res[0] == 39) {
+      const start_index = 3
+      let FPS = res[start_index]
+      profileInfo.FPS = FPS
+    }
+
+    // 直线修正开关 0 为关，1 为开
+    else if (res[0] == 40) {
+      const start_index = 3
+      let lineUpdate = res[start_index]
+      profileInfo.lineUpdate = lineUpdate
+    }
+
     // 获取宏录制名字 profile 名字
     else if (res[0] === 25) {
       const macroName = decodeArrayBufferToString(new Uint8Array(res.slice(4, 4 + res[2])))
+
       // 0-5 （左，右，中，前进，后退，dpi）   6-9 录制宏（球1-球4）
       if ([6, 7, 8, 9].includes(res[3])) {
         profileInfo.macroList[res[3] - 6].name = macroName
@@ -1255,13 +1272,42 @@ function mouseenter(type) {
 
 const radioActive = ref(false)
 function radioChange() {
-  radioActive.value = !radioActive.value
+  console.log(profileInfo.sports_arena , profileInfo.polling_slider)
+  if(profileInfo.sports_arena === 1 && profileInfo.polling_slider === 5){
+    showMouseenter.value = 'FPS'
+    return
+  }
+  showMouseenter.value = 'FPS1'
+
+  // radioActive.value = !radioActive.value
+}
+
+async function FPSChange(type){
+  await transport?.value.send([0x27, 0x00, 0x00, type])
+  profileInfo.FPS = !!type
+  setLoadingStatus()
+  showMouseenter.value = 'show'
+}
+
+// 直线修正
+function lineUpdate(){
+  showMouseenter.value = 'line'
+}
+
+// 直线修正发送鼠标信息
+
+async function lineUpdateSent(type){
+  await transport?.value.send([0x28, 0x00, 0x00, type])
+  profileInfo.lineUpdate = !! type
+  setLoadingStatus()
+  showMouseenter.value = 'show'
 }
 
 // 动态灵敏度
-const radioActive1 = ref(false)
-function radioChange1() {
-  radioActive1.value = !radioActive1.value
+async function radioChange1() {
+  profileInfo.sensitivity = !!! profileInfo.sensitivity
+  await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
+  setLoadingStatus()
 }
 
 const activeBg = ref('performance')
@@ -1447,7 +1493,6 @@ function onProfileBlur() {
 }
 
 function createHong(index, buttonType) {
-  console.log(index, 'indexindex')
   mouseButtonRef.value.onConnection(index, buttonType)
 }
 
@@ -1571,7 +1616,7 @@ async function toggleLocales(language: string) {
 }
 
 function mouseButtonClickFn() {
-  console.log(111)
+
   bottomItem.value = 5
 }
 
@@ -1770,7 +1815,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </div>
 
                   <!-- <CustomSlider
-                    v-for="(_, index) in profileInfo.dpi_slider_list"`
+                    v-for="(_, index) in profileInfo.dpi_slider_list"
                     :key="index"
                     v-model="profileInfo.dpi_slider_list[index]"
                     class="dpi_slider absolute bottom-20 w-90%"
@@ -1782,8 +1827,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       [sliderOptions.dpi_slider.min]: `${sliderOptions.dpi_slider.min}`,
                       [sliderOptions.dpi_slider.max]: `${sliderOptions.dpi_slider.max}`,
                     }"
-                  />
-                  <CustomSlider
+                  /> -->
+                  <!-- <CustomSlider
                     v-for="(_, index) in profileInfo.dpi_slider_list" :key="index"
                     v-model="profileInfo.dpi_slider_list[index]" class="dpi_slider absolute bottom-6 w-90%"
                     :bind="sliderOptions.dpi_slider" :default-select-options="sliderDefaultSelectOptions.dpi_slider"
@@ -1825,26 +1870,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                             >
                               {{ item.label }}
                             </div>
-                            <!-- <div
-                              class="block_item"
-                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
-                            >
-                              400
-                            </div>
-                            <div
-                              class="block_item"
-
-                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
-                            >
-                              400
-                            </div>
-                            <div
-                              class="block_item"
-
-                              style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px dashed #fff;"
-                            >
-                              400
-                            </div> -->
+                       
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
@@ -2096,9 +2122,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       >
                         <transition name="right-fade">
                           <div
-                            :key="radioActive1" class="absolute" :class="[radioActive1 ? 'right-0.5' : 'left-0.5']"
+                            :key="!!profileInfo.sensitivity" class="absolute" :class="[!!profileInfo.sensitivity ? 'right-0.5' : 'left-0.5']"
                             style="width: 19px;height: 19px;border-radius: 50%;"
-                            :style="{ &quot;background-color&quot;: radioActive1 ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
+                            :style="{ 'backgroundColor': !!profileInfo.sensitivity ? '#DAFF00' : '#8B8A8A' }"
                           />
                         </transition>
                       </div>
@@ -2119,9 +2145,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       >
                         <transition name="right-fade">
                           <div
-                            :key="radioActive" class="absolute" :class="[radioActive ? 'right-0.5' : 'left-0.5']"
+                            :key="profileInfo.FPS" class="absolute" :class="[profileInfo.FPS ? 'right-0.5' : 'left-0.5']"
                             style="width: 19px;height: 19px;border-radius: 50%;"
-                            :style="{ &quot;background-color&quot;: radioActive ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
+                            :style="{ 'background-color': profileInfo.FPS ? '#DAFF00' : '#8B8A8A' }"
                           />
                         </transition>
                       </div>
@@ -2135,13 +2161,13 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       </div>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
-                        @click="radioChange"
+                        @click="lineUpdate"
                       >
                         <transition name="right-fade">
                           <div
-                            :key="radioActive" class="absolute" :class="[radioActive ? 'right-0.5' : 'left-0.5']"
+                            :key="profileInfo.lineUpdate" class="absolute" :class="[profileInfo.lineUpdate ? 'right-0.5' : 'left-0.5']"
                             style="width: 19px;height: 19px;border-radius: 50%;"
-                            :style="{ &quot;background-color&quot;: radioActive ? &quot;#DAFF00&quot; : &quot;#8B8A8A&quot; }"
+                            :style="{ 'backgroundColor': profileInfo.lineUpdate ? '#DAFF00' : '#8B8A8A' }"
                           />
                         </transition>
                       </div>
@@ -2149,7 +2175,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </div>
                 </div>
                 <div v-show="showMouseenter === 'show'" class="absolute right-0 flex justify-between" style="width:1250px">
-                  <div v-if="!radioActive1" class="absolute h-100% w-100%" style="z-index:1; background: #0D0D0D;" />
+                  <div v-if="!profileInfo.sensitivity" class="absolute h-100% w-100%" style="z-index:1; background: #0D0D0D;" />
                   <div style="padding: 25px 25px 0 25px; flex:1;">
                     <div class="ml-25 flex items-center">
                       <div class="icon-box">
@@ -2217,13 +2243,13 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <p>· 跳跃:缓慢移动时使用低灵敏度，快速移动时立即转换为高灵敏度。 </p>
                       <p> &nbsp;&nbsp;是喜欢超低灵敏度的 FPS 玩家的理想之选，同时还能在快速移动中完成 180 度旋转，实现出色的控制。</p>
                       <p>· 自定义:你自己的动态灵敏度设置。</p>
-                      <AnimateCanvas
+                      <!-- <AnimateCanvas
                         :width="593"
                         :height="287"
                         :img-length="91"
                         :end-stop="false"
                         url="/advanced/2_0"
-                      />
+                      /> -->
                     </div>
 
                     <!-- <ElIcon size="40" style="position: absolute; right: 10px; top: 10px;" @click="showMouseenter = 'show'">
@@ -2240,10 +2266,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       </div>
 
                       <div class="mt-20 flex">
-                        <div class="button mr-10">
+                        <div class="button mr-10" @click="FPSChange(0)">
                           取消
                         </div>
-                        <div class="button1">
+                        <div class="button1" @click="FPSChange(1)">
                           确认
                         </div>
                       </div>
@@ -2267,10 +2293,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       </div>
 
                       <div class="mt-20 flex">
-                        <div class="button mr-10">
+                        <div class="button mr-10" @click="FPSChange(0)">
                           取消
                         </div>
-                        <div class="button1">
+                        <div class="button1" @click="FPSChange(1)">
                           确认
                         </div>
                       </div>
@@ -2292,10 +2318,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       </div>
 
                       <div class="mt-20 flex">
-                        <div class="button mr-10">
+                        <div class="button mr-10" @click="lineUpdateSent(0)">
                           取消
                         </div>
-                        <div class="button1">
+                        <div class="button1" @click="lineUpdateSent(1)">
                           确认
                         </div>
                       </div>

@@ -58,6 +58,7 @@ var Command = {
 
   WriteKBCIdMID:0xF0,//读取cid mid,cx53710专用
   ReadKBCIdMID:0xF1,//读取cid mid,cx53710专用
+
 }
 
 var MouseEepromAddr = {
@@ -144,6 +145,7 @@ var mouseCfg = {
   debounceTime:8,//按键防抖时间
   supportLongDistance:true,
   longDistance:false,//远距离模式
+
   sensor:{//sensor的配置
     lod:1,
     motionSync:false,
