@@ -2243,13 +2243,13 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <p>· 跳跃:缓慢移动时使用低灵敏度，快速移动时立即转换为高灵敏度。 </p>
                       <p> &nbsp;&nbsp;是喜欢超低灵敏度的 FPS 玩家的理想之选，同时还能在快速移动中完成 180 度旋转，实现出色的控制。</p>
                       <p>· 自定义:你自己的动态灵敏度设置。</p>
-                      <!-- <AnimateCanvas
+                      <AnimateCanvas
                         :width="593"
                         :height="287"
                         :img-length="91"
                         :end-stop="false"
                         url="/advanced/2_0"
-                      /> -->
+                      />
                     </div>
 
                     <!-- <ElIcon size="40" style="position: absolute; right: 10px; top: 10px;" @click="showMouseenter = 'show'">
