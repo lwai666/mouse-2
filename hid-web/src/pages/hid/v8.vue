@@ -26,7 +26,7 @@ import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, 
 import { messageBox } from '~/components/CustomMessageBox'
 import { loadLanguageAsync } from '~/modules/i18n'
 
-import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, removeAt9th, removeItem, sleep } from '~/utils'
+import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToString, encodeStringToArrayBuffer,decodeArrayBufferToArray, getLowAndHigh8Bits, processArrayToObject, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, removeAt9th, removeItem, sleep } from '~/utils'
 
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
@@ -117,6 +117,7 @@ const sliderOptions = {
   angle_slider: { min: -30, max: 30, step: 1 },
 }
 
+
 function initProfileInfo() {
   return {
     battery_level: 0,
@@ -151,10 +152,22 @@ function initProfileInfo() {
     sensitivity: 0,
     // 直线修正
     lineUpdate: 0,
-
     // 20K采样率 
-    FPS: 0
+    FPS: 0,
+    // XY DPI 开关
+    DPIStartList:[0,0,0,0,0],
+
+    // XY 每一个档位的 XY值 {0:[400,400],1:[400,400]}
+    XYObjDataList:{
+      0:[0,0],
+      1:[0,0],
+      2:[0,0],
+      3:[0,0],
+      4:[0,0],
+    }
   }
+
+
 }
 
 const profileInfo = reactive(initProfileInfo())
@@ -303,11 +316,28 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
         dpi: ${profileInfo.dpi}
       `)
     }
+
+     // XY 值
+     else if (res[0] == 35) {
+      let XYDataList = res.slice(3, (res[2] * 4) + 3)
+      let dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList),5)
+      profileInfo.XYObjDataList = dataObj
+      // profileInfo.DPIStartList = decodeArrayBufferToArray(DPIStartList)
+      // profileInfo.sensitivity = sensitivity
+    }
+
+
     // 灵敏度&速度开关 0 为关，1 为开
     else if (res[0] == 36) {
       const start_index = 3
       let sensitivity = res[start_index]
       profileInfo.sensitivity = sensitivity
+    }
+
+     // DPD XY轴开关
+     else if (res[0] == 37) {
+      let DPIStartList = res.slice(3, 3 + res[2])
+      profileInfo.DPIStartList = decodeArrayBufferToArray(DPIStartList)
     }
 
      // 20K采样率开关 0 为关，1 为开
@@ -682,6 +712,10 @@ async function sendDpi(index?: number) {
     return arr
   }, [])
 
+  if(profileInfo.dpi_slider_active_index == index){
+    return
+  }
+
   if (index !== undefined) {
     profileInfo.dpi_slider_active_index = index
   }
@@ -741,6 +775,17 @@ async function sendPolling(value) {
 async function sendHibernation() {
   const byte = profileInfo.hibernation_slider * 1000
   await transport.value.send([0x15, 0x00, 0x04, ...[byte & 0xFF, byte >> 8 & 0xFF, byte >> 16 & 0xFF, byte >> 24 & 0xFF]])
+  onExecutionSuccess()
+}
+
+async function sendXYElimination(){
+
+  console.log(profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index],'profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index]')
+
+  let currentLowAndHigh8 = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index]
+
+  await transport.value.send([0x23,0x00,5,profileInfo.dpi_slider_active_index,...getLowAndHigh8Bits(currentLowAndHigh8[0]),...getLowAndHigh8Bits(currentLowAndHigh8[1])])
+
   onExecutionSuccess()
 }
 
@@ -1282,6 +1327,18 @@ function radioChange() {
   // radioActive.value = !radioActive.value
 }
 
+async function setDPIXY(){
+
+  let DPIStartListCopy = profileInfo.DPIStartList
+
+  DPIStartListCopy[profileInfo.dpi_slider_active_index] = DPIStartListCopy[profileInfo.dpi_slider_active_index] === 0 ? 1 : 0
+
+
+  profileInfo.DPIStartList = DPIStartListCopy
+
+  await transport?.value.send([0x25, 0x00, profileInfo.dpi_slider_list.length, ...profileInfo.DPIStartList])
+}
+
 async function FPSChange(type){
   await transport?.value.send([0x27, 0x00, 0x00, type])
   profileInfo.FPS = !!type
@@ -1499,9 +1556,14 @@ function createHong(index, buttonType) {
 const dpi_slider_edit = ref(null)
 const dpi_slider_value = ref('')
 
+let dpiInputRef = ref(null)
+
 function dpiEditValue(editActive, value) {
   dpi_slider_edit.value = editActive
   dpi_slider_value.value = value
+  nextTick(() => {
+    dpiInputRef.value[0].focus();
+  });
 }
 
 const { copied, copy } = useClipboard({ source: base64 })
@@ -1759,7 +1821,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
           <div style="position: relative;height: 100%; display: flex; align-items: center;">
             <Transition name="slide-up">
               <div v-if="activeBg === 'performance'" class="absolute flex">
-                <div class="right-f-b h-100" style="padding: 50px 25px 25px 25px;position: relative;">
+                <div class="right-f-b h-100" style="padding: 40px 25px 25px 25px;position: relative;">
                   <div class="flex items-center justify-between">
                     <span style="font-size: 20px;">灵敏度设置</span>
                     <div class="flex items-center">
@@ -1779,13 +1841,24 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         style="width: 99.56px;height: 118px;padding-top: 7px;flex-direction: column;"
                         @click="sendDpi(index)"
                       >
-                        <div style="font-size: 14px;margin-bottom: 30px;">
+                        <div style="font-size: 14px;" :style="{'margin-bottom' : !!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index] ? '0px' : '30px'}">
                           等级 {{ index + 1 }}
                         </div>
-                        <div style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick="dpiEditValue(index, item)">
-                          <input v-if="dpi_slider_edit === index" v-model="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="sendDpi(index)" @keyup.enter="sendDpi(index)">
+                        <div v-if="!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"  style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick.stop="dpiEditValue(index, item)">
+                          <input ref="dpiInputRef" v-if="dpi_slider_edit === index" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="sendDpi(index)" @keyup.enter="sendDpi(index)">
                           <span v-else>{{ item }}</span>
                         </div>
+          
+                        <template v-else>
+                          <span style="font-size:10px">X</span>
+                          <div style="width: 69px; text-align: center;border:1px solid #444444; border-radius: 10px;" >
+                            <input   ref="dpiInputRef"  v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                          </div>
+                          <span style="font-size:10px">Y</span>
+                          <div style="width: 69px; text-align: center;border:1px solid #444444; border-radius: 10px;" >
+                            <input ref="dpiInputRef"  v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                          </div>
+                        </template>
                       </div>
                       <div class="triangle" :class="index === 0 ? '' : `triangle${index + 1}`" />
                     </div>
@@ -1802,23 +1875,20 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     ></span>
                     <div
                       class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
-                      @click="radioChange"
+                      @click="setDPIXY"
                     >
                       <Transition name="right-fade">
                         <div
-                          :key="radioActive" class="absolute" :class="[radioActive ? 'right-0.5' : 'left-0.5']"
+                          :key="!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]" class="absolute" :class="[profileInfo.DPIStartList[profileInfo.dpi_slider_active_index] === 1 ? 'right-0.5' : 'left-0.5']"
                           style="width: 19px;height: 19px;border-radius: 50%;"
-                          :style="{ 'background-color': radioActive ? '#DAFF00' : '#8B8A8A' }"
+                          :style="{ 'background-color': profileInfo.DPIStartList[profileInfo.dpi_slider_active_index] === 1 ? '#DAFF00' : '#8B8A8A' }"
                         />
                       </Transition>
                     </div>
                   </div>
-
-                  <!-- <CustomSlider
-                    v-for="(_, index) in profileInfo.dpi_slider_list"
-                    :key="index"
-                    v-model="profileInfo.dpi_slider_list[index]"
-                    class="dpi_slider absolute bottom-20 w-90%"
+                  <CustomSlider
+                    v-model="profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0]"
+                    class="dpi_slider absolute bottom-20 w-90% slider1"
                     :bind="sliderOptions.dpi_slider"
                     :default-select-options="sliderDefaultSelectOptions.dpi_slider"
                     :double-click-edit="true"
@@ -1827,18 +1897,22 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       [sliderOptions.dpi_slider.min]: `${sliderOptions.dpi_slider.min}`,
                       [sliderOptions.dpi_slider.max]: `${sliderOptions.dpi_slider.max}`,
                     }"
-                  /> -->
-                  <!-- <CustomSlider
-                    v-for="(_, index) in profileInfo.dpi_slider_list" :key="index"
-                    v-model="profileInfo.dpi_slider_list[index]" class="dpi_slider absolute bottom-6 w-90%"
-                    :bind="sliderOptions.dpi_slider" :default-select-options="sliderDefaultSelectOptions.dpi_slider"
+                    @change="sendXYElimination"
+                  />
+                  <CustomSlider
+                    v-if="!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"
+                    v-model="profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][1]"
+                    class="dpi_slider absolute bottom-6 w-90% slider2"
+                    :bind="sliderOptions.dpi_slider" 
+                    :default-select-options="sliderDefaultSelectOptions.dpi_slider"
                     :double-click-edit="true"
                     :show-fixed="true"
                     :marks="{
                       [sliderOptions.dpi_slider.min]: `${sliderOptions.dpi_slider.min}`,
                       [sliderOptions.dpi_slider.max]: `${sliderOptions.dpi_slider.max}`,
                     }"
-                  /> -->
+                    @change="sendXYElimination"
+                  />
                 </div>
 
                 <div style="flex:1;" class="relative">
@@ -1938,6 +2012,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <div class="cross-horizontal" />
                           <div class="cross-vertical" />
                         </div>
+                        
 
                         <CustomSlider
                           v-model="profileInfo.angle_slider" class="absolute bottom-6 w-85%"
@@ -2174,7 +2249,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     </div>
                   </div>
                 </div>
-                <div v-show="showMouseenter === 'show'" class="absolute right-0 flex justify-between" style="width:1250px">
+                <div   class="absolute right-0 flex justify-between" style="width:1250px" :style="{opacity: showMouseenter === 'show' ? 1 : 0}">
                   <div v-if="!profileInfo.sensitivity" class="absolute h-100% w-100%" style="z-index:1; background: #0D0D0D;" />
                   <div style="padding: 25px 25px 0 25px; flex:1;">
                     <div class="ml-25 flex items-center">
@@ -2201,6 +2276,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       </div>
                     </div>
                     <div style="width:100%" class="relative">
+                      
                       <div id="myChart" style="width:100%; height:350px;" />
 
                       <div class="icon-box absolute bottom-0 right-0">
@@ -2852,5 +2928,35 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 .el-dropdown-menu__item:hover {
   background-color: #daff00 !important;
   color: #333 !important;
+}
+
+.slider1 .el-slider__button{
+  position: relative;
+}
+
+.slider2 .el-slider__button{
+  position: relative;
+}
+
+.slider1 .el-slider__button::after{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    content: 'X';
+    color: #333;
+    left: 50%;
+    top: -6%;
+    margin-left: -5px;
+}
+
+.slider2 .el-slider__button::after{
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    content: 'Y';
+    color: #333;
+    left: 50%;
+    top: -6%;
+    margin-left: -5px;
 }
 </style>
