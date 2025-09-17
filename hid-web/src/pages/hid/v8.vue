@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { DotConnection } from '~/composables/useDotsConnection'
 
+import type { DraggableChart } from '~/composables/useDraggableChart'
+
 import type { ConnectionType, Macro, ProfileInfoType, ProfileType } from '~/types'
 import type { TransportWebHIDInstance } from '~/utils/hidHandle'
 
@@ -26,7 +28,7 @@ import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, 
 import { messageBox } from '~/components/CustomMessageBox'
 import { loadLanguageAsync } from '~/modules/i18n'
 
-import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToString, encodeStringToArrayBuffer,decodeArrayBufferToArray, getLowAndHigh8Bits, processArrayToObject, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, removeAt9th, removeItem, sleep } from '~/utils'
+import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th, removeItem, sleep } from '~/utils'
 
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
@@ -117,7 +119,6 @@ const sliderOptions = {
   angle_slider: { min: -30, max: 30, step: 1 },
 }
 
-
 function initProfileInfo() {
   return {
     battery_level: 0,
@@ -152,22 +153,20 @@ function initProfileInfo() {
     sensitivity: 0,
     // 直线修正
     lineUpdate: 0,
-    // 20K采样率 
+    // 20K采样率
     FPS: 0,
     // XY DPI 开关
-    DPIStartList:[0,0,0,0,0],
+    DPIStartList: [0, 0, 0, 0, 0],
 
     // XY 每一个档位的 XY值 {0:[400,400],1:[400,400]}
-    XYObjDataList:{
-      0:[0,0],
-      1:[0,0],
-      2:[0,0],
-      3:[0,0],
-      4:[0,0],
-    }
+    XYObjDataList: {
+      0: [100, 100],
+      1: [100, 100],
+      2: [100, 100],
+      3: [100, 100],
+      4: [100, 100],
+    },
   }
-
-
 }
 
 const profileInfo = reactive(initProfileInfo())
@@ -317,31 +316,31 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       `)
     }
 
-     // XY 值
-     else if (res[0] == 35) {
-      let XYDataList = res.slice(3, (res[2] * 4) + 3)
-      let dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList),5)
-      profileInfo.XYObjDataList = dataObj
+    // XY 值
+    else if (res[0] === 35) {
+      const XYDataList = res.slice(3, (res[2] * 4) + 3)
+      const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 5)
+
+      profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
       // profileInfo.DPIStartList = decodeArrayBufferToArray(DPIStartList)
       // profileInfo.sensitivity = sensitivity
     }
 
-
     // 灵敏度&速度开关 0 为关，1 为开
-    else if (res[0] == 36) {
+    else if (res[0] === 36) {
       const start_index = 3
-      let sensitivity = res[start_index]
+      const sensitivity = res[start_index]
       profileInfo.sensitivity = sensitivity
     }
 
-     // DPD XY轴开关
-     else if (res[0] == 37) {
-      let DPIStartList = res.slice(3, 3 + res[2])
+    // DPD XY轴开关
+    else if (res[0] === 37) {
+      const DPIStartList = res.slice(3, 3 + res[2])
       profileInfo.DPIStartList = decodeArrayBufferToArray(DPIStartList)
     }
 
-     // 20K采样率开关 0 为关，1 为开
-     else if (res[0] == 39) {
+    // 20K采样率开关 0 为关，1 为开
+    else if (res[0] == 39) {
       const start_index = 3
       let FPS = res[start_index]
       profileInfo.FPS = FPS
@@ -712,9 +711,9 @@ async function sendDpi(index?: number) {
     return arr
   }, [])
 
-  if(profileInfo.dpi_slider_active_index == index){
-    return
-  }
+  // if(profileInfo.dpi_slider_active_index == index){
+  //   return
+  // }
 
   if (index !== undefined) {
     profileInfo.dpi_slider_active_index = index
@@ -778,13 +777,10 @@ async function sendHibernation() {
   onExecutionSuccess()
 }
 
-async function sendXYElimination(){
-
-  console.log(profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index],'profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index]')
-
+async function sendXYElimination() {
   let currentLowAndHigh8 = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index]
 
-  await transport.value.send([0x23,0x00,5,profileInfo.dpi_slider_active_index,...getLowAndHigh8Bits(currentLowAndHigh8[0]),...getLowAndHigh8Bits(currentLowAndHigh8[1])])
+  await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...getLowAndHigh8Bits(currentLowAndHigh8[0]), ...getLowAndHigh8Bits(currentLowAndHigh8[1])])
 
   onExecutionSuccess()
 }
@@ -1317,8 +1313,8 @@ function mouseenter(type) {
 
 const radioActive = ref(false)
 function radioChange() {
-  console.log(profileInfo.sports_arena , profileInfo.polling_slider)
-  if(profileInfo.sports_arena === 1 && profileInfo.polling_slider === 5){
+  console.log(profileInfo.sports_arena, profileInfo.polling_slider)
+  if (profileInfo.sports_arena === 1 && profileInfo.polling_slider === 5) {
     showMouseenter.value = 'FPS'
     return
   }
@@ -1327,19 +1323,17 @@ function radioChange() {
   // radioActive.value = !radioActive.value
 }
 
-async function setDPIXY(){
-
+async function setDPIXY() {
   let DPIStartListCopy = profileInfo.DPIStartList
 
   DPIStartListCopy[profileInfo.dpi_slider_active_index] = DPIStartListCopy[profileInfo.dpi_slider_active_index] === 0 ? 1 : 0
-
 
   profileInfo.DPIStartList = DPIStartListCopy
 
   await transport?.value.send([0x25, 0x00, profileInfo.dpi_slider_list.length, ...profileInfo.DPIStartList])
 }
 
-async function FPSChange(type){
+async function FPSChange(type) {
   await transport?.value.send([0x27, 0x00, 0x00, type])
   profileInfo.FPS = !!type
   setLoadingStatus()
@@ -1347,22 +1341,22 @@ async function FPSChange(type){
 }
 
 // 直线修正
-function lineUpdate(){
+function lineUpdate() {
   showMouseenter.value = 'line'
 }
 
 // 直线修正发送鼠标信息
 
-async function lineUpdateSent(type){
+async function lineUpdateSent(type) {
   await transport?.value.send([0x28, 0x00, 0x00, type])
-  profileInfo.lineUpdate = !! type
+  profileInfo.lineUpdate = !!type
   setLoadingStatus()
   showMouseenter.value = 'show'
 }
 
 // 动态灵敏度
 async function radioChange1() {
-  profileInfo.sensitivity = !!! profileInfo.sensitivity
+  profileInfo.sensitivity = !profileInfo.sensitivity
   await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
   setLoadingStatus()
 }
@@ -1387,17 +1381,24 @@ const startXYFlag = ref(false)
 function startXY() {
   startXYFlag.value = !startXYFlag.value
 }
+const myChart = ref(null)
+const chart = ref(null)
+const xAxisMax = ref(250)
+const yAxisMax = ref(60)
+const initData = ref([
+  [0, 40],
+  [38, 42],
+  [70, 50],
+  [90, 55],
+  [180, 60],
+])
 
 function initEcharts() {
-  const myChart = echarts.init(document.getElementById('myChart'))
+  myChart.value = echarts.init(document.getElementById('myChart'))
   const symbolSize = 20
-  const data = [
-    [0, 1],
-    [18, 1.2],
-    [50, 1],
-    [60, 1.5],
-    [80.1, 0.5],
-  ]
+
+  chart.value = new DraggableChart(initData.value)
+
   const option = {
 
     grid: {
@@ -1408,7 +1409,8 @@ function initEcharts() {
     },
     xAxis: {
       min: 0,
-      max: 105,
+      max: xAxisMax.value,
+      interval: 50,
       type: 'value',
 
       splitLine: {
@@ -1428,7 +1430,8 @@ function initEcharts() {
     },
     yAxis: {
       min: 0,
-      max: 1.5,
+      max: 60,
+      interval: 20,
       type: 'value',
       splitLine: {
         lineStyle: {
@@ -1451,7 +1454,7 @@ function initEcharts() {
         type: 'line',
         smooth: true,
         symbolSize,
-        data,
+        data: initData.value,
         itemStyle: {
           color: '#DAFF00', // 折线点颜色（番茄色）
         },
@@ -1463,15 +1466,15 @@ function initEcharts() {
     ],
   }
 
-  myChart.setOption(option)
+  myChart.value.setOption(option)
 
   setTimeout(() => {
     // Add shadow circles (which is not visible) to enable drag.
-    myChart.setOption({
-      graphic: data.map((item, dataIndex) => {
+    myChart.value.setOption({
+      graphic: initData.value.map((item, dataIndex) => {
         return {
           type: 'circle',
-          position: myChart.convertToPixel('grid', item),
+          position: myChart.value.convertToPixel('grid', item),
           shape: {
             cx: 0,
             cy: 0,
@@ -1489,17 +1492,53 @@ function initEcharts() {
   }, 0)
 
   function onPointDragging(dataIndex, pos) {
-    data[dataIndex] = myChart.convertFromPixel('grid', pos)
-    // Update data
-    myChart.setOption({
+    const [x, y] = myChart.value.convertFromPixel('grid', pos)
+
+    initData.value[dataIndex] = chart.value.dragPoint(dataIndex, x, y)
+    // chart.value = new DraggableChart(initData.value)
+    myChart.value.setOption({
       series: [
         {
           id: 'a',
-          data,
+          data: initData.value,
         },
       ],
+      graphic: initData.value.map((item, dataIndex) => {
+        return {
+          type: 'circle',
+          position: myChart.value.convertToPixel('grid', item),
+          shape: {
+            cx: 0,
+            cy: 0,
+            r: symbolSize / 2,
+          },
+          invisible: true,
+          draggable: true,
+          ondrag(dx, dy) {
+            onPointDragging(dataIndex, [this.x, this.y])
+          },
+          z: 100,
+        }
+      }),
     })
   }
+}
+
+function changeXAxisMax(num) {
+  xAxisMax.value = xAxisMax.value + num
+  if (xAxisMax.value > 250) {
+    xAxisMax.value = 250
+
+    return
+  }
+  if (xAxisMax.value < 50) {
+    xAxisMax.value = 50
+    // chart.value.setBounds(0, 50, 0, yAxisMax.value)
+
+    return
+  }
+
+  initEcharts()
 }
 
 const bottomItem = ref(0)
@@ -1556,14 +1595,14 @@ function createHong(index, buttonType) {
 const dpi_slider_edit = ref(null)
 const dpi_slider_value = ref('')
 
-let dpiInputRef = ref(null)
+const dpiInputRef = ref(null)
 
 function dpiEditValue(editActive, value) {
   dpi_slider_edit.value = editActive
   dpi_slider_value.value = value
   nextTick(() => {
-    dpiInputRef.value[0].focus();
-  });
+    dpiInputRef.value[0].focus()
+  })
 }
 
 const { copied, copy } = useClipboard({ source: base64 })
@@ -1678,7 +1717,6 @@ async function toggleLocales(language: string) {
 }
 
 function mouseButtonClickFn() {
-
   bottomItem.value = 5
 }
 
@@ -1841,22 +1879,22 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         style="width: 99.56px;height: 118px;padding-top: 7px;flex-direction: column;"
                         @click="sendDpi(index)"
                       >
-                        <div style="font-size: 14px;" :style="{'margin-bottom' : !!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index] ? '0px' : '30px'}">
+                        <div style="font-size: 14px;" :style="{ 'margin-bottom': !!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index] ? '0px' : '30px' }">
                           等级 {{ index + 1 }}
                         </div>
-                        <div v-if="!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"  style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick.stop="dpiEditValue(index, item)">
-                          <input ref="dpiInputRef" v-if="dpi_slider_edit === index" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="sendDpi(index)" @keyup.enter="sendDpi(index)">
-                          <span v-else>{{ item }}</span>
+                        <div v-if="!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]" style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick.stop="dpiEditValue(index, item)">
+                          <!-- <input ref="dpiInputRef" v-if="dpi_slider_edit === index" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="sendDpi(index)" @keyup.enter="sendDpi(index)"> -->
+                          <span>{{ item }}</span>
                         </div>
-          
+
                         <template v-else>
                           <span style="font-size:10px">X</span>
-                          <div style="width: 69px; text-align: center;border:1px solid #444444; border-radius: 10px;" >
-                            <input   ref="dpiInputRef"  v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                          <div style="width: 69px; text-align: center;border:1px solid #444444; border-radius: 10px;">
+                            <input ref="dpiInputRef" v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                           <span style="font-size:10px">Y</span>
-                          <div style="width: 69px; text-align: center;border:1px solid #444444; border-radius: 10px;" >
-                            <input ref="dpiInputRef"  v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                          <div style="width: 69px; text-align: center;border:1px solid #444444; border-radius: 10px;">
+                            <input ref="dpiInputRef" v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                         </template>
                       </div>
@@ -1865,14 +1903,14 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </div>
 
                   <div class="flex" style="margin-top: 12px;">
-                    <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y 
+                    <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y
                       <img
                         style="margin-left: 5px;"
-                        @mouseenter="startXY"
-                        @mouseleave="startXY"
-                        :src="`/v9/wenhao${startXYFlag?'_active':''}.png`"
-                        alt="" srcset=""
-                    ></span>
+                        :src="`/v9/wenhao${startXYFlag ? '_active' : ''}.png`"
+                        alt=""
+                        srcset=""
+                        @mouseenter="startXY" @mouseleave="startXY"
+                      ></span>
                     <div
                       class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
                       @click="setDPIXY"
@@ -1887,8 +1925,20 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     </div>
                   </div>
                   <CustomSlider
+                    v-if="!!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"
+                    v-model="profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]"
+                    class="dpi_slider absolute bottom-6 w-90%" :bind="sliderOptions.dpi_slider"
+                    :default-select-options="sliderDefaultSelectOptions.dpi_slider" :double-click-edit="true"
+                    :marks="{
+                      [sliderOptions.dpi_slider.min]: `${sliderOptions.dpi_slider.min}`,
+                      [sliderOptions.dpi_slider.max]: `${sliderOptions.dpi_slider.max}`,
+                    }"
+                    @change="sendDpi(profileInfo.dpi_slider_active_index)"
+                  />
+                  <CustomSlider
+                    v-if="!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"
                     v-model="profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0]"
-                    class="dpi_slider absolute bottom-20 w-90% slider1"
+                    class="dpi_slider slider1 absolute bottom-20 w-90%"
                     :bind="sliderOptions.dpi_slider"
                     :default-select-options="sliderDefaultSelectOptions.dpi_slider"
                     :double-click-edit="true"
@@ -1902,8 +1952,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <CustomSlider
                     v-if="!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"
                     v-model="profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][1]"
-                    class="dpi_slider absolute bottom-6 w-90% slider2"
-                    :bind="sliderOptions.dpi_slider" 
+                    class="dpi_slider slider2 absolute bottom-6 w-90%"
+                    :bind="sliderOptions.dpi_slider"
                     :default-select-options="sliderDefaultSelectOptions.dpi_slider"
                     :double-click-edit="true"
                     :show-fixed="true"
@@ -1944,7 +1994,6 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                             >
                               {{ item.label }}
                             </div>
-                       
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
@@ -2001,7 +2050,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         <div class="flex" style="width: 100%;">
                           <span style="font-size: 20px; text-align: left;">旋转角度</span>
                         </div>
-                        <div style="width:224px;height:214px;left: 50%; top: 50%; margin-left: -112px; margin-top: -107px; " class="absolute flex items-center justify-center">
+                        <div style="width:224px;height:214px;left: 50%; top: 45%; margin-left: -112px; margin-top: -107px; " class="absolute flex items-center justify-center">
                           <!-- profileInfo.angle_slider -->
                           <img
                             style="width: 84px;height:152px;z-index:1"
@@ -2012,7 +2061,6 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <div class="cross-horizontal" />
                           <div class="cross-vertical" />
                         </div>
-                        
 
                         <CustomSlider
                           v-model="profileInfo.angle_slider" class="absolute bottom-6 w-85%"
@@ -2187,9 +2235,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
                         <div>动态灵敏度</div>
-                        <img style=" margin-left: 5px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' :''}.png`" srcset="" 
-                        @mouseenter="showMouseenterChange('showMouseenter')"
-                        @mouseleave="showMouseenterChange('showMouseenter')">
+                        <img
+                          style=" margin-left: 5px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' : ''}.png`" srcset=""
+                          @mouseenter="showMouseenterChange('showMouseenter')"
+                          @mouseleave="showMouseenterChange('showMouseenter')"
+                        >
                       </div>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
@@ -2199,7 +2249,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <div
                             :key="!!profileInfo.sensitivity" class="absolute" :class="[!!profileInfo.sensitivity ? 'right-0.5' : 'left-0.5']"
                             style="width: 19px;height: 19px;border-radius: 50%;"
-                            :style="{ 'backgroundColor': !!profileInfo.sensitivity ? '#DAFF00' : '#8B8A8A' }"
+                            :style="{ backgroundColor: !!profileInfo.sensitivity ? '#DAFF00' : '#8B8A8A' }"
                           />
                         </transition>
                       </div>
@@ -2242,14 +2292,14 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <div
                             :key="profileInfo.lineUpdate" class="absolute" :class="[profileInfo.lineUpdate ? 'right-0.5' : 'left-0.5']"
                             style="width: 19px;height: 19px;border-radius: 50%;"
-                            :style="{ 'backgroundColor': profileInfo.lineUpdate ? '#DAFF00' : '#8B8A8A' }"
+                            :style="{ backgroundColor: profileInfo.lineUpdate ? '#DAFF00' : '#8B8A8A' }"
                           />
                         </transition>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div   class="absolute right-0 flex justify-between" style="width:1250px" :style="{opacity: showMouseenter === 'show' ? 1 : 0}">
+                <div class="absolute right-0 flex justify-between" style="width:1250px" :style="{ opacity: showMouseenter === 'show' ? 1 : 0 }">
                   <div v-if="!profileInfo.sensitivity" class="absolute h-100% w-100%" style="z-index:1; background: #0D0D0D;" />
                   <div style="padding: 25px 25px 0 25px; flex:1;">
                     <div class="ml-25 flex items-center">
@@ -2276,15 +2326,14 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       </div>
                     </div>
                     <div style="width:100%" class="relative">
-                      
                       <div id="myChart" style="width:100%; height:350px;" />
 
                       <div class="icon-box absolute bottom-0 right-0">
-                        <ElIcon size="18">
-                          <Plus />
-                        </ElIcon>
-                        <ElIcon size="18">
+                        <ElIcon size="18" @click.stop="changeXAxisMax(-50)">
                           <Minus />
+                        </ElIcon>
+                        <ElIcon size="18" @click.stop="changeXAxisMax(50)">
+                          <Plus />
                         </ElIcon>
                       </div>
                       <p class="absolute bottom-0 left-[50%] ml-[-64px]">
@@ -2930,33 +2979,33 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
   color: #333 !important;
 }
 
-.slider1 .el-slider__button{
+.slider1 .el-slider__button {
   position: relative;
 }
 
-.slider2 .el-slider__button{
+.slider2 .el-slider__button {
   position: relative;
 }
 
-.slider1 .el-slider__button::after{
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    content: 'X';
-    color: #333;
-    left: 50%;
-    top: -6%;
-    margin-left: -5px;
+.slider1 .el-slider__button::after {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  content: 'X';
+  color: #333;
+  left: 50%;
+  top: -6%;
+  margin-left: -5px;
 }
 
-.slider2 .el-slider__button::after{
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    content: 'Y';
-    color: #333;
-    left: 50%;
-    top: -6%;
-    margin-left: -5px;
+.slider2 .el-slider__button::after {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  content: 'Y';
+  color: #333;
+  left: 50%;
+  top: -6%;
+  margin-left: -5px;
 }
 </style>

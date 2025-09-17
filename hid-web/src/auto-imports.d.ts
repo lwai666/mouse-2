@@ -6,6 +6,7 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const DraggableChart: typeof import('./composables/useDraggableChart.js')['DraggableChart']
   const EffectScope: typeof import('vue')['EffectScope']
   const asyncComputed: typeof import('@vueuse/core')['asyncComputed']
   const autoResetRef: typeof import('@vueuse/core')['autoResetRef']
@@ -168,6 +169,7 @@ declare global {
   const useDocumentVisibility: typeof import('@vueuse/core')['useDocumentVisibility']
   const useDotsConnection: typeof import('./composables/useDotsConnection')['useDotsConnection']
   const useDraggable: typeof import('@vueuse/core')['useDraggable']
+  const useDraggableChart: typeof import('./composables/useDraggableChart.js')['default']
   const useDropZone: typeof import('@vueuse/core')['useDropZone']
   const useElementBounding: typeof import('@vueuse/core')['useElementBounding']
   const useElementByPoint: typeof import('@vueuse/core')['useElementByPoint']
@@ -318,6 +320,7 @@ import { UnwrapRef } from 'vue'
 declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
+    readonly DraggableChart: UnwrapRef<typeof import('./composables/useDraggableChart.js')['DraggableChart']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
