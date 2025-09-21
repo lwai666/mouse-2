@@ -67,7 +67,7 @@ nextTick(() => {
 
 async function onNouseClick() {
   if (transport.value) {
-    router.push(`/hid/v9`)
+    router.push(`/hid/v8`)
     return
   }
 

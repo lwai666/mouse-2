@@ -111,17 +111,18 @@ function animate(editIndex = -1, callback) {
         i = props.sortPage
       }
     }
-    if (props.width) {
+    if (props.width && canvas) {
+      console.log(props.width,'props.width')
       canvas.width = props.width
       canvas.height = props.height
     }
     else {
-      if (imgList.value[i]) {
+      if (imgList.value[i] && canvas) {
         canvas.width = imgList.value[i].width
         canvas.height = imgList.value[i].height
       }
     }
-    if (imgList.value[i]) {
+    if (imgList.value[i] && canvas) {
       canvas
         .getContext('2d')
         .drawImage(imgList.value[i], 0, 0, canvas.width, canvas.height)

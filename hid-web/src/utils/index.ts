@@ -1,16 +1,15 @@
 /** 字符串拆分 */
 export function stringSplit(str: string, length = 2) {
-  const result = [];
+  const result = []
   for (let i = 0; i < str.length; i += length) {
-    result.push(str.slice(i, i + length));
+    result.push(str.slice(i, i + length))
   }
-  return result;
+  return result
 }
-
 
 /** 等待 */
 export function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -20,13 +19,13 @@ export function sleep(ms: number) {
  * @returns 将数组按 size 长度分组
  */
 export function chunkArray(arr: number[], size: number) {
-  const result = [];
+  const result = []
 
   for (let i = 0; i < arr.length; i += size) {
-    result.push(arr.slice(i, i + size));
+    result.push(arr.slice(i, i + size))
   }
 
-  return result;
+  return result
 }
 
 /**
@@ -38,12 +37,14 @@ export function mapHexToRange(hexValue: number) {
   // 检查输入值是否在有效范围内
   if (hexValue >= 0xE2 && hexValue <= 0xFF) {
     // 映射 0xE2-0xFF 到 (-30, -1)
-    return -30 + (hexValue - 0xE2);
-  } else if (hexValue >= 0x00 && hexValue <= 0x1E) {
+    return -30 + (hexValue - 0xE2)
+  }
+  else if (hexValue >= 0x00 && hexValue <= 0x1E) {
     // 映射 0x00-0x1E 到 (0, 30)
-    return (hexValue / 0x1E) * 30;
-  } else {
-    throw new Error("输入值超出有效范围 (0x00-0x1E 或 0xE2-0xFF)");
+    return (hexValue / 0x1E) * 30
+  }
+  else {
+    throw new Error('输入值超出有效范围 (0x00-0x1E 或 0xE2-0xFF)')
   }
 }
 
@@ -56,63 +57,66 @@ export function mapRangeToHex(degree: number) {
   // 检查输入值是否在有效范围内
   if (degree >= -30 && degree <= -1) {
     // 映射 (-30, -1) 到 0xE2-0xFF
-    return 0xE2 + (degree + 30);
-  } else if (degree >= 0 && degree <= 30) {
+    return 0xE2 + (degree + 30)
+  }
+  else if (degree >= 0 && degree <= 30) {
     // 映射 (0, 30) 到 0x00-0x1E
-    return Math.round((degree / 30) * 0x1E);
-  } else {
-    throw new Error("输入值超出有效范围 (-30 到 -1 或 0 到 30)");
+    return Math.round((degree / 30) * 0x1E)
+  }
+  else {
+    throw new Error('输入值超出有效范围 (-30 到 -1 或 0 到 30)')
   }
 }
 
 /**
  * 获取一个数的 低8位 和 高8位
  * @param {number} num - 输入的整数
- * @returns {array} [低8位, 高8位]
+ * @returns {Array} [低8位, 高8位]
  */
 export function getLowAndHigh8Bits(num: number) {
   return [
-    num & 0xFF,         // 提取低 8 位
-    (num >> 8) & 0xFF  // 提取高 8 位
+    num & 0xFF, // 提取低 8 位
+    (num >> 8) & 0xFF, // 提取高 8 位
   ]
 }
 
 /**
  * 获取 低8位 和 高8位 的一个整数
- * @param {array} - 输入 低8位 和 高8位
+ * @param {Array} - 输入 低8位 和 高8位
  * @returns {number} num - 整数
  */
 export function combineLowAndHigh8Bits(low8Bits: number, high8Bits: number): number {
-  return (high8Bits << 8) | low8Bits;
+  return (high8Bits << 8) | low8Bits
 }
 
 export function insertAt9th(str: string, char: string) {
-  if (str.length < 8) return str + char;
-  return str.slice(0, 8) + char + str.slice(8);
+  if (str.length < 8)
+    return str + char
+  return str.slice(0, 8) + char + str.slice(8)
 }
 
 export function removeAt9th(str: string) {
-  if (str.length < 9) return str;
-  return str.slice(0, 8) + str.slice(9);
+  if (str.length < 9)
+    return str
+  return str.slice(0, 8) + str.slice(9)
 }
 
 export function jsonToBase64(jsonObj: object) {
-  const jsonString = JSON.stringify(jsonObj);
-  return btoa(unescape(encodeURIComponent(jsonString)));
+  const jsonString = JSON.stringify(jsonObj)
+  return btoa(unescape(encodeURIComponent(jsonString)))
 }
 
 export function base64ToJson(base64Str: string) {
-  const jsonString = decodeURIComponent(escape(atob(base64Str)));
-  return JSON.parse(jsonString);
+  const jsonString = decodeURIComponent(escape(atob(base64Str)))
+  return JSON.parse(jsonString)
 }
-
 
 /**
  *
  * @param base64
  * @returns 检查base64配置文件是否有效
  */
-export function checkProfile(base64: string): Boolean {
+export function checkProfile(base64: string): boolean {
   if (base64) {
     try {
       const profile = base64ToJson(base64)
@@ -120,7 +124,8 @@ export function checkProfile(base64: string): Boolean {
       if (['Left', 'Right', 'Wheel', 'Forward', 'Back', 'dpi', 'angle_slider'].every(key => Object.keys(profile).includes(key))) {
         return profile
       }
-    } catch (e) {}
+    }
+    catch (e) {}
   }
   return false
 }
@@ -131,8 +136,8 @@ export function checkProfile(base64: string): Boolean {
  * @returns
  */
 export function encodeStringToArrayBuffer(str: string) {
-  const encoder = new TextEncoder();  // 创建 TextEncoder 实例
-  return encoder.encode(str);  // 将字符串转换为 Uint8Array
+  const encoder = new TextEncoder() // 创建 TextEncoder 实例
+  return encoder.encode(str) // 将字符串转换为 Uint8Array
 }
 
 /**
@@ -141,10 +146,30 @@ export function encodeStringToArrayBuffer(str: string) {
  * @returns
  */
 export function decodeArrayBufferToString(arrayBuffer: Uint8Array) {
-  const decoder = new TextDecoder();  // 创建 TextDecoder 实例
-  return decoder.decode(arrayBuffer);  // 解码 Uint8Array 为字符串
+  const decoder = new TextDecoder() // 创建 TextDecoder 实例
+  return decoder.decode(arrayBuffer) // 解码 Uint8Array 为字符串
 }
 
+/**
+ *
+ * @param arrayBuffer 将 Uint8Array 转换为普通数组
+ * @returns
+ */
+export function decodeArrayBufferToArray(arrayBuffer: Uint8Array) {
+  // 创建一个与ArrayBuffer相关联的Uint8Array视图
+  let typedArray = new Uint8Array(arrayBuffer)
+
+  // 创建一个新的数组对象
+  let newArray = []
+
+  // 将ArrayBuffer的内容复制到新数组中
+  for (let i = 0; i < typedArray.length; i++) {
+    newArray.push(typedArray[i])
+  }
+
+  // 返回转换后的数组
+  return newArray
+}
 
 /**
  * 删除数组中的某一项，并返回被删除的项
@@ -154,12 +179,72 @@ export function decodeArrayBufferToString(arrayBuffer: Uint8Array) {
  */
 export function removeItem<T>(arr: T[], index: number): T | undefined {
   if (index < 0 || index >= arr.length) {
-      return undefined; // 索引超出范围时返回 undefined
+    return undefined // 索引超出范围时返回 undefined
   }
-  return arr.splice(index, 1)[0]; // splice 返回一个数组，取第一个元素
+  return arr.splice(index, 1)[0] // splice 返回一个数组，取第一个元素
 }
-
 
 export function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
+  return JSON.parse(JSON.stringify(obj))
 }
+
+// 返回格式转换, 5个一组,
+
+export function processArrayToObject(originalArray: any, groupSize = 5) {
+  const result = {} as any
+  const totalGroups = originalArray.length / groupSize
+
+  for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
+    // 计算当前组的起始索引
+    const startIndex = groupIndex * groupSize
+    // 获取当前组的 key (第一个元素)
+    const key = originalArray[startIndex]
+    // 获取当前组的 value (剩余的所有元素)
+    const valueArray = originalArray.slice(startIndex + 1, startIndex + groupSize)
+
+    // 将4位的value数组转换为2个数字
+    // valueArray = [a, b, c, d]
+    // 第一个数字: a (低8位) + b << 8 (高8位)
+    // 第二个数字: c (低8位) + d << 8 (高8位)
+    const num1 = combineLowAndHigh8Bits(valueArray[0], valueArray[1])
+    const num2 = combineLowAndHigh8Bits(valueArray[2], valueArray[3])
+
+    // 将转换后的两个数字作为值
+    result[key] = [num1, num2]
+  }
+
+  return result
+}
+
+// export function processArrayToObject(originalArray: number[], groupSize = 5): Record<number, [number, number]> {
+//   const result: Record<number, [number, number]> = {}
+
+//   // 固定生成0-5的key
+//   const totalGroups = 5 // 0,1,2,3,4,5
+
+//   for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
+//     const startIndex = groupIndex * (groupSize - 1) // 每组需要4个值（去掉key）
+
+//     // 获取当前组对应的值数组
+//     let valueArray: number[] = []
+
+//     if (startIndex < originalArray.length) {
+//       // 从原始数组中获取值
+//       valueArray = originalArray.slice(startIndex, startIndex + (groupSize - 1))
+//     }
+
+//     // 如果值不足4个，用默认值100填充
+//     while (valueArray.length < groupSize - 1) {
+//       valueArray.push(100)
+//     }
+
+//     // 确保有4个值进行处理
+//     const num1 = combineLowAndHigh8Bits(valueArray[0], valueArray[1])
+//     const num2 = combineLowAndHigh8Bits(valueArray[2], valueArray[3])
+
+//     // key从0到5
+//     result[groupIndex] = [num1, num2]
+//   }
+
+//   return result
+// }
