@@ -708,9 +708,14 @@ async function sendDpi(index?: number) {
     return arr
   }, [])
 
-  // if(profileInfo.dpi_slider_active_index == index){
-  //   return
-  // }
+  if(profileInfo.dpi_slider_active_index != index){
+    // eslint-disable-next-line ts/no-use-before-define
+    dpi_slider_edit.value = null
+    // eslint-disable-next-line ts/no-use-before-define
+    dpi_slider_value.value = ''
+  }
+
+
 
   if (index !== undefined) {
     profileInfo.dpi_slider_active_index = index
@@ -721,10 +726,6 @@ async function sendDpi(index?: number) {
 
   dpi_progress.value = false
 
-  // eslint-disable-next-line ts/no-use-before-define
-  dpi_slider_edit.value = null
-  // eslint-disable-next-line ts/no-use-before-define
-  dpi_slider_value.value = ''
   onExecutionSuccess()
 }
 // newLength: number | undefined, oldLength: number | undefined
@@ -1602,6 +1603,11 @@ function dpiEditValue(editActive, value) {
   })
 }
 
+function inputSendDpi(value,index){
+  profileInfo.dpi_slider_list[index] = value
+  sendDpi(index)
+}
+
 const { copied, copy } = useClipboard({ source: base64 })
 
 watch(copied, (newV) => {
@@ -1879,18 +1885,18 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         <div style="font-size: 14px;" :style="{ 'margin-bottom': !!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index] ? '0px' : '30px' }">
                           等级 {{ index + 1 }}
                         </div>
-                        <div v-if="!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]" style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick.stop="dpiEditValue(index, item)">
-                          <!-- <input ref="dpiInputRef" v-if="dpi_slider_edit === index" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="sendDpi(index)" @keyup.enter="sendDpi(index)"> -->
-                          <span>{{ item }}</span>
+                        <div v-if="!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]" style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick="dpiEditValue(index, item)">
+                          <input ref="dpiInputRef" v-if="dpi_slider_edit === index" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="inputSendDpi(dpi_slider_value,index)" @keyup.enter="inputSendDpi(dpi_slider_value,index)">
+                          <span v-else>{{ item }}</span>
                         </div>
 
                         <template v-else>
                           <span style="font-size:10px">X</span>
-                          <div style="width: 69px; text-align: center;border:1px solid #444444; border-radius: 10px;">
+                          <div style="width: 69px; text-align: center; border-radius: 10px;">
                             <input ref="dpiInputRef" v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                           <span style="font-size:10px">Y</span>
-                          <div style="width: 69px; text-align: center;border:1px solid #444444; border-radius: 10px;">
+                          <div style="width: 69px; text-align: center; border-radius: 10px;">
                             <input ref="dpiInputRef" v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                         </template>
