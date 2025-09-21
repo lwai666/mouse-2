@@ -1736,10 +1736,6 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
     <div class="logo-box absolute right-90px top-50px">
       <img v-for="item in selectLanguageList" :key="item.title" class="h-38px w-38px" :src="item.img" :alt="item.title" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales(item.language)">
-      <!-- <img class="h-38px w-38px" src="/flag/DE.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover; " @click="toggleLocales('de-DE')">
-      <img class="h-38px w-38px" src="/flag/JP.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales('ja-JP')">
-      <img class="h-38px w-38px" src="/flag/KR.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales('ko-KR')">
-      <img class="h-38px w-38px" src="/flag/US.png" alt="logo" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales('en-US')"> -->
     </div>
 
     <div class="profile-item absolute right-190px top-260px w-24% flex items-center">
