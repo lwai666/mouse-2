@@ -296,7 +296,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       `)
     }
     // 灵敏度&速度开关
-    else if (res[0] == 0x24) {
+    else if (res[0] === 0x24) {
       console.log(res,'0x240x24')
       // const macroName = decodeArrayBufferToString(new Uint8Array(res.slice(4, 4 + res[2])))
       // // 0-5 （左，右，中，前进，后退，dpi）   6-9 录制宏（球1-球4）
