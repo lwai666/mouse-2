@@ -102,10 +102,10 @@ const sliderDefaultSelectOptions = {
   ],
   // angle_slider: [{ label: '-30', value: 1 },{ label: '-10', value: 2 },{ label: '0', value: 3 },{ label: '15', value: 4 },{ label: '30', value: 5 }],
   angle_slider: [
-    { label: '-30°', value: -30 },
-    { label: '-10°', value: -10 },
-    { label: '15°', value: 15 },
-    { label: '30°', value: 30 },
+    { label: '5°', value: 5 },
+    { label: '20°', value: 20 },
+    // { label: '15°', value: 15 },
+    // { label: '30°', value: 30 },
   ],
 }
 const sliderOptions = {
@@ -709,14 +709,12 @@ async function sendDpi(index?: number) {
     return arr
   }, [])
 
-  if(profileInfo.dpi_slider_active_index != index){
+  if (profileInfo.dpi_slider_active_index != index) {
     // eslint-disable-next-line ts/no-use-before-define
     dpi_slider_edit.value = null
     // eslint-disable-next-line ts/no-use-before-define
     dpi_slider_value.value = ''
   }
-
-
 
   if (index !== undefined) {
     profileInfo.dpi_slider_active_index = index
@@ -1323,13 +1321,11 @@ function radioChange() {
 }
 
 async function setDPIXY() {
-  let DPIStartListCopy = profileInfo.DPIStartList
-
+  const DPIStartListCopy = profileInfo.DPIStartList
   DPIStartListCopy[profileInfo.dpi_slider_active_index] = DPIStartListCopy[profileInfo.dpi_slider_active_index] === 0 ? 1 : 0
-
   profileInfo.DPIStartList = DPIStartListCopy
-
   await transport?.value.send([0x25, 0x00, profileInfo.dpi_slider_list.length, ...profileInfo.DPIStartList])
+  setLoadingStatus()
 }
 
 async function FPSChange(type) {
@@ -1633,7 +1629,7 @@ function dpiEditValue(editActive, value) {
   })
 }
 
-function inputSendDpi(value,index){
+function inputSendDpi(value, index) {
   profileInfo.dpi_slider_list[index] = value
   sendDpi(index)
 }
@@ -1908,11 +1904,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         style="width: 99.56px;height: 118px;padding-top: 7px;flex-direction: column;"
                         @click="sendDpi(index)"
                       >
-                        <div style="font-size: 14px;" :style="{ 'margin-bottom': !!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index] ? '0px' : '30px' }">
+                        <div style="font-size: 14px;" :style="{ 'margin-bottom': !!profileInfo.DPIStartList[index] ? '0px' : '30px' }">
                           等级 {{ index + 1 }}
                         </div>
-                        <div v-if="!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]" style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick="dpiEditValue(index, item)">
-                          <input ref="dpiInputRef" v-if="dpi_slider_edit === index" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="inputSendDpi(dpi_slider_value,index)" @keyup.enter="inputSendDpi(dpi_slider_value,index)">
+                        <div v-if="!profileInfo.DPIStartList[index]" style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick="dpiEditValue(index, item)">
+                          <input v-if="dpi_slider_edit === index" ref="dpiInputRef" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="inputSendDpi(dpi_slider_value, index)" @keyup.enter="inputSendDpi(dpi_slider_value, index)">
                           <span v-else>{{ item }}</span>
                         </div>
 
@@ -1967,7 +1963,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <CustomSlider
                     v-if="!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"
                     v-model="profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0]"
-                    class="dpi_slider slider1 absolute bottom-20 w-90%"
+                    class="dpi_slider slider1 absolute bottom-23 w-90%"
                     :bind="sliderOptions.dpi_slider"
                     :default-select-options="sliderDefaultSelectOptions.dpi_slider"
                     :double-click-edit="true"
