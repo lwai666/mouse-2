@@ -12,7 +12,7 @@ import autofit from 'autofit.js'
 // 引入柱状图图表，图表后缀都为 Chart
 import { LineChart } from 'echarts/charts'
 // 引入标题，提示框，直角坐标系，数据集，内置数据转换器组件，组件后缀都为 Component
-import { DatasetComponent, GraphicComponent, GridComponent, TitleComponent, TooltipComponent, TransformComponent } from 'echarts/components'
+import { DatasetComponent, GraphicComponent, GridComponent, TitleComponent, TooltipComponent, TransformComponent, VisualMapComponent } from 'echarts/components'
 
 // 引入 echarts 核心模块，核心模块提供了 echarts 使用必须要的接口。
 import * as echarts from 'echarts/core'
@@ -45,6 +45,7 @@ echarts.use([
   LabelLayout,
   UniversalTransition,
   CanvasRenderer,
+  VisualMapComponent,
 ])
 
 export type MouseButtonType = 'Left' | 'Right' | 'Wheel' | 'Forward' | 'Back' | 'dpi'
@@ -1370,6 +1371,20 @@ function activeBgChange(type) {
   if (type === 'advanced') {
     nextTick(() => {
       initEcharts()
+
+      // setTimeout(() => {
+      //   myChart.value.setOption({
+      //     visualMap: {
+      //       pieces: [
+      //         {
+      //           gt: 0,
+      //           lt: 150,
+      //           color: 'rgb(0, 0, 180)',
+      //         },
+      //       ],
+      //     },
+      //   })
+      // }, 1500)
     })
   }
 }
@@ -1383,6 +1398,7 @@ const myChart = ref(null)
 const chart = ref(null)
 const xAxisMax = ref(250)
 const yAxisMax = ref(60)
+const pieces = ref(100)
 const initData = ref([
   [0, 40],
   [38, 42],
@@ -1445,6 +1461,19 @@ function initEcharts() {
         },
       },
     },
+    visualMap: {
+      type: 'piecewise',
+      show: false,
+      dimension: 0,
+      seriesIndex: 0,
+      pieces: [
+        {
+          gt: 0,
+          lt: 100,
+          color: 'rgba(219, 255, 6, .5)',
+        },
+      ],
+    },
 
     series: [
       {
@@ -1453,6 +1482,7 @@ function initEcharts() {
         smooth: true,
         symbolSize,
         data: initData.value,
+        areaStyle: {},
         itemStyle: {
           color: '#DAFF00', // 折线点颜色（番茄色）
         },
