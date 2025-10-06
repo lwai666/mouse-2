@@ -11,7 +11,7 @@ const messages = {
     switchToChinese: '中文'
   },
   zh: {
-    mouseName: '鼠标名称',
+    mouseName: 'v8鼠标',
     productId: '鼠标 ProductID',
     version: '鼠标版本号',
     rfAddress: '鼠标 RF Address',
