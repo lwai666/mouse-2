@@ -140,7 +140,7 @@ defineExpose({ mouseButtonCascaderRef })
         <div class="flex items-center justify-center">
           <div class="absolute left-[-105px] flex items-center justify-center">
             <p v-if="active1 === 'active1'" class="absolute left-[-190px]" style="color: #CF0EFF">
-              点击执行设置你设定的宏
+              {{ t('button.macro_execution_description') }}
             </p>
             <img
               style="margin-right: 5px;"
@@ -148,7 +148,7 @@ defineExpose({ mouseButtonCascaderRef })
               alt="" srcset="" @click="changeActive1('active1')"
             >
             <div style="z-index: 1; width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click.stop="onChangeRadioGroup">
-              执行
+              {{ t('button.macro_execute') }}
             </div>
           </div>
           {{ hongName }}
@@ -176,7 +176,7 @@ defineExpose({ mouseButtonCascaderRef })
           </ElRadioGroup> -->
           <div class="flex items-center">
             <p v-if="active === 'active'" class="absolute left-[-315px]" style="color: #159FFF">
-              双击下划线输入你设定的宏想要执行的次数
+              {{ t('button.macro_loop_count_input') }}
             </p>
             <img
               style="margin-right: 15px;"
@@ -184,17 +184,19 @@ defineExpose({ mouseButtonCascaderRef })
               alt="" srcset="" @click="changeActive('active')"
             >
             <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 4 }" style="width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px">
-              宏执行
+              {{ t('button.macro_execution') }}
+
               <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
               {{ t('mouseConnection.times') }}
             </div>
             <div style="width: 49.06px;height: 21.68px;border-radius: 14px;background: #0E5383;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click="onEnterKey">
-              确认
+              {{ t('macro.confirm') }}
             </div>
           </div>
           <div class="mb-3 ml-11 mt-5 flex items-center">
             <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 1 }" style="text-align: right; width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 1">
-              宏执行
+              {{ t('button.macro_execution') }}
+
               N
               {{ t('mouseConnection.times') }}
             </div>
@@ -203,13 +205,13 @@ defineExpose({ mouseButtonCascaderRef })
 
           <div class="mb-3 flex items-center">
             <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 2 }" style="text-align: right; width: 195px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 2">
-              宏执行直至按键释放
+              {{ t('button.macro_execute_until_release') }}
             </div>
           </div>
 
           <div class="mb-3 flex items-center">
             <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 3 }" style="text-align: right; width: 249px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 3">
-              宏执行直至按键再次被按下
+              {{ t('button.macro_execute_until_repressed') }}
             </div>
           </div>
         </div>

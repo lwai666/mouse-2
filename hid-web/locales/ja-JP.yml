@@ -53,6 +53,14 @@ button:
   forward_button: 進むボタン
   back_button: 戻るボタン
   keyboard_key: キーボードキー
+  application: 適用
+  save: 保存
+  macro_execution_description: 設定したマクロを実行するにはクリック
+  macro_execute: 実行
+  macro_loop_count_input: 下線をダブルクリックしてマクロの実行回数を入力
+  macro_execution: マクロ実行
+  macro_execute_until_release: キーを離すまでマクロ実行
+  macro_execute_until_repressed: 再度押されるまでマクロ実行
 
 message:
   warning: 通知
@@ -64,7 +72,8 @@ message:
   pairing_connection: マウスをペアリングモードにしてください（左、中央、右ボタンを28秒間同時に押し、ペアリングLEDが高速点滅するまで待ちます）。その後、レシーバーの近くでボタンをクリックするか、キーボードのスペースキーを押してペアリングを開始してください
   pairing_connection_success: ペアリング成功！
   execution_success: 設定が適用され、保持されています！
-
+  format_error: フォーマットエラー
+  delete_macro_error: まずすべての接続を削除してください！
 not-found: ページが見つかりません
 
 tips:
@@ -133,6 +142,38 @@ tips:
     title: 角度調整
     description: マウスの持ち方に合わせて適切な角度に調整できます
 
+  application:
+    description: 現在のモードのすべての設定がコピーされ、貼り付けて友達と共有できます
+    description1: 適用するには、行の上のコードをダブルクリックし、右クリックで貼り付け置換して適用します
+  macro_set:
+    title: マクロ設定
+    description: 下線部をクリックし、1〜40のループ回数を入力してEnterキーを押すか、オプションの左側のボールをクリックして実行し保存します。
+  sensitivity_enable_xy:
+    title: X-Yを有効にする
+    description: この機能を有効にすると、マウス移動時のX軸とY軸の感度を個別に設定できます。
+
+title:
+  sensitivity_settings_heading: 感度設定
+  sensitivity_level: レベル
+  polling_rate: ポーリングレート(Hz)
+  lod_height: LOD 高さ
+  response_time: 応答時間
+  sleep_time: スリープ時間
+  rotation_angle: 回転角度
+  key_list: キーリスト
+  input_speed: 入力速度(カウント/ミリ秒)
+  output_input_ratio: 出力と入力の比率
+  select_preset: プリセット選択
+  sensitivity_preset_classic: クラシック
+  sensitivity_preset_natural: ナチュラル
+  sensitivity_preset_jump: ジャンプ
+  sensitivity_preset_custom: カスタム
+  none: なし
+  straight_line_correction: 直線補正
+  straight_line_correction_action: システムはマウスカーソルの移動軌跡を修正します
+  straight_line_correction_reason: 動作の揺れによるわずかな軌跡の曲率に対して。
+  straight_line_correction_warning: アルゴリズムの介入により、わずかなデータ遅延が発生します。究極のeスポーツ体験を求める場合は注意してご利用ください。
+
 mouseKeyOptions:
   switch_polling_rate: レポートレート切替
   left_button: 左ボタン
@@ -167,3 +208,48 @@ mouseKeyOptions:
   stop_web: ウェブ停止
   refresh: 更新
   favorites: お気に入り
+
+macro:
+  Macro: マクロ
+  newMacro: 新規マクロ
+  insertMacro: 挿入
+  recordMacro: 記録
+  stopRecording: 停止
+  startRecording: 開始
+  saveMacro: 保存
+  dynamicSensitivity: 動的感度
+  confirm: 確認
+  cancel: キャンセル
+
+tabs:
+  competitiveMode: 競技モード
+  performanceMode: パフォーマンスモード
+  MotionMode: モーションモード
+  Performance: パフォーマンス
+  Advanced: 詳細設定
+
+deviceManagement:
+  pairing: ペアリング
+  restoreFactory: 工場出荷時設定に戻す
+
+description:
+  main_ui_heading: 好みのマウス速度またはカスタム加速出力を選択してください。
+  sensitivity_preset_classic: 伝統的な感度設定を採用し、日常使用での精密な制御に最適です。
+  main_ui_subheading: 精度と応答性を最適化。
+  main_ui_description: プリセットまたはお好みのカスタム設定を使用して、マウスの応答速度と加速度をニーズに合わせて調整します。
+  sensitivity_preset_natural: 予測可能なカーソル移動、最大感度に上限あり。
+  sensitivity_preset_jump: 遅い動きでは低感度を使用し、素早い動きでは即座に高感度に切り替えます。
+  sensitivity_preset_jump1: 超低感度を好むFPSプレイヤーに理想的な選択肢であり、素早い動きの中で180度ターンを優れた制御性で実現できます。
+  sensitivity_preset_custom: あなた自身の動的感度設定。
+  high_performance_warning_20k: 20K FPSを有効にすると消費電力が大幅に増加し、バッテリー持続時間が減少します。
+  high_performance_requirement: 現在のポーリングレートは4K未満であるか、競技モードがアクティブではありません。20K FPSを有効にするには、より高いデータ伝送速度が必要です。20K FPSのデータ量は大きいため、伝送速度が不十分な条件下では、データの過負荷、歪み、遅延、その他の不安定性が発生する可能性があります。ポーリングレートを4Kに調整しました。20K FPSを有効にする前に競技モードを有効にしてください。
+  settings_saved: 設定を保存しました。
+  competitive_mode_description: このモードでは、すべてのマウスパラメータが競技プレイ用に強化され、
+  competitive_mode_description1: 同時に消費電力が大幅に増加します。
+  performance_mode_description: このモードでは、すべてのマウスパラメータがプロレベルの強化トレーニング用に強化されます。
+  receiver_pairing_instructions: レシーバーとのペアリング説明
+  factory_reset_confirmation: 「確認」をクリック後、
+  factory_reset_confirmation1: マウスは工場出荷時のデフォルト設定に復元されます。
+  left_button_restriction: 左ボタンは保持する必要があります。
+  left_button_restriction1: 左ボタンは選択時に決定的な役割を果たすため、変更できません。
+  power_consumption_increase_note: 同時に消費電力も相応に増加します。

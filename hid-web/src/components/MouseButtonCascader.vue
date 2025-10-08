@@ -130,10 +130,10 @@ function mouseButtonClick() {
   mouseButtonClickFn()
 }
 
-function executeFn(item){
-  let kIndex = props.options.findIndex((k)=>k.value == 1999)
-  let cIndex = props.options[kIndex].children.findIndex((j)=>j.value == item.value)
-  onSelect(item,1999,cIndex)
+function executeFn(item) {
+  let kIndex = props.options.findIndex(k => k.value == 1999)
+  let cIndex = props.options[kIndex].children.findIndex(j => j.value == item.value)
+  onSelect(item, 1999, cIndex)
 }
 
 defineExpose({ show, open, close })
@@ -152,12 +152,13 @@ defineExpose({ show, open, close })
         >
           <template v-if="!item.hidden && item.value !== 1999">
             <div class="relative flex items-center">
-              <div 
-                v-if="item.value > 1999" 
-                class="ml-3 flex items-center justify-center absolute left-[-76px] backgroundHover"  
-                @click="executeFn(item)"
-                style="z-index: 1; width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A8280;color: #fff; font-size: 14px;"  @click.stop="onChangeRadioGroup">
-                执行
+              <div
+                v-if="item.value > 1999"
+                class="backgroundHover absolute left-[-76px] ml-3 flex items-center justify-center"
+                style="z-index: 1; width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A8280;color: #fff; font-size: 14px;"
+                @click="executeFn(item)" @click.stop="onChangeRadioGroup"
+              >
+                {{ t('button.macro_execute') }}
               </div>
               <span :class="[!disabled ? 'hover_text' : '']">{{ t(item.label) }}</span>
             </div>
@@ -187,8 +188,8 @@ defineExpose({ show, open, close })
                 v-for="(child, kIndex) in item.children"
                 :key="child.value"
                 class="pointer-events-auto opacity-30 transition-all duration-500 hover:opacity-100"
-                @click.stop="disabled ? () => {} : onSelect(child, item.value, kIndex)"
                 :class="[!disabled ? 'hover_text' : '']"
+                @click.stop="disabled ? () => {} : onSelect(child, item.value, kIndex)"
               >
                 {{ t(child.label) }}
               </li>
@@ -212,12 +213,12 @@ defineExpose({ show, open, close })
       white-space: nowrap;
     }
   }
-  .backgroundHover:hover{
-    background: #6A0A82 !important;
+  .backgroundHover:hover {
+    background: #6a0a82 !important;
   }
 
-  .hover_text:hover{
-    color: #DAFF00 !important; 
+  .hover_text:hover {
+    color: #daff00 !important;
   }
 }
 </style>

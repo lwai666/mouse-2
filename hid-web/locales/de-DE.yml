@@ -53,6 +53,14 @@ button:
   forward_button: Vorwärts-Taste
   back_button: Rückwärts-Taste
   keyboard_key: Tastatur-Taste
+  application: Anwenden
+  save: Speichern
+  macro_execution_description: Klicken Sie, um Ihr festgelegtes Makro auszuführen
+  macro_execute: Ausführen
+  macro_loop_count_input: Doppelklicken Sie auf den Unterstrich, um die gewünschte Ausführungsanzahl des Makros einzugeben
+  macro_execution: Makroausführung
+  macro_execute_until_release: Makroausführung bis Taste losgelassen
+  macro_execute_until_repressed: Makroausführung bis Taste erneut gedrückt
 
 message:
   warning: Hinweis
@@ -64,6 +72,8 @@ message:
   pairing_connection: Bitte versetzen Sie die Maus in den Kopplungsmodus (linke, mittlere und rechte Taste 28 Sekunden lang gedrückt halten, bis die Kopplungsanzeige schnell blinkt), dann in die Nähe des Empfängers bringen und die Taste drücken oder die Leertaste auf der Tastatur drücken
   pairing_connection_success: Kopplung erfolgreich!
   execution_success: Einstellungen wurden ausgeführt und beibehalten!
+  format_error: Formatfehler
+  delete_macro_error: Bitte löschen Sie zuerst alle Verbindungen!
 
 not-found: Seite nicht gefunden
 
@@ -132,6 +142,15 @@ tips:
   angle:
     title: Winkeleinstellung
     description: Sie können den Winkel basierend auf Ihrer bevorzugten Mausgriffhaltung anpassen
+  application:
+    description: Alle Einstellungen des aktuellen Modus wurden kopiert und können über Einfügen mit Freunden geteilt werden
+    description1: Zum Anwenden doppelklicken Sie den Code über dem Strich, klicken Sie mit der rechten Maustaste, um zu ersetzen, und wenden Sie an
+  macro_set:
+    title: Makro-Einstellungen
+    description: Klicken Sie auf den unterstrichenen Bereich, geben Sie die Schleifenanzahl (1-40) ein und drücken Sie Enter oder klicken Sie auf die Kugel links von der Option, um auszuführen und zu speichern.
+  sensitivity_enable_xy:
+    title: X-Y aktivieren
+    description: Nach Aktivierung können Sie die Empfindlichkeitswerte für die X- und Y-Achse getrennt einstellen.
 
 mouseKeyOptions:
   switch_polling_rate: Abtastrate umschalten
@@ -167,3 +186,69 @@ mouseKeyOptions:
   stop_web: Web stoppen
   refresh: Aktualisieren
   favorites: Favoriten
+
+title:
+  sensitivity_settings_heading: Empfindlichkeitseinstellungen
+  sensitivity_level: Stufe
+  polling_rate: Abtastrate (Hz)
+  lod_height: LOD-Höhe
+  response_time: Reaktionszeit
+  sleep_time: Ruhezeit
+  rotation_angle: Drehwinkel
+  key_list: Tastenliste
+  input_speed: Eingabegeschwindigkeit (Zählung/Millisekunde)
+  output_input_ratio: Ausgabe-zu-Eingabe-Verhältnis
+  select_preset: Vorlage auswählen
+  sensitivity_preset_classic: Klassisch
+  sensitivity_preset_natural: Natürlich
+  sensitivity_preset_jump: Sprung
+  sensitivity_preset_custom: Benutzerdefiniert
+  none: Keine
+  straight_line_correction: Gerade Linien Korrektur
+  straight_line_correction_action: Das System korrigiert die Mauszeigerbewegung
+  straight_line_correction_reason: bei leichter Bahnkrümmung durch Bewegungszittern.
+  straight_line_correction_warning: Durch den Algorithmus entsteht eine minimale Datenverzögerung. Für ein ultimatives E-Sport-Erlebnis mit Vorsicht zu genießen.
+macro:
+  Macro: Makro
+  newMacro: Neues Makro
+  insertMacro: Einfügen
+  recordMacro: Aufnehmen
+  stopRecording: Stopp
+  startRecording: Start
+  saveMacro: Speichern
+  dynamicSensitivity: Dynamische Empfindlichkeit
+  confirm: Bestätigen
+  cancel: Abbrechen
+
+tabs:
+  competitiveMode: Wettkampfmodus
+  performanceMode: Leistungsmodus
+  MotionMode: Bewegungsmodus
+  Performance: Leistung
+  Advanced: Erweitert
+
+deviceManagement:
+  pairing: Kopplung
+  restoreFactory: Werkszustand
+
+description:
+  main_ui_heading: Wählen Sie Ihre bevorzugte Mausgeschwindigkeit oder benutzerdefinierte Beschleunigungsausgabe.
+  sensitivity_preset_classic: Verwendet traditionelle Empfindlichkeitseinstellungen, ideal für präzise Steuerung im täglichen Gebrauch.
+  main_ui_subheading: Optimierte Präzision und Reaktionsgeschwindigkeit.
+  main_ui_description: Verwenden Sie Voreinstellungen oder benutzerdefinierte Einstellungen, um die Mausreaktionsgeschwindigkeit und Beschleunigung an Ihre Bedürfnisse anzupassen.
+  sensitivity_preset_natural: Vorhersehbare Cursorbewegung mit einer Obergrenze für die maximale Empfindlichkeit.
+  sensitivity_preset_jump: Verwendet niedrige Empfindlichkeit bei langsamer Bewegung und schaltet sofort auf hohe Empfindlichkeit bei schnellen Bewegungen um.
+  sensitivity_preset_jump1: Die ideale Wahl für FPS-Spieler, die ultra-niedrige Empfindlichkeit bevorzugen und dennoch 180-Grad-Drehungen bei schnellen Bewegungen mit hervorragender Kontrolle ausführen können.
+  sensitivity_preset_custom: Ihre eigenen dynamischen Empfindlichkeitseinstellungen.
+  high_performance_warning_20k: Das Aktivieren von 20K FPS erhöht den Stromverbrauch erheblich und verringert die Akkulaufzeit.
+  high_performance_requirement: Die aktuelle Abtastrate liegt unter 4K oder der Wettkampfmodus ist nicht aktiviert. 20K FPS erfordert eine höhere Datenübertragungsrate. Da die Datenmenge von 20K FPS groß ist, kann es bei unzureichender Übertragungsrate zu Datenüberlastung, Verzerrung, Verzögerung und anderen Instabilitäten kommen. Wir haben Ihre Abtastrate auf 4K eingestellt. Bitte aktivieren Sie den Wettkampfmodus, bevor Sie 20K FPS aktivieren.
+  settings_saved: Einstellungen gespeichert.
+  competitive_mode_description: In diesem Modus werden alle Mausparameter für den Wettkampf verbessert,
+  competitive_mode_description1: gleichzeitig steigt der Stromverbrauch erheblich.
+  performance_mode_description: In diesem Modus werden alle Mausparameter für professionelles intensives Training verbessert.
+  receiver_pairing_instructions: Anleitung zur Kopplung mit dem Empfänger
+  factory_reset_confirmation: Nach dem Klicken auf "Bestätigen",
+  factory_reset_confirmation1: wird die Maus auf die Werkseinstellungen zurückgesetzt.
+  left_button_restriction: Die linke Taste muss beibehalten werden.
+  left_button_restriction1: Die linke Taste ist entscheidend für die Auswahl und kann daher nicht geändert werden.
+  power_consumption_increase_note: Der Stromverbrauch wird entsprechend steigen.

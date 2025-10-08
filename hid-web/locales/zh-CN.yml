@@ -51,6 +51,14 @@ button:
   forward_button: 前进
   back_button: 后退
   keyboard_key: 键盘按键
+  application: 应用
+  save: 保存
+  macro_execution_description: 点击执行设置你设定的宏
+  macro_execute: 执行
+  macro_loop_count_input: 双击下划线输入你设定的宏想要执行的次数
+  macro_execution: 宏执行
+  macro_execute_until_release: 宏执行直至按键释放
+  macro_execute_until_repressed: 宏执行直至按键再次被按下
 message:
   warning: 提示
   format_error: 格式错误
@@ -63,8 +71,13 @@ message:
   pairing_connection_success: 配对成功！
   execution_success: 设置已执行并保持!
   delete_macro_error: 请先删除所有连线!
-not-found: 未找到页面
+  not-found: 未找到页面
+
 tips:
+  application:
+    description: 已复制当前模式所有设置，可以通过粘贴分享给好友应用
+    description1: 应用时双击横杠上代码点击鼠标右键粘贴替换，应用即可
+
   clone:
     title: 克隆
     description: 点击密钥后面的图标复制这段密钥通过社交工具粘贴分享给你的队友并告诉他将这段密钥粘贴在此处随后点击应用那么你的朋友就克隆了你当前模式下的所有设置 双击左边的 Profile 1 名称需改成你的理想名称 \n 除板载默认 Profile 1 组外
@@ -132,6 +145,11 @@ tips:
   angle:
     title: 角度调节
     description: 可以根据自己习惯握持鼠标的姿势调整到适应的角度
+
+  sensitivity_enable_xy:
+    title: 启用X-Y
+    description: 开启该功能后可以分别设定鼠标在滑动时的x轴与y轴的灵敏度值。
+
 mouseKeyOptions:
   switch_polling_rate: 切换回报率
   left_button: 左键
@@ -166,3 +184,69 @@ mouseKeyOptions:
   stop_web: 停止网页
   refresh: 刷新
   favorites: 收藏夹
+
+title:
+  sensitivity_settings_heading: 灵敏度设置
+  sensitivity_level: 等级
+  polling_rate: 轮询率(Hz)
+  lod_height: LOD 高度
+  response_time: 响应时间
+  sleep_time: 休眠时间
+  rotation_angle: 旋转角度
+  key_list: 按键列表
+  input_speed: 输入速度(计数/毫秒)
+  output_input_ratio: 输出与输入比率
+  select_preset: 选择模板
+  sensitivity_preset_classic: 经典
+  sensitivity_preset_natural: 自然
+  sensitivity_preset_jump: 跳跃
+  sensitivity_preset_custom: 自定义
+  none: 无
+  straight_line_correction: 直线修正
+  straight_line_correction_action: 系统将修正鼠标光标移动轨迹时
+  straight_line_correction_reason: 因动作抖动产生的轻微的轨迹曲率。
+  straight_line_correction_warning: 因运行算法的介入，会导致微小的数据延迟。追求极致电竞体验慎用。
+macro:
+  Macro: 宏
+  newMacro: 新建宏
+  insertMacro: 插入
+  recordMacro: 录制
+  stopRecording: 停止
+  startRecording: 开始
+  saveMacro: 保 存
+  dynamicSensitivity: 动态灵敏度
+  confirm: 确认
+  cancel: 取消
+
+tabs:
+  competitiveMode: 竞技模式
+  performanceMode: 性能模式
+  MotionMode: 运动模式
+  Performance: 性能
+  Advanced: 高级
+
+deviceManagement:
+  pairing: 配对
+  restoreFactory: 恢复出厂设置
+
+description:
+  main_ui_heading: 选择你喜欢的鼠标速度或自定义加速输出。
+  sensitivity_preset_classic: 采用传统的灵敏度设置，非常适合在日常使用中进行精确控制。
+  main_ui_subheading: 优化了精度和响应速度。
+  main_ui_description: 使用预设或你喜欢的自定义设置来调整鼠标的响应速度和加速度，使其适应你的需求。
+  sensitivity_preset_natural: 光标移动可预测，最大灵敏度有上限。
+  sensitivity_preset_jump: 缓慢移动时使用低灵敏度，快速移动时立即转换为高灵敏度。
+  sensitivity_preset_jump1: 是喜欢超低灵敏度的 FPS 玩家的理想之选，同时还能在快速移动中完成 180 度旋转，实现出色的控制。
+  sensitivity_preset_custom: 你自己的动态灵敏度设置。
+  high_performance_warning_20k: 开启20K FPS功耗会进一步增大，续航也会随之减少。
+  high_performance_requirement: 现在的回报率是4K以下，或未开启竞技模式。开启20KFPS要求更高的传输速率。因为20KFPS数据量比较大，在传输速率过低的条件下有概率产生数据的超载，失真，延迟，和其他不稳定性。帮您调整到4K回报率，或开启竞技模式再打开20KFPS 功能。
+  settings_saved: 设置已保存。
+  competitive_mode_description: 开启此模式后，鼠标的各项参数将提升至竞技所需，
+  competitive_mode_description1: 同时功耗将大幅度提升。
+  performance_mode_description: 开启此模式后，鼠标的各项参数将提升至职业强化训练所需。
+  receiver_pairing_instructions: 与接收器配对说明
+  factory_reset_confirmation: 点击 "确认" 后
+  factory_reset_confirmation1: 鼠标将恢复出厂时的默认设置。
+  left_button_restriction: 必须保留左键。
+  left_button_restriction1: 左键在选择时起关键的决定性，所以不可更改。
+  power_consumption_increase_note: 同时功耗也会相应提升。

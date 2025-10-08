@@ -1722,7 +1722,13 @@ function observeWidthChange(element) {
 }
 
 function changeModeShow() {
-  observeWidthChange(document.querySelector('.mode-box'))
+  modeShow.value = true
+  // observeWidthChange(document.querySelector('.mode-box'))
+}
+
+function changeModeHide() {
+  modeShow.value = false
+  // observeWidthChange(document.querySelector('.mode-box'))
 }
 
 const selectLanguageList = ref([
@@ -1734,6 +1740,7 @@ const selectLanguageList = ref([
 ])
 
 toggleLocales(locale.value)
+
 async function toggleLocales(language: string) {
   await loadLanguageAsync(language)
   locale.value = language
@@ -1784,14 +1791,17 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
       <ElButton v-if="buttonType === 'share'" :icon="Share" circle size="small" style="margin-left:10px" @click="copyBase64" />
       <!-- 应用 -->
       <ElButton v-else-if="buttonType === 'check'" style="border:1px solid #DAFF00; color:#DAFF00;margin-left:10px" type="success" round color="#2F3603" size="small" @click="setProfileYS">
-        应用
+        <!-- 应用 -->
+        {{ t('button.application') }}
       </ElButton>
 
       <img style="margin-left: 10px;width: 20px ;height: 20px;" :src="`/v9/wenhao${hover === 'share' ? '_active' : ''}.png`" srcset="" @mouseenter="mouseenter('share')" @mouseleave="mouseenter('share')">
 
       <p v-if="hover === 'share'" class="absolute top-11 w-[401px]" style="font-size:16px; color:#DAFF00">
-        已复制当前模式所有设置，可以通过粘贴分享给好友应用
-        应用时双击横杠上代码点击鼠标右键粘贴替换，应用即可
+        <!-- 已复制当前模式所有设置，可以通过粘贴分享给好友应用
+        应用时双击横杠上代码点击鼠标右键粘贴替换，应用即可 -->
+        {{ t('tips.application.description') }}
+        {{ t('tips.application.description1') }}
       </p>
     </div>
 
@@ -1849,19 +1859,31 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
       <div class="config-box">
         <div class="flex items-center" @click="bottomItemChange(0)">
           <img :src="`/v9/Motion${bottomItem === 0 ? '_active' : ''}.png`" alt="Motion" style="margin-right: 5px;">
-          <span :style="{ color: bottomItem === 0 ? '#DAFF00' : '' }">运动模式</span>
+          <span :style="{ color: bottomItem === 0 ? '#DAFF00' : '' }">
+            <!-- 运动模式 -->
+            {{ t('tabs.MotionMode') }}
+          </span>
         </div>
         <div class="flex items-center" @click="bottomItemChange(1)">
           <img :src="`/v9/icon2${profileInfo.sports_arena === 0 ? '' : '_active'}.png`" alt="Motion" style="margin-right: 5px;">
-          <span>竞技模式</span>
+          <span>
+            {{ t('tabs.competitiveMode') }}
+            <!-- 竞技模式 -->
+          </span>
         </div>
         <div class="flex items-center" @click="bottomItemChange(3)">
           <img src="/v9/icon1.png" alt="Motion" style="margin-right: 5px;">
-          <span>配对</span>
+          <span>
+            {{ t('deviceManagement.pairing') }}
+            <!-- 配对 -->
+          </span>
         </div>
         <div class="flex items-center" @click="bottomItem = 4">
           <img src="/v9/icon.png" alt="Motion" style="margin-right: 5px;">
-          <span>恢复出厂</span>
+          <span>
+            {{ t('deviceManagement.restoreFactory') }}
+            <!-- 恢复出厂 -->
+          </span>
         </div>
       </div>
 
@@ -1872,13 +1894,16 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
         <div style="width: 100%;flex:1;align-items: center;" class="flex">
           <div class="left-item-box">
             <div :class="{ activeBg: activeBg === 'performance' }" @click="activeBgChange('performance')">
-              性能
+              <!-- 性能 -->
+              {{ t('tabs.Performance') }}
             </div>
             <div :class="{ activeBg: activeBg === 'hong' }" @click="activeBgChange('hong')">
-              宏
+              <!-- 宏 -->
+              {{ t('macro.Macro') }}
             </div>
             <div :class="{ activeBg: activeBg === 'advanced' }" @click="activeBgChange('advanced')">
-              高级
+              <!-- 高级 -->
+              {{ t('tabs.Advanced') }}
             </div>
           </div>
           <div style="position: relative;height: 100%; display: flex; align-items: center;">
@@ -1886,7 +1911,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
               <div v-if="activeBg === 'performance'" class="absolute flex">
                 <div class="right-f-b h-100" style="padding: 40px 25px 25px 25px;position: relative;">
                   <div class="flex items-center justify-between">
-                    <span style="font-size: 20px;">灵敏度设置</span>
+                    <span style="font-size: 20px;"> {{ t('title.sensitivity_settings_heading') }} </span>
                     <div class="flex items-center">
                       <span style="display: inline-block; font-size: 30px;" @click="sendDpiLength('add')">+</span>
                       <span
@@ -1905,7 +1930,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         @click="sendDpi(index)"
                       >
                         <div style="font-size: 14px;" :style="{ 'margin-bottom': !!profileInfo.DPIStartList[index] ? '0px' : '30px' }">
-                          等级 {{ index + 1 }}
+                          {{ t('title.sensitivity_level') }} {{ index + 1 }}
                         </div>
                         <div v-if="!profileInfo.DPIStartList[index]" style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick="dpiEditValue(index, item)">
                           <input v-if="dpi_slider_edit === index" ref="dpiInputRef" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="inputSendDpi(dpi_slider_value, index)" @keyup.enter="inputSendDpi(dpi_slider_value, index)">
@@ -1928,7 +1953,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </div>
 
                   <div class="flex" style="margin-top: 12px;">
-                    <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">启用X-Y
+                    <span style="font-size: 20px; margin-right: 50px;" class="flex items-center">{{ t('tips.sensitivity_enable_xy.title') }}
                       <img
                         style="margin-left: 5px;"
                         :src="`/v9/wenhao${startXYFlag ? '_active' : ''}.png`"
@@ -1995,8 +2020,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div v-if="!startXYFlag" class="absolute flex" style="flex:1;">
                       <div class="right-s-b" style="margin-left: 10px;padding: 50px 25px 25px 25px;position: relative;">
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px; width: 100px;text-align: right;">
-                            轮询率(Hz)
+                          <p style="font-size: 20px; min-width: 100px;text-align: right;" :style="{ 'font-size': t('title.polling_rate').length > 6 ? '14px' : '20px' }">
+                            {{ t('title.polling_rate') }}
                           </p>
 
                           <!-- <CustomSliderLabel
@@ -2022,8 +2047,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px;width: 100px;text-align: right;">
-                            LOD 高度
+                          <p style="font-size: 20px;min-width: 100px;text-align: right;">
+                            <!-- LOD 高度 -->
+                            {{ t('title.lod_height') }}
                           </p>
                           <div class="flex items-center justify-between" style="flex: 1;margin-left: 20px;">
                             <div
@@ -2039,13 +2065,13 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px;width: 100px;text-align: right;">
-                            响应时间
+                          <p style="font-size: 20px;min-width: 100px;text-align: right;">
+                            {{ t('title.response_time') }}
                           </p>
 
                           <CustomSlider
                             v-model="profileInfo.jitter_elimination_slider"
-                            class="transparent-slider dpi_slider absolute right-5 w-66%"
+                            class="transparent-slider dpi_slider absolute right-5 w-63%"
                             :bind="sliderOptions.jitter_elimination_slider"
                             :default-select-options="sliderDefaultSelectOptions.jitter_elimination_slider"
                             :show-fixed="true"
@@ -2053,14 +2079,15 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           />
                         </div>
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px;width: 100px;text-align: right;">
-                            休眠时间
+                          <p style="font-size: 20px;min-width: 100px;text-align: right;">
+                            <!-- 休眠时间 -->
+                            {{ t('title.sleep_time') }}
                           </p>
                           <!-- @mouseenter="setRightHintCode('hibernation')"
                             @change="sendHibernation" -->
                           <CustomSlider
                             v-model="profileInfo.hibernation_slider"
-                            class="transparent-slider absolute right-5 w-66%"
+                            class="transparent-slider absolute right-5 w-63%"
                             :bind="sliderOptions.hibernation_slider"
                             :default-select-options="sliderDefaultSelectOptions.hibernation_slider"
                             :show-fixed="true"
@@ -2073,7 +2100,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         style="margin-left: 10px;padding: 50px 25px 25px 25px;position: relative; flex-direction: column;"
                       >
                         <div class="flex" style="width: 100%;">
-                          <span style="font-size: 20px; text-align: left;">旋转角度</span>
+                          <span style="font-size: 20px; text-align: left;">{{ t('title.rotation_angle') }}</span>
                         </div>
                         <div style="width:224px;height:214px;left: 50%; top: 45%; margin-left: -112px; margin-top: -107px; " class="absolute flex items-center justify-center">
                           <!-- profileInfo.angle_slider -->
@@ -2100,9 +2127,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     </div>
                     <div v-else style="width: 890px; margin-left: 10px; justify-content: center;align-items: center;  height:100%; flex-direction: column;background-image: linear-gradient(to right, #0E0E0D, #31350F, #A5AA5290);border-radius: 15px;" class="absolute flex">
                       <p style="font-size: 30px;margin-bottom: 10px;">
-                        启用X-Y
+                        {{ t('tips.sensitivity_enable_xy.title') }}
                       </p>
-                      <span style="font-size: 16px;line-height: 24px;color: #FFFFFF;">开启该功能后可以分别设定鼠标在滑动时的x轴与y轴的灵敏度值。</span>
+
+                      <span style="font-size: 16px;line-height: 24px;color: #FFFFFF;">{{ t('tips.sensitivity_enable_xy.description') }}</span>
                       <div style="height:197px;width:593px;margin-top: 50px;">
                         <AnimateCanvas
                           :width="593"
@@ -2123,7 +2151,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
               <div v-else-if="activeBg === 'hong'" class="absolute flex">
                 <div style="width: 564px;">
                   <div class="config-child-box" @click="addMacroFn">
-                    <span class="active">新建宏</span>
+                    <span class="active">{{ t('macro.newMacro') }}</span>
                   </div>
                   <div class="relative flex">
                     <!-- @scroll="scroll" -->
@@ -2149,12 +2177,12 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div class="flex items-center justify-between">
                     <!-- <span style="font-size: 20px;">灵敏度设置</span> -->
                     <div class="config-child-box">
-                      <span style="border: 0; justify-content: flex-start; background: transparent">灵敏度设置</span>
+                      <span style="border: 0; justify-content: flex-start; background: transparent">{{ t('title.key_list') }}</span>
                     </div>
 
                     <ElDropdown :teleported="false" class="" trigger="click" popper-class="custom-popper custom-dropdown-popper" @command="insertMacro">
                       <div class="flex items-center justify-center" style="width: 122px;height: 36px;  background-color: #242424;;border-radius: 30px">
-                        插入
+                        {{ t('macro.insertMacro') }}
                         <ElIcon class="absolute right-3" style="margin-left: 10px;" size="20" color="#DAFF00">
                           <!-- <ArrowUpBold /> -->
                           <ArrowDownBold />
@@ -2246,11 +2274,12 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                 <div style="margin-left: 20px;flex-direction: column; justify-content: end;" class="flex">
                   <div class="flex items-center" style="width: 123px;height: 123px; background-color: #242424;flex-direction: column; padding-top: 25px;border-radius: 10px;" :style="{ background: isRecording ? '#DAFF00' : '#242424', color: isRecording ? '#333' : '#fff' }" @click="onClickPecordBtn">
                     <div style="width: 17px;height: 17px;border-radius: 50%; background: #FF0000; margin-bottom: 10px;" />
-                    <div>{{ isRecording ? '停止' : '开始' }}</div>
-                    <div>录制</div>
+                    <div>{{ isRecording ? t('macro.stopRecording') : t('macro.startRecording') }}</div>
+                    <div>{{ t('macro.recordMacro') }}</div>
                   </div>
                   <div style="height: 63px; line-height: 63px; text-align: center; width: 123px;border: 1px solid #DAFF00; border-radius: 10px;margin-top: 20px;background:#242424 ;" @click="addMacro">
-                    保 存
+                    <!-- 保 存 -->
+                    {{ t('macro.saveMacro') }}
                   </div>
                 </div>
               </div>
@@ -2259,7 +2288,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div>
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
-                        <div>动态灵敏度</div>
+                        <div>{{ t('macro.dynamicSensitivity') }} </div>
                         <img
                           style=" margin-left: 5px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' : ''}.png`" srcset=""
                           @mouseenter="showMouseenterChange('showMouseenter')"
@@ -2280,7 +2309,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       </div>
                     </div>
                     <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 20px;">
-                      选择你喜欢的鼠标速度或 自定义加速输出。
+                      <!-- 选择你喜欢的鼠标速度或 自定义加速输出。 -->
+                      {{ t('description.main_ui_heading') }}
                     </div>
                   </div>
 
@@ -2307,7 +2337,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div style="margin-top: 50px;">
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
-                        <div>直线修正</div>
+                        <div>{{ t('title.straight_line_correction') }}</div>
                       </div>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
@@ -2337,13 +2367,13 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </ElIcon>
                       </div>
                       <div class="ml-15 flex items-center">
-                        <span class="mr-3">选择模板</span>
-                        <div class="mode-box relative flex items-center pl-10" style="width:123px; height: 32px;  background-color: #242424;border-radius: 30px" @mouseenter="changeModeShow">
-                          <span v-if="currentActive === 0 || modeShow" class="mr-5">经典</span>
-                          <span v-if="currentActive === 1 || modeShow" class="mr-5">自然</span>
-                          <span v-if="currentActive === 2 || modeShow" class="mr-5">跳跃</span>
-                          <span v-if="currentActive === 3 || modeShow" class="mr-5">无</span>
-                          <ElIcon class="absolute right-3" style="margin-left: 10px;" size="20" color="#DAFF00">
+                        <span class="mr-3">{{ t('title.select_preset') }}</span>
+                        <div class="mode-box relative flex items-center pl-10" style="height: 32px;  background-color: #242424;border-radius: 30px" @mouseenter="changeModeShow" @mouseleave="changeModeHide">
+                          <span v-if="currentActive === 0 || modeShow" class="mr-10">{{ t('title.sensitivity_preset_classic') }}</span>
+                          <span v-if="currentActive === 1 || modeShow" class="mr-10">{{ t('title.sensitivity_preset_natural') }}</span>
+                          <span v-if="currentActive === 2 || modeShow" class="mr-10">{{ t('title.sensitivity_preset_jump') }}</span>
+                          <span v-if="currentActive === 3 || modeShow" class="mr-10">{{ t('title.none') }}</span>
+                          <ElIcon class="absolute right-3" style="margin-left: 15px;" size="20" color="#DAFF00">
                             <ArrowDownBold v-if="!modeShow" />
                             <ArrowRightBold v-else />
                           </ElIcon>
@@ -2362,37 +2392,37 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </ElIcon>
                       </div>
                       <p class="absolute bottom-0 left-[50%] ml-[-64px]">
-                        输入速度(计数/毫秒)
+                        {{ t('title.input_speed') }}
                       </p>
                       <p class="absolute left-0 top-[50%] mt-[-49px]" style="transform: rotate(90deg);">
-                        输出与输入比率
+                        {{ t('title.output_input_ratio') }}
                       </p>
                     </div>
                   </div>
                   <div class="config-child-box" style="flex-direction: column; margin-left: 30px; justify-content: center;">
-                    <span style="margin-bottom: 35px;">经典</span>
-                    <span style="margin-bottom: 35px;">自然</span>
-                    <span style="margin-bottom: 35px;">跳跃</span>
-                    <span style="margin-bottom: 35px;" class="active">自定义</span>
+                    <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_classic') }}</span>
+                    <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_natural') }}</span>
+                    <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_jump') }}</span>
+                    <span style="margin-bottom: 35px;" class="active">{{ t('title.sensitivity_preset_custom') }}</span>
                   </div>
                 </div>
                 <Transition name="slide-right">
                   <div v-if="showMouseenter === 'showMouseenter'" style="padding: 25px 100px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
                     <div>
                       <div style="font-size: 20px;text-align: left">
-                        动态灵敏度
+                        {{ t('macro.dynamicSensitivity') }}
                       </div>
                       <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
-                        优化了精度和响应速度
+                        {{ t('description.main_ui_subheading') }}
                       </div>
                     </div>
                     <div style="text-align: left;">
-                      <p>使用预设或你喜欢的自定义设置来调整鼠标的响应速度和加速度，使其适应你的需求。 </p>
-                      <p>· 经典:采用传统的灵敏度设置，非常适合在日常使用中进行精确控制。</p>
-                      <p>· 自然:光标移动可预测，最大灵敏度有上限。</p>
-                      <p>· 跳跃:缓慢移动时使用低灵敏度，快速移动时立即转换为高灵敏度。 </p>
-                      <p> &nbsp;&nbsp;是喜欢超低灵敏度的 FPS 玩家的理想之选，同时还能在快速移动中完成 180 度旋转，实现出色的控制。</p>
-                      <p>· 自定义:你自己的动态灵敏度设置。</p>
+                      <p>{{ t('description.main_ui_description') }}</p>
+                      <p>· {{ t('title.sensitivity_preset_classic') }}:{{ t('description.sensitivity_preset_classic') }}</p>
+                      <p>· {{ t('title.sensitivity_preset_natural') }}:{{ t('description.sensitivity_preset_natural') }}</p>
+                      <p>· {{ t('title.sensitivity_preset_jump') }}:{{ t('description.sensitivity_preset_jump') }}</p>
+                      <p> &nbsp;&nbsp;{{ t('description.sensitivity_preset_jump1') }}</p>
+                      <p>· {{ t('title.sensitivity_preset_custom') }}:{{ t('description.sensitivity_preset_custom') }}</p>
                       <AnimateCanvas
                         :width="593"
                         :height="287"
@@ -2412,15 +2442,15 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         20K FPS
                       </div>
                       <div style="text-align: left; color: #C8EA01;margin-top: 10px;">
-                        开启20K FPS功耗会进一步增大，续航也会随之减少。
+                        {{ t('description.high_performance_warning_20k') }}
                       </div>
 
                       <div class="mt-20 flex">
                         <div class="button mr-10" @click="FPSChange(0)">
-                          取消
+                          {{ t('macro.cancel') }}
                         </div>
                         <div class="button1" @click="FPSChange(1)">
-                          确认
+                          {{ t('macro.confirm') }}
                         </div>
                       </div>
                     </div>
@@ -2435,19 +2465,19 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         20K FPS
                       </div>
                       <div style="width: 410px; text-align: left; color: #C8EA01;margin-top: 10px;">
-                        开启20K FPS功耗会进一步增大，续航也会随之减少。
+                        {{ t('description.high_performance_warning_20k') }}
                       </div>
 
                       <div style="width: 410px; text-align: left; color: #C8EA01;margin-top: 10px; line-height: 18px;">
-                        现在的回报率是4K以下，或未开启竞技模式。开启20KFPS要求更高的传输速率。因为20KFPS数据量比较大，在传输速率过低的条
+                        {{ t('description.high_performance_requirement') }}
                       </div>
 
                       <div class="mt-20 flex">
                         <div class="button mr-10" @click="FPSChange(0)">
-                          取消
+                          {{ t('macro.cancel') }}
                         </div>
                         <div class="button1" @click="FPSChange(1)">
-                          确认
+                          {{ t('macro.confirm') }}
                         </div>
                       </div>
                     </div>
@@ -2456,23 +2486,23 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div v-else-if="showMouseenter === 'line'" style="padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1; border-radius: 10px;" class="flex">
                     <div>
                       <div style="font-size: 20px;text-align: left">
-                        直线修正
+                        {{ t('title.straight_line_correction') }}
                       </div>
 
                       <div style="width: 410px; text-align: left; color: #C8EA01;margin-top: 10px;">
-                        系统将修正鼠标光标移动轨迹时因 <br> 动作抖动产生的轻微的轨迹曲率。
+                        {{ t('title.straight_line_correction_action') }} <br>{{ t('title.straight_line_correction_reason') }}
                       </div>
 
                       <div style="width: 380px; text-align: left; color: #E80872;margin-top: 10px; line-height: 18px;">
-                        因运行算法的介入，会导致微小的数据延迟。 追求极致电竞体验慎用
+                        {{ t('title.straight_line_correction_warning') }}
                       </div>
 
                       <div class="mt-20 flex">
                         <div class="button mr-10" @click="lineUpdateSent(0)">
-                          取消
+                          {{ t('macro.cancel') }}
                         </div>
                         <div class="button1" @click="lineUpdateSent(1)">
-                          确认
+                          {{ t('macro.confirm') }}
                         </div>
                       </div>
                     </div>
@@ -2494,7 +2524,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
         <div class="absolute right-[25px] top-[-56px] flex items-center">
           <div v-if="loadingShow" class="flex items-center">
             <p style="font-size: 16px;color: #DAFF00;" class="mr-3">
-              设置已保存
+              {{ t('description.settings_saved') }}
             </p>
             <AnimateLoading />
           </div>
@@ -2506,70 +2536,71 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
       <Transition name="bottom-opacity">
         <div v-if="bottomItem === 1" class="bottom-box bottom-box1 relative">
           <p class="mb-3 mt-3" style="font-size: 18px;line-height: 40px;">
-            开启此模式后，鼠标的各项参数将提升至竞技所需
+            {{ t('description.competitive_mode_description') }}
           </p>
           <p style="font-size: 18px;line-height: 40px; color: red;">
-            同时功耗将大幅度提升
+            {{ t('description.competitive_mode_description1') }}
           </p>
 
           <div class="flex" style="margin-top: 30px;">
             <div class="config-child-box config-child-box1 mr-2" @click="onSportsMode(0)">
-              <span>取消</span>
+              <span>{{ t('macro.cancel') }}</span>
             </div>
             <div class="config-child-box" @click="onSportsMode(1)">
-              <span class="active">确认</span>
+              <span class="active">{{ t('macro.confirm') }}</span>
             </div>
           </div>
         </div>
 
         <div v-else-if="bottomItem === 2" class="bottom-box bottom-box1 relative">
           <div class="config-child-box absolute" style=" margin-left: -50px; left: 50%; top: 150px;">
-            <span class="active">保存</span>
+            <span class="active">{{ t('button.save') }}</span>
           </div>
 
           <p class="mb-3 mt-3" style="font-size: 18px;line-height: 40px;">
-            开启此模式后，鼠标的各项参数将提升至职业强化训练所需
+            {{ t('description.performance_mode_description') }}
           </p>
           <p style="font-size: 18px;line-height: 40px; color: red;">
-            同时功耗也会相应提升
+            {{ t('description.power_consumption_increase_note') }}
           </p>
         </div>
 
         <div v-else-if="bottomItem === 3" class="bottom-box bottom-box1 relative">
           <p class="mb-3" style="font-size: 18px;line-height: 40px;">
-            与接收器配对说明
+            {{ t('description.receiver_pairing_instructions') }}
           </p>
 
           <img class="mb-10 h-240px" src="/slideshow/2_zh-CN.png" alt="item.title">
 
           <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 60px;" @click="onPairingConnection">
-            <span class="active">确认</span>
+            <span class="active">{{ t('macro.confirm') }}</span>
           </div>
         </div>
 
         <div v-else-if="bottomItem === 4" class="bottom-box bottom-box1 relative">
           <p style="font-size: 18px;line-height: 40px;">
-            点击 "确认" 后，
+            {{ t('description.factory_reset_confirmation') }}
           </p>
           <p class="mb-3" style="font-size: 18px;line-height: 40px;">
-            鼠标将恢复出厂时的默认设置。
+            {{ t('description.factory_reset_confirmation1') }}
           </p>
 
           <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 100px;" @click="onRestoreFactorySettings">
-            <span class="active">确认</span>
+            <span class="active">{{ t('macro.confirm') }}</span>
           </div>
         </div>
 
         <div v-else-if="bottomItem === 5" class="bottom-box bottom-box1 relative">
           <p style="font-size: 18px;line-height: 40px;">
-            必须保留左键
+            <!-- 必须保留左键 -->
+            {{ t('description.left_button_restriction') }}
           </p>
           <p class="mb-3" style="font-size: 18px;line-height: 40px;">
-            左键在选择时起关键的决定性,所以不可更改
+            {{ t('description.left_button_restriction1') }}
           </p>
 
           <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 100px;" @click="bottomItem = 0">
-            <span class="active">确认</span>
+            <span class="active">{{ t('macro.confirm') }}</span>
           </div>
         </div>
       </Transition>
@@ -2878,7 +2909,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
   }
 
   .mode-box:hover {
-    width: 260px !important;
+    /* width: 320px !important; */
   }
 
   .mode-box span:hover {

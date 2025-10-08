@@ -53,6 +53,14 @@ button:
   forward_button: Forward Button
   back_button: Back Button
   keyboard_key: Keyboard Key
+  application: Apply
+  save: Save
+  macro_execution_description: Click to execute the macro you have set
+  macro_execute: Execute
+  macro_loop_count_input: Double-click the underline to input the desired execution count for your macro
+  macro_execution: Macro Execution
+  macro_execute_until_release: Macro Execute Until Key Release
+  macro_execute_until_repressed: Macro Execute Until Key Pressed Again
 
 message:
   warning: Notice
@@ -64,6 +72,8 @@ message:
   pairing_connection: Please put the mouse into pairing mode (press and hold left, middle, and right buttons for 28 seconds until the pairing indicator flashes rapidly), then bring it close to the receiver and click the button to start pairing or press the keyboard spacebar
   pairing_connection_success: Pairing successful!
   execution_success: Settings have been executed and maintained!
+  format_error: Format Error
+  delete_macro_error: Please delete all connections first!
 
 not-found: Page Not Found
 
@@ -133,6 +143,16 @@ tips:
     title: Angle Adjustment
     description: You can adjust to a suitable angle based on your preferred mouse grip posture
 
+  application:
+    description: All settings of the current mode have been copied and can be shared with friends by pasting
+    description1: To apply, double-click the code above the line, right-click to paste and replace, then apply.
+  macro_set:
+    title: Macro Settings
+    description: Click the underlined area, enter loop count from 1 to 40 and press Enter, or click the ball to the left of the option to execute and save.
+  sensitivity_enable_xy:
+    title: Enable X-Y
+    description: After enabling this function, you can set the sensitivity values for the X-axis and Y-axis separately when the mouse is moving.
+
 mouseKeyOptions:
   switch_polling_rate: Switch Polling Rate
   left_button: Left Button
@@ -167,3 +187,69 @@ mouseKeyOptions:
   stop_web: Stop Web
   refresh: Refresh
   favorites: Favorites
+title:
+  sensitivity_settings_heading: Sensitivity Settings
+  sensitivity_level: Level
+  polling_rate: Polling Rate(Hz)
+  lod_height: LOD Height
+  response_time: Res Time
+  sleep_time: Sleep Time
+  rotation_angle: Rotation Angle
+  key_list: Key List
+  input_speed: Input Speed(Counts/Millisecond)
+  output_input_ratio: Output to Input Ratio
+  select_preset: Select Preset
+  sensitivity_preset_classic: Classic
+  sensitivity_preset_natural: Natural
+  sensitivity_preset_jump: Jump
+  sensitivity_preset_custom: Custom
+  none: None
+  straight_line_correction: Straight Line Correction
+  straight_line_correction_action: The system will correct the mouse cursor movement trajectory
+  straight_line_correction_reason: for slight trajectory curvature caused by motion jitter.
+  straight_line_correction_warning: Due to the intervention of the operating algorithm, minor data delay will be caused. Use with caution for ultimate esports experience.
+
+macro:
+  Macro: Macro
+  newMacro: New Macro
+  insertMacro: Insert
+  recordMacro: Record
+  stopRecording: Stop
+  startRecording: Start
+  saveMacro: Save
+  dynamicSensitivity: Dynamic Sensitivity
+  confirm: Confirm
+  cancel: Cancel
+
+tabs:
+  competitiveMode: Competitive Mode
+  performanceMode: Performance Mode
+  MotionMode: Motion Mode
+  Performance: Performance
+  Advanced: Advanced
+
+deviceManagement:
+  pairing: Pairing
+  restoreFactory: Restore Factory Settings
+
+description:
+  main_ui_heading: Choose your preferred mouse speed or custom acceleration output.
+  sensitivity_preset_classic: Utilizes traditional sensitivity settings, ideal for precise control in everyday use.
+  main_ui_subheading: Optimized for precision and responsiveness.
+  main_ui_description: Use presets or your own custom settings to adjust the mouse response speed and acceleration to fit your needs.
+  sensitivity_preset_natural: Offers predictable cursor movement with an upper limit on maximum sensitivity.
+  sensitivity_preset_jump: Uses low sensitivity for slow movements and instantly switches to high sensitivity for fast flicks.
+  sensitivity_preset_jump1: The ideal choice for FPS players who prefer ultra-low sensitivity while still achieving 180-degree turns with excellent control during rapid movements.
+  sensitivity_preset_custom: Your own dynamic sensitivity settings.
+  high_performance_warning_20k: Enabling 20K FPS will significantly increase power consumption and reduce battery life.
+  high_performance_requirement: The current polling rate is below 4K, or Competitive Mode is not active. Enabling 20K FPS requires a higher data transmission rate. Due to the large data volume of 20K FPS, operating with an insufficient transmission rate may cause data overload, distortion, latency, and other instabilities. We have adjusted your polling rate to 4K. Please enable Competitive Mode before activating 20K FPS.
+  settings_saved: Settings saved.
+  competitive_mode_description: In this mode, all mouse parameters are enhanced for competitive gameplay,
+  competitive_mode_description1: with a significant increase in power consumption.
+  performance_mode_description: In this mode, all mouse parameters are enhanced for professional-level intensive training.
+  receiver_pairing_instructions: Receiver Pairing Instructions
+  factory_reset_confirmation: After clicking "Confirm",
+  factory_reset_confirmation1: the mouse will be restored to its default factory settings.
+  left_button_restriction: The left button must be retained.
+  left_button_restriction1: The left button plays a critical role in selection and cannot be changed.
+  power_consumption_increase_note: Power consumption will also increase accordingly.

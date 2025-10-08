@@ -53,6 +53,14 @@ button:
   forward_button: 앞으로 버튼
   back_button: 뒤로 버튼
   keyboard_key: 키보드 키
+  application: 적용
+  save: 저장
+  macro_execution_description: 설정한 매크로를 실행하려면 클릭
+  macro_execute: 실행
+  macro_loop_count_input: 밑줄을 더블클릭하여 매크로 실행 횟수 입력
+  macro_execution: 매크로 실행
+  macro_execute_until_release: 키를 놓을 때까지 매크로 실행
+  macro_execute_until_repressed: 다시 누를 때까지 매크로 실행
 
 message:
   warning: 알림
@@ -64,6 +72,8 @@ message:
   pairing_connection: 마우스를 페어링 모드로 전환하세요(왼쪽, 가운데, 오른쪽 버튼을 28초 동안 동시에 누르고 페어링 LED가 빠르게 깜박일 때까지 기다리세요). 그런 다음 수신기 근처에서 버튼을 클릭하거나 키보드의 스페이스바를 눌러 페어링을 시작하세요
   pairing_connection_success: 페어링 성공!
   execution_success: 설정이 적용되고 유지됩니다!
+  format_error: 형식 오류
+  delete_macro_error: 먼저 모든 연결을 삭제하세요!
 
 not-found: 페이지를 찾을 수 없습니다
 
@@ -133,6 +143,16 @@ tips:
     title: 각도 조정
     description: 마우스를 잡는 자세에 맞춰 적절한 각도로 조정할 수 있습니다
 
+  application:
+    description: 현재 모드의 모든 설정이 복사되어 붙여넣기로 친구와 공유할 수 있습니다
+    description1: 적용하려면 줄 위의 코드를 더블클릭하고, 마우스 오른쪽 버튼을 클릭하여 붙여넣기 및 교체 후 적용합니다
+  macro_set:
+    title: 매크로 설정
+    description: 밑줄 친 영역을 클릭하고 1에서 40까지의 루프 횟수를 입력한 후 Enter를 누르거나 옵션 왼쪽의 공을 클릭하여 실행하고 저장합니다.
+  sensitivity_enable_xy:
+    title: X-Y 활성화
+    description: 이 기능을 활성화하면 마우스 이동 시 X축과 Y축의 감도 값을 별도로 설정할 수 있습니다.
+
 mouseKeyOptions:
   switch_polling_rate: 폴링 레이트 전환
   left_button: 왼쪽 버튼
@@ -167,3 +187,70 @@ mouseKeyOptions:
   stop_web: 웹 중지
   refresh: 새로고침
   favorites: 즐겨찾기
+
+title:
+  sensitivity_settings_heading: 감도 설정
+  sensitivity_level: 레벨
+  polling_rate: 폴링 레이트(Hz)
+  lod_height: LOD 높이
+  response_time: 응답 시간
+  sleep_time: 대기 시간
+  rotation_angle: 회전 각도
+  key_list: 키 목록
+  input_speed: 입력 속도(카운트/밀리초)
+  output_input_ratio: 출력 대 입력 비율
+  select_preset: 프리셋 선택
+  sensitivity_preset_classic: 클래식
+  sensitivity_preset_natural: 내추럴
+  sensitivity_preset_jump: 점프
+  sensitivity_preset_custom: 사용자 지정
+  none: 없음
+  straight_line_correction: 직선 보정
+  straight_line_correction_action: 시스템은 마우스 커서 이동 궤적을 수정합니다
+  straight_line_correction_reason: 동작 흔들림으로 인한 약간의 궤적 곡률에 대해.
+  straight_line_correction_warning: 운영 알고리즘의 개입으로 인해 미미한 데이터 지연이 발생합니다. 극한의 e스포츠 경험을 위해서는 주의하여 사용하십시오.
+
+macro:
+  Macro: 매크로
+  newMacro: 새 매크로
+  insertMacro: 삽입
+  recordMacro: 기록
+  stopRecording: 중지
+  startRecording: 시작
+  saveMacro: 저장
+  dynamicSensitivity: 동적 감도
+  confirm: 확인
+  cancel: 취소
+
+tabs:
+  competitiveMode: 경쟁 모드
+  performanceMode: 성능 모드
+  MotionMode: 모션 모드
+  Performance: 성능
+  Advanced: 고급
+
+deviceManagement:
+  pairing: 페어링
+  restoreFactory: 공장 설정 복원
+
+description:
+  main_ui_heading: 선호하는 마우스 속도 또는 사용자 지정 가속 출력을 선택하십시오.
+  sensitivity_preset_classic: 일상 사용에서 정밀 제어에 이상적인 전통적인 감도 설정을 사용합니다.
+  main_ui_subheading: 정밀도와 반응 속도 최적화.
+  main_ui_description: 프리셋 또는 자신이 좋아하는 사용자 지정 설정을 사용하여 마우스 응답 속도와 가속도를 필요에 맞게 조정합니다.
+  sensitivity_preset_natural: 예측 가능한 커서 이동, 최대 감도 상한선 있음.
+  sensitivity_preset_jump: 느린 이동에는 낮은 감도를 사용하고 빠른 이동에는 즉시 높은 감도로 전환합니다.
+  sensitivity_preset_jump1: 초저감도를 선호하는 FPS 플레이어에게 이상적인 선택이며, 빠른 이동 중에도 뛰어난 제어력으로 180도 회전을 완성할 수 있습니다.
+  sensitivity_preset_custom: 사용자 자신의 동적 감도 설정입니다.
+  high_performance_warning_20k: 20K FPS를 활성화하면 전력 소비가 더욱 증가하고 배터리 수명이随之减少。
+  high_performance_requirement: 현재 폴링 레이트는 4K 미만이거나 경쟁 모드가 활성화되어 있지 않습니다. 20K FPS를 사용하려면 더 높은 데이터 전송 속도가 필요합니다. 20K FPS의 데이터 양이 비교적 크기 때문에 전송 속도가 너무 낮은 조건에서 데이터 과부하, 왜곡, 지연 및 기타 불안정성이 발생할 수 있습니다. 폴링 레이트를 4K로 조정했으며, 20K FPS를 활성화하기 전에 경쟁 모드를 먼저 활성화하십시오.
+  settings_saved: 설정이 저장되었습니다.
+  competitive_mode_description: 이 모드를 켜면 모든 마우스 매개변수가 경쟁에 필요한 수준으로 향상됩니다,
+  competitive_mode_description1: 동시에 전력 소비가大幅도로 증가합니다.
+  performance_mode_description: 이 모드를 켜면 모든 마우스 매개변수가 전문적인 강화 훈련에 필요한 수준으로 향상됩니다.
+  receiver_pairing_instructions: 수신기 페어링 설명
+  factory_reset_confirmation: 확인 을 클릭한 후,
+  factory_reset_confirmation1: 마우스가 공장 출하 시 기본 설정으로 복원됩니다.
+  left_button_restriction: 왼쪽 버튼은 반드시 유지되어야 합니다.
+  left_button_restriction1: 왼쪽 버튼은 선택 시 결정적인 역할을 하므로 변경할 수 없습니다.
+  power_consumption_increase_note: 동시에 전력 소비도相应하게 증가합니다.
