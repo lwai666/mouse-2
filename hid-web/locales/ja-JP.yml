@@ -157,7 +157,8 @@ title:
   sensitivity_level: レベル
   polling_rate: ポーリングレート(Hz)
   lod_height: LOD 高さ
-  response_time: 応答時間
+  key_response: キー応答
+  new_device: 新規デバイス
   sleep_time: スリープ時間
   rotation_angle: 回転角度
   key_list: キーリスト

@@ -192,7 +192,8 @@ title:
   sensitivity_level: Level
   polling_rate: Polling Rate(Hz)
   lod_height: LOD Height
-  response_time: Res Time
+  key_response: Key Response
+  new_device: New Device
   sleep_time: Sleep Time
   rotation_angle: Rotation Angle
   key_list: Key List

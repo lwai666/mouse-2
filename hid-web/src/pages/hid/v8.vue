@@ -317,9 +317,13 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     // XY 值
     else if (res[0] === 35) {
       const XYDataList = res.slice(3, (res[2] * 4) + 3)
-      const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 5)
 
-      profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
+      console.log(XYDataList,'XYDataList')
+      // const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 5)
+
+      // profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
+
+      // console.log(profileInfo.XYObjDataList,'profileInfo.XYObjDataList')
       // profileInfo.DPIStartList = decodeArrayBufferToArray(DPIStartList)
       // profileInfo.sensitivity = sensitivity
     }
@@ -775,9 +779,17 @@ async function sendHibernation() {
 }
 
 async function sendXYElimination() {
-  let currentLowAndHigh8 = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index]
+  // const currentLowAndHigh8 = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index]
 
-  await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...getLowAndHigh8Bits(currentLowAndHigh8[0]), ...getLowAndHigh8Bits(currentLowAndHigh8[1])])
+  const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item) => {
+    return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
+  })
+
+  // console.log([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...getLowAndHigh8Bits(currentLowAndHigh8[0]), ...getLowAndHigh8Bits(currentLowAndHigh8[1])], '[0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...getLowAndHigh8Bits(currentLowAndHigh8[0]), ...getLowAndHigh8Bits(currentLowAndHigh8[1])]')
+
+  await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])
+
+  // await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...getLowAndHigh8Bits(currentLowAndHigh8[0]), ...getLowAndHigh8Bits(currentLowAndHigh8[1])])
 
   onExecutionSuccess()
 }
@@ -1288,13 +1300,8 @@ onUnmounted(() => {
 
 // 使用 provide 提供数据
 provide<Ref<TransportWebHIDInstance>>('transport', transport)
-// 选择鼠标键设置连线透明度0
-// provide('dotsCleanup', dotsCleanup)
-// provide('createConnection', createConnection)
 
 const hover = ref('')
-// const hoverSrc = ref(wenhaoActive)
-// const originalSrc = ref(wenhao)
 
 function mouseenter(type) {
   if (hover.value === type) {
@@ -1304,20 +1311,14 @@ function mouseenter(type) {
   hover.value = type
 }
 
-// const imageToDisplay = computed(() => {
-//   return hover.value ? hoverSrc.value : originalSrc.value
-// })
+const showMouseenter = ref('show')
 
-const radioActive = ref(false)
 function radioChange() {
-  console.log(profileInfo.sports_arena, profileInfo.polling_slider)
   if (profileInfo.sports_arena === 1 && profileInfo.polling_slider === 5) {
     showMouseenter.value = 'FPS'
     return
   }
   showMouseenter.value = 'FPS1'
-
-  // radioActive.value = !radioActive.value
 }
 
 async function setDPIXY() {
@@ -1367,6 +1368,7 @@ function activeBgChange(type) {
   if (type === 'advanced') {
     nextTick(() => {
       initEcharts()
+      getProfileData(0)
 
       // setTimeout(() => {
       //   myChart.value.setOption({
@@ -1385,6 +1387,15 @@ function activeBgChange(type) {
   }
 }
 
+// 获取模板的折线点
+// 0:是经典,1:自然，2;跳跃，3;无，4，不能修改
+
+async function getProfileData(type) {
+  const data = await transport?.value.send([0x26, 0, 0, type])
+
+  console.log(data, 'data')
+}
+
 const startXYFlag = ref(false)
 
 function startXY() {
@@ -1393,8 +1404,8 @@ function startXY() {
 const myChart = ref(null)
 const chart = ref(null)
 const xAxisMax = ref(250)
-const yAxisMax = ref(60)
-const pieces = ref(100)
+// const yAxisMax = ref(60)
+// const pieces = ref(100)
 const initData = ref([
   [0, 40],
   [38, 42],
@@ -1457,19 +1468,19 @@ function initEcharts() {
         },
       },
     },
-    visualMap: {
-      type: 'piecewise',
-      show: false,
-      dimension: 0,
-      seriesIndex: 0,
-      pieces: [
-        {
-          gt: 0,
-          lt: 100,
-          color: 'rgba(219, 255, 6, .5)',
-        },
-      ],
-    },
+    // visualMap: {
+    //   type: 'piecewise',
+    //   show: false,
+    //   dimension: 0,
+    //   seriesIndex: 0,
+    //   pieces: [
+    //     {
+    //       gt: 0,
+    //       lt: 100,
+    //       color: 'rgba(219, 255, 6, .5)',
+    //     },
+    //   ],
+    // },
 
     series: [
       {
@@ -1477,8 +1488,9 @@ function initEcharts() {
         type: 'line',
         smooth: true,
         symbolSize,
-        data: initData.value,
-        areaStyle: {},
+        // initData.value
+        data: [],
+        // areaStyle: {},
         itemStyle: {
           color: '#DAFF00', // 折线点颜色（番茄色）
         },
@@ -1575,7 +1587,6 @@ function bottomItemChange(type) {
 }
 
 const imgActive = ref(false)
-const showMouseenter = ref('show')
 
 function showMouseenterChange(type) {
   if (imgActive.value) {
@@ -1699,27 +1710,27 @@ async function onChange(macroName: string, index: number) {
 const currentActive = ref(0)
 const modeShow = ref(false)
 
-function observeWidthChange(element) {
-  // 检查浏览器是否支持ResizeObserver
-  if (typeof ResizeObserver !== 'undefined') {
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const width = entry.contentRect.width
+// function observeWidthChange(element) {
+//   // 检查浏览器是否支持ResizeObserver
+//   if (typeof ResizeObserver !== 'undefined') {
+//     const observer = new ResizeObserver((entries) => {
+//       for (const entry of entries) {
+//         const width = entry.contentRect.width
 
-        if (width < 200) {
-          modeShow.value = false
-        }
-        if (width > 200) {
-          modeShow.value = true
-        }
-      }
-    })
-    // 开始观察元素
-    observer.observe(element)
-    // 返回一个用于停止观察的函数
-    return () => observer.disconnect()
-  }
-}
+//         if (width < 200) {
+//           modeShow.value = false
+//         }
+//         if (width > 200) {
+//           modeShow.value = true
+//         }
+//       }
+//     })
+//     // 开始观察元素
+//     observer.observe(element)
+//     // 返回一个用于停止观察的函数
+//     return () => observer.disconnect()
+//   }
+// }
 
 function changeModeShow() {
   modeShow.value = true
@@ -2066,7 +2077,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </div>
                         <div class="flex items-center justify-between">
                           <p style="font-size: 20px;min-width: 100px;text-align: right;">
-                            {{ t('title.response_time') }}
+                            {{ t('title.key_response') }}
                           </p>
 
                           <CustomSlider

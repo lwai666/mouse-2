@@ -8,8 +8,8 @@ index:
   add_macro_warning: 最多只能添加4个宏！
   add_macro_warning_1: 请先录制宏！
   record_macro_warning: 宏录制已满！
-  sports_arena_1: 己开启竟技模式能提升更佳的竟技体验也将带来更大的功耗！
-  sports_arena_2: 开启电竞赛场模式后会将更细微的手部动作以及更精准的移动即时的体现于游戏中。即时性高于电竟模式一倍，同时要求pc硬件极高，要求苛刻无线传输环境，更先进的无线传输设备。也将带来更大的功耗!
+  sports_arena_1: 己开启竞技模式能提升更佳的竞技体验也将带来更大的功耗！
+  sports_arena_2: 开启电竞赛场模式后会将更细微的手部动作以及更精准的移动即时的体现于游戏中。即时性高于电竞模式一倍，同时要求pc硬件极高，要求苛刻无线传输环境，更先进的无线传输设备。也将带来更大的功耗!
   not_support_hid_warning: 当前浏览器不支持连接设备,我们推荐您使用 Chrome、Edge 或 Opera 浏览器！
 mouseConnection:
   connecting: 连线中...
@@ -190,8 +190,9 @@ title:
   sensitivity_level: 等级
   polling_rate: 轮询率(Hz)
   lod_height: LOD 高度
-  response_time: 响应时间
+  key_response: 按键响应
   sleep_time: 休眠时间
+  new_device: 新增设备
   rotation_angle: 旋转角度
   key_list: 按键列表
   input_speed: 输入速度(计数/毫秒)

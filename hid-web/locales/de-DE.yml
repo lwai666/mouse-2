@@ -192,7 +192,8 @@ title:
   sensitivity_level: Stufe
   polling_rate: Abtastrate (Hz)
   lod_height: LOD-Höhe
-  response_time: Reaktionszeit
+  key_response: Tastenansprechzeit
+  new_device: Neues Gerät
   sleep_time: Ruhezeit
   rotation_angle: Drehwinkel
   key_list: Tastenliste

@@ -170,7 +170,7 @@ onMounted(() => {
 
       <div class="mb-5 h-[251px] w-[800px] border-gray-600" style="overflow: hidden;">
         <div class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);">
-          <img style="width: 84px;height:142px;" src="/public/mouse.png" alt="" srcset="">
+          <img style="width: 84px; height:142px;" src="/public/mouse.png" alt="" srcset="">
           <p class="absolute bottom-1" style="color: black; font-weight: bold;font-size: 20px;">
             V6
           </p>
@@ -181,7 +181,7 @@ onMounted(() => {
         </div>
         <div class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;float: left;border: 1px solid rgba(255, 255, 255, 0.4);" @click="onNouseClick">
           <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
-            新增设备
+            {{ t('title.new_device') }}
           </p>
           <ElIcon size="20" color="#ffff">
             <Plus />
@@ -212,7 +212,7 @@ onMounted(() => {
           indicator-position="none"
           @change="onChangeCarousel"
         >
-          <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="h-240px flex items-center justify-center">
+          <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="flex items-center justify-center">
             <img class="h-100%" :src="item.img" alt="item.title">
           </ElCarouselItem>
         </ElCarousel>

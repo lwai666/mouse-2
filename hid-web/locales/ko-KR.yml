@@ -193,7 +193,8 @@ title:
   sensitivity_level: 레벨
   polling_rate: 폴링 레이트(Hz)
   lod_height: LOD 높이
-  response_time: 응답 시간
+  key_response: 키 응답
+  new_device: 새 장치
   sleep_time: 대기 시간
   rotation_angle: 회전 각도
   key_list: 키 목록
