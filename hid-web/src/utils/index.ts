@@ -198,7 +198,7 @@ export function processArrayToObject(originalArray: any, groupSize = 5) {
     // 计算当前组的起始索引
     const startIndex = groupIndex * groupSize
     // 获取当前组的 key (第一个元素)
-    const key = originalArray[startIndex]
+    // const key = originalArray[startIndex]
     // 获取当前组的 value (剩余的所有元素)
     const valueArray = originalArray.slice(startIndex + 1, startIndex + groupSize)
 
@@ -210,41 +210,9 @@ export function processArrayToObject(originalArray: any, groupSize = 5) {
     const num2 = combineLowAndHigh8Bits(valueArray[2], valueArray[3])
 
     // 将转换后的两个数字作为值
-    result[key] = [num1, num2]
+    result[startIndex] = [num1, num2]
   }
 
   return result
 }
 
-// export function processArrayToObject(originalArray: number[], groupSize = 5): Record<number, [number, number]> {
-//   const result: Record<number, [number, number]> = {}
-
-//   // 固定生成0-5的key
-//   const totalGroups = 5 // 0,1,2,3,4,5
-
-//   for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
-//     const startIndex = groupIndex * (groupSize - 1) // 每组需要4个值（去掉key）
-
-//     // 获取当前组对应的值数组
-//     let valueArray: number[] = []
-
-//     if (startIndex < originalArray.length) {
-//       // 从原始数组中获取值
-//       valueArray = originalArray.slice(startIndex, startIndex + (groupSize - 1))
-//     }
-
-//     // 如果值不足4个，用默认值100填充
-//     while (valueArray.length < groupSize - 1) {
-//       valueArray.push(100)
-//     }
-
-//     // 确保有4个值进行处理
-//     const num1 = combineLowAndHigh8Bits(valueArray[0], valueArray[1])
-//     const num2 = combineLowAndHigh8Bits(valueArray[2], valueArray[3])
-
-//     // key从0到5
-//     result[groupIndex] = [num1, num2]
-//   }
-
-//   return result
-// }

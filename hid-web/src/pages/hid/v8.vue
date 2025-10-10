@@ -317,15 +317,8 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     // XY 值
     else if (res[0] === 35) {
       const XYDataList = res.slice(3, (res[2] * 4) + 3)
-
-      console.log(XYDataList,'XYDataList')
-      // const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 5)
-
-      // profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
-
-      // console.log(profileInfo.XYObjDataList,'profileInfo.XYObjDataList')
-      // profileInfo.DPIStartList = decodeArrayBufferToArray(DPIStartList)
-      // profileInfo.sensitivity = sensitivity
+      const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 5)
+      profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
     }
 
     // 灵敏度&速度开关 0 为关，1 为开
@@ -779,17 +772,12 @@ async function sendHibernation() {
 }
 
 async function sendXYElimination() {
-  // const currentLowAndHigh8 = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index]
 
   const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item) => {
     return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
   })
 
-  // console.log([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...getLowAndHigh8Bits(currentLowAndHigh8[0]), ...getLowAndHigh8Bits(currentLowAndHigh8[1])], '[0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...getLowAndHigh8Bits(currentLowAndHigh8[0]), ...getLowAndHigh8Bits(currentLowAndHigh8[1])]')
-
   await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])
-
-  // await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...getLowAndHigh8Bits(currentLowAndHigh8[0]), ...getLowAndHigh8Bits(currentLowAndHigh8[1])])
 
   onExecutionSuccess()
 }
