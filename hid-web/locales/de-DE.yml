@@ -190,7 +190,7 @@ mouseKeyOptions:
 title:
   sensitivity_settings_heading: Empfindlichkeitseinstellungen
   sensitivity_level: Stufe
-  polling_rate: Abtastrate (Hz)
+  polling_rate: Abtastrate
   lod_height: LOD-Höhe
   key_response: Tastenansprechzeit
   new_device: Neues Gerät

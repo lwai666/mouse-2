@@ -348,6 +348,14 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       profileInfo.lineUpdate = lineUpdate
     }
 
+    // 折线图
+    else if (res[0] == 38) {
+      console.log(res,'res[0]')
+      // const start_index = 3
+      // let lineUpdate = res[start_index]
+      // profileInfo.lineUpdate = lineUpdate
+    }
+
     // 获取宏录制名字 profile 名字
     else if (res[0] === 25) {
       const macroName = decodeArrayBufferToString(new Uint8Array(res.slice(4, 4 + res[2])))
@@ -1413,7 +1421,7 @@ function initEcharts() {
     grid: {
       top: '8%',
       bottom: '20%',
-      left: '10%',
+      left: '5%',
       right: '3%',
     },
     xAxis: {
@@ -2019,7 +2027,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div v-if="!startXYFlag" class="absolute flex" style="flex:1;">
                       <div class="right-s-b" style="margin-left: 10px;padding: 50px 25px 25px 25px;position: relative;">
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px; min-width: 100px;text-align: right;" :style="{ 'font-size': t('title.polling_rate').length > 6 ? '14px' : '20px' }">
+                          <p style="font-size: 20px; min-width: 100px;text-align: right;" >
                             {{ t('title.polling_rate') }}
                           </p>
 
@@ -2041,7 +2049,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                               style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #3D3D3D;background:#242424"
                               @click="sendPolling(item.value)"
                             >
-                              {{ item.label }}
+                              {{ item.label }}<span style="font-size:12px"> Hz</span> 
                             </div>
                           </div>
                         </div>
@@ -2067,31 +2075,33 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <p style="font-size: 20px;min-width: 100px;text-align: right;">
                             {{ t('title.key_response') }}
                           </p>
-
-                          <CustomSlider
-                            v-model="profileInfo.jitter_elimination_slider"
-                            class="transparent-slider dpi_slider absolute right-5 w-63%"
-                            :bind="sliderOptions.jitter_elimination_slider"
-                            :default-select-options="sliderDefaultSelectOptions.jitter_elimination_slider"
-                            :show-fixed="true"
-                            @change="sendJitterElimination"
-                          />
+                          <div style="flex:1;height: 100%;" class="relative">
+                            <CustomSlider
+                              v-model="profileInfo.jitter_elimination_slider"
+                              class="transparent-slider dpi_slider absolute left-5 w-95%"
+                              :bind="sliderOptions.jitter_elimination_slider"
+                              :default-select-options="sliderDefaultSelectOptions.jitter_elimination_slider"
+                              :show-fixed="true"
+                              @change="sendJitterElimination"
+                            />
+                          </div>
                         </div>
                         <div class="flex items-center justify-between">
                           <p style="font-size: 20px;min-width: 100px;text-align: right;">
                             <!-- 休眠时间 -->
                             {{ t('title.sleep_time') }}
                           </p>
-                          <!-- @mouseenter="setRightHintCode('hibernation')"
-                            @change="sendHibernation" -->
-                          <CustomSlider
-                            v-model="profileInfo.hibernation_slider"
-                            class="transparent-slider absolute right-5 w-63%"
-                            :bind="sliderOptions.hibernation_slider"
-                            :default-select-options="sliderDefaultSelectOptions.hibernation_slider"
-                            :show-fixed="true"
-                            @change="sendHibernation"
-                          />
+                          <div style="flex:1;height: 100%;" class="relative">
+                            <CustomSlider
+                              v-model="profileInfo.hibernation_slider"
+                              class="transparent-slider absolute left-5 w-95%"
+                              :bind="sliderOptions.hibernation_slider"
+                              :default-select-options="sliderDefaultSelectOptions.hibernation_slider"
+                              :show-fixed="true"
+                              @change="sendHibernation"
+                            />
+                          </div>
+                          
                         </div>
                       </div>
                       <div
@@ -2136,7 +2146,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           :height="197"
                           :img-length="91"
                           :end-stop="false"
-                          url="/xy/启用X-Y轴_0"
+                          url="/xy/1_0"
                         />
                       </div>
 
@@ -2287,7 +2297,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div>
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
-                        <div>{{ t('macro.dynamicSensitivity') }} </div>
+                        <div style="text-align:left">{{ t('macro.dynamicSensitivity') }} </div>
                         <img
                           style=" margin-left: 5px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' : ''}.png`" srcset=""
                           @mouseenter="showMouseenterChange('showMouseenter')"
@@ -2336,7 +2346,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div style="margin-top: 50px;">
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
-                        <div>{{ t('title.straight_line_correction') }}</div>
+                        <div style="text-align:left">{{ t('title.straight_line_correction') }}</div>
                       </div>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
@@ -2379,9 +2389,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </div>
                       </div>
                     </div>
-                    <div style="width:100%" class="relative">
-                      <div id="myChart" style="width:100%; height:350px;" />
-
+                    <p  style="transform: rotate(90deg) translate(-50%);position: absolute; transform-origin: left;top: 50%;">
+                        <span> {{ t('title.output_input_ratio') }}</span>
+                    </p>
+                    <div style="width:100%" class="relative flex">
+                      <div id="myChart" style="flex:1; height:350px;" />
                       <div class="icon-box absolute bottom-0 right-0">
                         <ElIcon size="18" @click.stop="changeXAxisMax(-50)">
                           <Minus />
@@ -2390,12 +2402,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <Plus />
                         </ElIcon>
                       </div>
-                      <p class="absolute bottom-0 left-[50%] ml-[-64px]">
+                      <p class="absolute bottom-0 left-[50%]" style="transform: translate(-50%);">
                         {{ t('title.input_speed') }}
                       </p>
-                      <p class="absolute left-0 top-[50%] mt-[-49px]" style="transform: rotate(90deg);">
-                        {{ t('title.output_input_ratio') }}
-                      </p>
+                
                     </div>
                   </div>
                   <div class="config-child-box" style="flex-direction: column; margin-left: 30px; justify-content: center;">
@@ -2425,9 +2435,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <AnimateCanvas
                         :width="593"
                         :height="287"
-                        :img-length="91"
+                        :img-length="71"
                         :end-stop="false"
-                        url="/advanced/2_0"
+                        url="/advanced/1_0"
                       />
                     </div>
 
@@ -2694,15 +2704,17 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
   .bottom-box .config-child-box {
     display: flex;
+    padding-right: 10321
   }
 
   .config-child-box1 span {
-    border: 1px solid #daff00 !important;
+    border: 1px solid #daff00 !important; 
     background-color: #333333 !important;
   }
 
   .bottom-box .config-child-box span {
-    width: 123px;
+    min-width: 123px;
+    width:100%;
     height: 36px;
     display: flex;
     justify-content: center;
@@ -2712,6 +2724,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     margin-right: 30px;
     font-size: 16px;
     background-color: #242424;
+    padding: 0 7px;
   }
 
   .button {

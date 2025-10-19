@@ -190,7 +190,7 @@ mouseKeyOptions:
 title:
   sensitivity_settings_heading: Sensitivity Settings
   sensitivity_level: Level
-  polling_rate: Polling Rate(Hz)
+  polling_rate: Polling Rate
   lod_height: LOD Height
   key_response: Key Response
   new_device: New Device

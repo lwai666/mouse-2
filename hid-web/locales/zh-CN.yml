@@ -188,7 +188,7 @@ mouseKeyOptions:
 title:
   sensitivity_settings_heading: 灵敏度设置
   sensitivity_level: 等级
-  polling_rate: 轮询率(Hz)
+  polling_rate: 轮询率
   lod_height: LOD 高度
   key_response: 按键响应
   sleep_time: 休眠时间

@@ -191,7 +191,7 @@ mouseKeyOptions:
 title:
   sensitivity_settings_heading: 감도 설정
   sensitivity_level: 레벨
-  polling_rate: 폴링 레이트(Hz)
+  polling_rate: 폴링 레이트
   lod_height: LOD 높이
   key_response: 키 응답
   new_device: 새 장치

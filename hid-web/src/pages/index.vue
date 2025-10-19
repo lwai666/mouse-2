@@ -65,11 +65,14 @@ nextTick(() => {
   show.value = true
 })
 
-async function onNouseClick() {
-  if (transport.value) {
-    router.push(`/hid/v8`)
-    return
-  }
+const transportList =  JSON.parse(localStorage.getItem('transportList'));
+
+async function onNouseClick(item) {
+  transport.value = item
+  router.push(`/hid/v8`)
+}
+
+async function onAddNouseClick() {
 
   transport.value = await createTransportWebHID({
     id: 'v8',
@@ -84,7 +87,13 @@ async function onNouseClick() {
       // console.log('接收的数据=======', data)
     },
   })
+
   if (transport.value) {
+    let transportList = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
+    if(!transportList.find(item=>item.reportId != transport.value.reportId)){
+      transportList.push(transport.value)
+      localStorage.setItem('transportList', JSON.stringify(transportList) );
+    }
     router.push(`/hid/v8`)
   }
 }
@@ -169,7 +178,7 @@ onMounted(() => {
       </div> -->
 
       <div class="mb-5 h-[251px] w-[800px] border-gray-600" style="overflow: hidden;">
-        <div class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);">
+        <div v-for="item in transportList"  @click="onNouseClick(item)" class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);">
           <img style="width: 84px; height:142px;" src="/public/mouse.png" alt="" srcset="">
           <p class="absolute bottom-1" style="color: black; font-weight: bold;font-size: 20px;">
             V6
@@ -179,7 +188,7 @@ onMounted(() => {
             <div style="width: 18px;height: 18px;background: #fff; border-radius: 50%;" />
           </div>
         </div>
-        <div class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;float: left;border: 1px solid rgba(255, 255, 255, 0.4);" @click="onNouseClick">
+        <div class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;float: left;border: 1px solid rgba(255, 255, 255, 0.4);" @click="onAddNouseClick">
           <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
             {{ t('title.new_device') }}
           </p>
