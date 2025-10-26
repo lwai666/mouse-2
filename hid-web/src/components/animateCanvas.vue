@@ -112,7 +112,6 @@ function animate(editIndex = -1, callback) {
       }
     }
     if (props.width && canvas) {
-      console.log(props.width,'props.width')
       canvas.width = props.width
       canvas.height = props.height
     }

@@ -30,16 +30,23 @@ const mouseButtonCascaderRef = ref()
 const constants = useConstants(t)
 
 const profileInfo = inject<ProfileInfoType>('profileInfo')
+const language = inject('language')
 
 // const transport = inject<Ref<TransportWebHIDInstance>>('transport');
 
 const options = ref()
 watch(() => profileInfo?.macroList, () => {
-  const children = constants.mouseKeyOptions.find(item => item.value === 1999)?.children
-  children?.forEach((item, index) => {
+  const data = constants.mouseKeyOptions.find(item => item.value === 1999)
+  data?.children?.forEach((item, index) => {
     item.label = profileInfo?.macroList[index]?.name
   })
+  data.hidden = !profileInfo?.macroList.filter((k: any) => k.name).length
   options.value = deepClone(constants.mouseKeyOptions)
+}, { immediate: true, deep: true })
+
+watch(() => language, () => {
+  const constants = useConstants(t)
+  options.value = constants.mouseKeyOptions
 }, { immediate: true, deep: true })
 
 const sendData = ref({

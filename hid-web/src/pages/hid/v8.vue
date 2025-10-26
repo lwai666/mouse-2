@@ -168,8 +168,10 @@ function initProfileInfo() {
 }
 
 const profileInfo = reactive(initProfileInfo())
+let localeStr = ref(null)
 
 provide < ProfileInfoType > ('profileInfo', profileInfo)
+provide('language', localeStr)
 
 const mouseButtonValue = computed(() => {
   return {
@@ -350,7 +352,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
 
     // 折线图
     else if (res[0] == 38) {
-      console.log(res,'res[0]')
+      console.log(res, 'res[0]')
       // const start_index = 3
       // let lineUpdate = res[start_index]
       // profileInfo.lineUpdate = lineUpdate
@@ -780,7 +782,6 @@ async function sendHibernation() {
 }
 
 async function sendXYElimination() {
-
   const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item) => {
     return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
   })
@@ -1309,7 +1310,13 @@ function mouseenter(type) {
 
 const showMouseenter = ref('show')
 
-function radioChange() {
+async function radioChange() {
+  if (profileInfo.FPS === 1 || profileInfo.FPS) {
+    profileInfo.FPS = false
+    await transport?.value.send([0x27, 0x00, 0x00, 0])
+    return
+  }
+
   if (profileInfo.sports_arena === 1 && profileInfo.polling_slider === 5) {
     showMouseenter.value = 'FPS'
     return
@@ -1326,6 +1333,10 @@ async function setDPIXY() {
 }
 
 async function FPSChange(type) {
+  if (type === 0) {
+    showMouseenter.value = 'show'
+    return
+  }
   await transport?.value.send([0x27, 0x00, 0x00, type])
   profileInfo.FPS = !!type
   setLoadingStatus()
@@ -1333,13 +1344,23 @@ async function FPSChange(type) {
 }
 
 // 直线修正
-function lineUpdate() {
+async function lineUpdate() {
+  if (profileInfo.lineUpdate === 1 || profileInfo.lineUpdate) {
+    profileInfo.lineUpdate = false
+    await transport?.value.send([0x28, 0x00, 0x00, 0])
+    return
+  }
+
   showMouseenter.value = 'line'
 }
 
 // 直线修正发送鼠标信息
 
 async function lineUpdateSent(type) {
+  if (type === 0) {
+    showMouseenter.value = 'show'
+    return
+  }
   await transport?.value.send([0x28, 0x00, 0x00, type])
   profileInfo.lineUpdate = !!type
   setLoadingStatus()
@@ -1482,10 +1503,10 @@ function initEcharts() {
       {
         id: 'a',
         type: 'line',
-        smooth: true,
+        smooth: 0.6,
         symbolSize,
         // initData.value
-        data: [],
+        data: initData.value,
         // areaStyle: {},
         itemStyle: {
           color: '#DAFF00', // 折线点颜色（番茄色）
@@ -1751,6 +1772,7 @@ toggleLocales(locale.value)
 async function toggleLocales(language: string) {
   await loadLanguageAsync(language)
   locale.value = language
+  localeStr.value = language
   const list = JSON.parse(JSON.stringify(selectLanguageList.value))
   const index = list.findIndex((item) => {
     return item.language === language
@@ -2027,7 +2049,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div v-if="!startXYFlag" class="absolute flex" style="flex:1;">
                       <div class="right-s-b" style="margin-left: 10px;padding: 50px 25px 25px 25px;position: relative;">
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px; min-width: 100px;text-align: right;" >
+                          <p style="font-size: 20px; min-width: 100px;text-align: right;">
                             {{ t('title.polling_rate') }}
                           </p>
 
@@ -2049,7 +2071,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                               style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #3D3D3D;background:#242424"
                               @click="sendPolling(item.value)"
                             >
-                              {{ item.label }}<span style="font-size:12px"> Hz</span> 
+                              {{ item.label }}<span style="font-size:12px"> Hz</span>
                             </div>
                           </div>
                         </div>
@@ -2101,7 +2123,6 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                               @change="sendHibernation"
                             />
                           </div>
-                          
                         </div>
                       </div>
                       <div
@@ -2297,7 +2318,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div>
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
-                        <div style="text-align:left">{{ t('macro.dynamicSensitivity') }} </div>
+                        <div style="text-align:left">
+                          {{ t('macro.dynamicSensitivity') }}
+                        </div>
                         <img
                           style=" margin-left: 5px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' : ''}.png`" srcset=""
                           @mouseenter="showMouseenterChange('showMouseenter')"
@@ -2346,7 +2369,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div style="margin-top: 50px;">
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="width: 170px;" class="flex items-center">
-                        <div style="text-align:left">{{ t('title.straight_line_correction') }}</div>
+                        <div style="text-align:left">
+                          {{ t('title.straight_line_correction') }}
+                        </div>
                       </div>
                       <div
                         class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
@@ -2389,8 +2414,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </div>
                       </div>
                     </div>
-                    <p  style="transform: rotate(90deg) translate(-50%);position: absolute; transform-origin: left;top: 50%;">
-                        <span> {{ t('title.output_input_ratio') }}</span>
+                    <p style="transform: rotate(90deg) translate(-50%);position: absolute; transform-origin: left;top: 50%;">
+                      <span> {{ t('title.output_input_ratio') }}</span>
                     </p>
                     <div style="width:100%" class="relative flex">
                       <div id="myChart" style="flex:1; height:350px;" />
@@ -2405,10 +2430,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <p class="absolute bottom-0 left-[50%]" style="transform: translate(-50%);">
                         {{ t('title.input_speed') }}
                       </p>
-                
                     </div>
                   </div>
-                  <div class="config-child-box" style="flex-direction: column; margin-left: 30px; justify-content: center;">
+                  <div class="config-child-box" style="flex-direction: column; margin-left: 30px; justify-content: center;padding-right:10px">
                     <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_classic') }}</span>
                     <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_natural') }}</span>
                     <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_jump') }}</span>
@@ -2704,17 +2728,17 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
   .bottom-box .config-child-box {
     display: flex;
-    padding-right: 10321
+    padding-right: 10321;
   }
 
   .config-child-box1 span {
-    border: 1px solid #daff00 !important; 
+    border: 1px solid #daff00 !important;
     background-color: #333333 !important;
   }
 
   .bottom-box .config-child-box span {
     min-width: 123px;
-    width:100%;
+    width: 100%;
     height: 36px;
     display: flex;
     justify-content: center;
