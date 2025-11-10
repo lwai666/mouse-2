@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>音浪效果折线图</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/6.0.0/echarts.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        color: #fff;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        overflow-x: hidden;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 2.8rem;
+        margin-bottom: 10px;
+        background: linear-gradient(90deg, #00c6ff, #0072ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 15px rgba(0, 114, 255, 0.5);
+      }
+
+      .subtitle {
+        font-size: 1.2rem;
+        color: #a0d2ff;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .content {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        width: 100%;
+      }
+
+      .chart-container {
+        flex: 1;
+        min-width: 700px;
+        height: 500px;
+        background: rgba(16, 36, 54, 0.7);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(0, 198, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .chart-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #00c6ff, #0072ff);
+        box-shadow: 0 0 10px #00c6ff;
+      }
+
+      #chart {
+        width: 100%;
+        height: 100%;
+      }
+
+      .info-panel {
+        width: 300px;
+        background: rgba(16, 36, 54, 0.7);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(0, 198, 255, 0.2);
+      }
+
+      .info-panel h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #00c6ff;
+        font-size: 1.5rem;
+      }
+
+      .stats {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .stat-label {
+        font-size: 1rem;
+        color: #a0d2ff;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #00c6ff;
+        text-shadow: 0 0 8px rgba(0, 198, 255, 0.7);
+      }
+
+      .stat-bar {
+        height: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .stat-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.3s ease;
+      }
+
+      .instructions {
+        margin-top: 30px;
+        text-align: center;
+        max-width: 800px;
+        background: rgba(16, 36, 54, 0.7);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .instructions h3 {
+        color: #00c6ff;
+        margin-bottom: 15px;
+      }
+
+      .instructions p {
+        line-height: 1.6;
+        margin-bottom: 10px;
+        color: #a0d2ff;
+      }
+
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 0.7;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.7;
+        }
+
+      @media (max-width: 1100px) {
+        .content {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .chart-container {
+          min-width: 90%;
+        }
+
+        .info-panel {
+          width: 90%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>音浪效果折线图</h1>
+        <p class="subtitle">鼠标移动控制VisualMap动效</p>
+      </header>
+
+      <div class="content">
+        <div class="chart-container">
+          <div id="chart"></div>
+        </div>
+
+        <div class="info-panel">
+          <h2>实时数据</h2>
+          <div class="stats">
+            <div class="stat-item">
+              <div class="stat-header">
+                <span class="stat-label">鼠标速度</span>
+                <span class="stat-value" id="speed">0</span>
+              </div>
+              <div class="stat-bar">
+                <div
+                  class="stat-fill"
+                  id="speed-bar"
+                  style="width: 0%; background: linear-gradient(90deg, #00c6ff, #0072ff)"
+                ></div>
+              </div>
+
+            <div class="stat-item">
+              <div class="stat-header">
+                <span class="stat-label">移动距离</span>
+                <span class="stat-value" id="distance">0</span>
+              </div>
+              <div class="stat-bar">
+                <div
+                  class="stat-fill"
+                  id="distance-bar"
+                  style="width: 0%; background: linear-gradient(90deg, #00e676, #00c853)"
+                ></div>
+              </div>
+
+            <div class="stat-item">
+              <div class="stat-header">
+                <span class="stat-label">VisualMap范围</span>
+                <span class="stat-value" id="visual-range">0-0</span>
+              </div>
+              <div class="stat-bar">
+                <div
+                  class="stat-fill"
+                  id="range-bar"
+                  style="width: 0%; background: linear-gradient(90deg, #ff4081, #f50057)"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <div class="instructions">
+        <h3>使用说明</h3>
+        <p>在页面上移动鼠标来控制VisualMap动效：</p>
+        <p>• <strong>鼠标速度</strong> - 影响VisualMap的扩展速度</p>
+        <p>• <strong>移动距离</strong> - 影响VisualMap的覆盖范围</p>
+        <p>• <strong>VisualMap范围</strong> - 显示当前visualMap覆盖的数据点范围</p>
+        <p class="pulse">快速移动鼠标来增强VisualMap效果！鼠标停止时VisualMap会消失。</p>
+      </div>
+    </div>
+
+    <script>
+      // 初始化ECharts实例
+      const chartDom = document.getElementById('chart')
+      const myChart = echarts.init(chartDom)
+
+      // 鼠标移动跟踪变量
+      let lastMouseX = 0
+      let lastMouseY = 0
+      let lastTime = 0
+      let currentSpeed = 0
+      let totalDistance = 0
+      let inactivityTimer = null
+
+      // 固定数据点
+      const fixedData = [
+        [0, 40],
+        [38, 42],
+        [70, 50],
+        [90, 55],
+        [180, 60],
+      ]
+
+      // 将数据转换为ECharts需要的格式
+      function processData() {
+        const xData = []
+        const yData = []
+
+        fixedData.forEach((point) => {
+          xData.push(point[0])
+          yData.push(point[1])
+        })
+
+        return { xData, yData }
+      }
+
+      const { xData, yData } = processData()
+      const maxXValue = xData[xData.length - 1]
+
+      // 配置ECharts选项
+      let option = {
+        backgroundColor: 'transparent',
+        tooltip: {
+          trigger: 'axis',
+          formatter: function (params) {
+            return `时间: ${params[0].name}<br/>数值: ${params[0].value}`
+          },
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          borderColor: '#00c6ff',
+          textStyle: {
+            color: '#fff',
+          },
+        },
+        grid: {
+          left: '5%',
+          right: '5%',
+          bottom: '10%',
+          top: '10%',
+          containLabel: true,
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: xData,
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.3)',
+            },
+          },
+          axisLabel: {
+            color: 'rgba(255, 255, 255, 0.7)',
+          },
+          splitLine: {
+            show: false,
+          },
+          name: '时间',
+          nameTextStyle: {
+            color: 'rgba(255, 255, 255, 0.7)',
+          },
+        },
+        yAxis: {
+          type: 'value',
+          min: 30,
+          max: 70,
+          axisLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.3)',
+            },
+          },
+          axisLabel: {
+            color: 'rgba(255, 255, 255, 0.7)',
+          },
+          splitLine: {
+            lineStyle: {
+              color: 'rgba(255, 255, 255, 0.1)',
+            },
+          },
+          name: '数值',
+          nameTextStyle: {
+            color: 'rgba(255, 255, 255, 0.7)',
+          },
+        },
+        visualMap: {
+          show: false, // 默认隐藏
+          type: 'continuous',
+          dimension: 0,
+          min: 0,
+          max: 10,
+          inRange: {
+            color: ['#00c6ff', '#0072ff', '#6a11cb', '#2575fc', '#ff0080'],
+          },
+          outOfRange: {
+            color: 'rgba(255, 255, 255, 0.1)',
+          },
+          range: [0, 0], // 初始范围为0
+        },
+        series: [
+          {
+            name: '音浪',
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8,
+            lineStyle: {
+              width: 4,
+              shadowColor: 'rgba(0, 198, 255, 0.5)',
+              shadowBlur: 10,
+              shadowOffsetY: 5,
+            },
+            itemStyle: {
+              color: '#00c6ff',
+              borderColor: '#fff',
+              borderWidth: 2,
+            },
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  {
+                    offset: 0,
+                    color: 'rgba(0, 198, 255, 0.3)',
+                  },
+                  {
+                    offset: 1,
+                    color: 'rgba(0, 114, 255, 0.1)',
+                  },
+                ],
+              },
+            },
+            data: yData,
+          },
+        ],
+        animation: false,
+      }
+
+      // 应用配置
+      myChart.setOption(option)
+
+      // 更新VisualMap范围
+      function updateVisualMap(speed, distance) {
+        // 根据速度和距离计算VisualMap范围
+        const speedFactor = Math.min(speed / 50, 1) // 速度因子，最大为1
+        const distanceFactor = Math.min(distance / 500, 1) // 距离因子，最大为1
+
+        // 综合因子（速度和距离各占一半权重）
+        const combinedFactor = speedFactor * 0.5 + distanceFactor * 0.5
+
+        // 计算VisualMap的范围
+        const rangeEnd = Math.floor(maxXValue * combinedFactor)
+
+        // 更新VisualMap
+        option.visualMap.range = [0, rangeEnd]
+        option.visualMap.show = rangeEnd > 0 // 如果范围大于0则显示
+
+        // 更新图表
+        myChart.setOption(option)
+
+        // 更新UI
+        updateUI(speed, distance, rangeEnd, combinedFactor)
+      }
+
+      // 重置VisualMap（鼠标停止时）
+      function resetVisualMap() {
+        option.visualMap.show = false
+        option.visualMap.range = [0, 0]
+        myChart.setOption(option)
+
+        // 重置UI
+        document.getElementById('speed').textContent = '0'
+        document.getElementById('distance').textContent = '0'
+        document.getElementById('visual-range').textContent = '0-0'
+        document.getElementById('speed-bar').style.width = '0%'
+        document.getElementById('distance-bar').style.width = '0%'
+        document.getElementById('range-bar').style.width = '0%'
+
+        // 重置跟踪变量
+        currentSpeed = 0
+        totalDistance = 0
+      }
+
+      // 更新UI显示
+      function updateUI(speed, distance, rangeEnd, factor) {
+        document.getElementById('speed').textContent = Math.round(speed)
+        document.getElementById('distance').textContent = Math.round(distance)
+        document.getElementById('visual-range').textContent = `0-${rangeEnd}`
+
+        // 更新进度条
+        document.getElementById('speed-bar').style.width = Math.min(100, speed / 5) + '%'
+        document.getElementById('distance-bar').style.width = Math.min(100, distance / 10) + '%'
+        document.getElementById('range-bar').style.width = factor * 100 + '%'
+      }
+
+      // 鼠标移动事件处理
+      document.addEventListener('mousemove', function (event) {
+        const currentTime = Date.now()
+        const currentX = event.clientX
+        const currentY = event.clientY
+
+        // 计算距离和速度
+        if (lastTime > 0) {
+          const deltaTime = (currentTime - lastTime) / 1000 // 转换为秒
+          const deltaX = currentX - lastMouseX
+          const deltaY = currentY - lastMouseY
+          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+          totalDistance += distance
+          currentSpeed = distance / deltaTime
+
+          // 更新VisualMap
+          updateVisualMap(currentSpeed, totalDistance)
+        }
+
+        // 更新上一次的位置和时间
+        lastMouseX = currentX
+        lastMouseY = currentY
+        lastTime = currentTime
+
+        // 清除之前的计时器
+        if (inactivityTimer) {
+          clearTimeout(inactivityTimer)
+        }
+
+        // 设置新的计时器，鼠标停止500ms后重置VisualMap
+        inactivityTimer = setTimeout(() => {
+          resetVisualMap()
+        }, 500)
+      })
+
+      // 响应窗口大小变化
+      window.addEventListener('resize', function () {
+        myChart.resize()
+      })
+    </script>
+  </body>
+</html>

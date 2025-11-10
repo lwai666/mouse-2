@@ -149,6 +149,7 @@ function initProfileInfo() {
 
     // 高级-灵敏度开关
     sensitivity: 0,
+    sensitivityModeIndex: 0,
     // 直线修正
     lineUpdate: 0,
     // 20K采样率
@@ -164,11 +165,15 @@ function initProfileInfo() {
       3: [100, 100],
       4: [100, 100],
     },
+    // 动态灵敏度折线图
+    sensitivityLineData: [],
+
   }
 }
+const localeStr = ref(null)
+const initData = ref([])
 
 const profileInfo = reactive(initProfileInfo())
-let localeStr = ref(null)
 
 provide < ProfileInfoType > ('profileInfo', profileInfo)
 provide('language', localeStr)
@@ -337,25 +342,25 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     }
 
     // 20K采样率开关 0 为关，1 为开
-    else if (res[0] == 39) {
+    else if (res[0] === 39) {
       const start_index = 3
-      let FPS = res[start_index]
+      const FPS = res[start_index]
       profileInfo.FPS = FPS
     }
 
     // 直线修正开关 0 为关，1 为开
-    else if (res[0] == 40) {
+    else if (res[0] === 40) {
       const start_index = 3
-      let lineUpdate = res[start_index]
+      const lineUpdate = res[start_index]
       profileInfo.lineUpdate = lineUpdate
     }
 
     // 折线图
-    else if (res[0] == 38) {
-      console.log(res, 'res[0]')
-      // const start_index = 3
-      // let lineUpdate = res[start_index]
-      // profileInfo.lineUpdate = lineUpdate
+    else if (res[0] === 38) {
+      profileInfo.sensitivityModeIndex = res[3]
+      const sensitivityLineDataList = res.slice(6, 6 + res[2])
+      profileInfo.sensitivityLineData = sensitivityLineDataList
+      initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2)
     }
 
     // 获取宏录制名字 profile 名字
@@ -501,8 +506,6 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
       uint8Array.push(transport.value.generatePacket(new Uint8Array([0x19, 0, macroName.length, macroIndex + 6, ...macroName])))
     }
   })
-
-  console.log(profileInfo.macroList, 'profileInfo.macroList')
 
   // 当前第几个配置
   // uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1E, 0x00, 0x01, active_profile_index.value])))
@@ -1010,12 +1013,6 @@ async function onPairingConnection() {
 
   connection()
   window.removeEventListener('keydown', handleSpaceKey)
-
-  // messageBox.confirm(t('message.pairing_connection'), { container: '.middle-container' })
-  //   .then(connection)
-  //   .finally(() => {
-  //     window.removeEventListener('keydown', handleSpaceKey)
-  //   })
 }
 
 async function onRestoreFactorySettings() {
@@ -1024,10 +1021,6 @@ async function onRestoreFactorySettings() {
   setTimeout(() => {
     location.reload()
   }, 1000)
-  // messageBox.confirm(t('message.restore_factory_settings'), { container: '.middle-container' })
-  //   .then(async () => {
-
-  //   })
 }
 
 function toSettings() {
@@ -1350,7 +1343,6 @@ async function lineUpdate() {
     await transport?.value.send([0x28, 0x00, 0x00, 0])
     return
   }
-
   showMouseenter.value = 'line'
 }
 
@@ -1371,6 +1363,16 @@ async function lineUpdateSent(type) {
 async function radioChange1() {
   profileInfo.sensitivity = !profileInfo.sensitivity
   await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
+  setLoadingStatus()
+}
+
+// 动态灵敏度折线图拖拽变更
+
+async function lineDropChange() {
+  const formatData = initData.value.map((item) => {
+    return [Number(item[0].toFixed(2)), Number(item[1].toFixed(2))]
+  })
+  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), 60, xAxisMax.value, ...formatData.flat()])
   setLoadingStatus()
 }
 
@@ -1410,7 +1412,7 @@ function activeBgChange(type) {
 async function getProfileData(type) {
   const data = await transport?.value.send([0x26, 0, 0, type])
 
-  console.log(data, 'data')
+  console.log(data, 'datadata0x26')
 }
 
 const startXYFlag = ref(false)
@@ -1423,13 +1425,6 @@ const chart = ref(null)
 const xAxisMax = ref(250)
 // const yAxisMax = ref(60)
 // const pieces = ref(100)
-const initData = ref([
-  [0, 40],
-  [38, 42],
-  [70, 50],
-  [90, 55],
-  [180, 60],
-])
 
 function initEcharts() {
   myChart.value = echarts.init(document.getElementById('myChart'))
@@ -1505,7 +1500,6 @@ function initEcharts() {
         type: 'line',
         smooth: 0.6,
         symbolSize,
-        // initData.value
         data: initData.value,
         // areaStyle: {},
         itemStyle: {
@@ -1535,8 +1529,11 @@ function initEcharts() {
           },
           invisible: true,
           draggable: true,
-          ondrag(dx, dy) {
+          ondrag() {
             onPointDragging(dataIndex, [this.x, this.y])
+          },
+          ondragend() {
+            lineDropChange()
           },
           z: 100,
         }
@@ -1548,7 +1545,7 @@ function initEcharts() {
     const [x, y] = myChart.value.convertFromPixel('grid', pos)
 
     initData.value[dataIndex] = chart.value.dragPoint(dataIndex, x, y)
-    // chart.value = new DraggableChart(initData.value)
+
     myChart.value.setOption({
       series: [
         {
@@ -1567,7 +1564,7 @@ function initEcharts() {
           },
           invisible: true,
           draggable: true,
-          ondrag(dx, dy) {
+          ondrag() {
             onPointDragging(dataIndex, [this.x, this.y])
           },
           z: 100,
@@ -1581,13 +1578,11 @@ function changeXAxisMax(num) {
   xAxisMax.value = xAxisMax.value + num
   if (xAxisMax.value > 250) {
     xAxisMax.value = 250
-
     return
   }
   if (xAxisMax.value < 50) {
     xAxisMax.value = 50
     // chart.value.setBounds(0, 50, 0, yAxisMax.value)
-
     return
   }
 
