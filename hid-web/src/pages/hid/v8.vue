@@ -1332,7 +1332,7 @@ async function FPSChange(type) {
   }
   await transport?.value.send([0x27, 0x00, 0x00, type])
   profileInfo.FPS = !!type
-  setLoadingStatus()
+  setLoadingStatus('')
   showMouseenter.value = 'show'
 }
 
@@ -1372,7 +1372,7 @@ async function lineDropChange() {
   const formatData = initData.value.map((item) => {
     return [Number(item[0].toFixed(2)), Number(item[1].toFixed(2))]
   })
-  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), 60, xAxisMax.value, ...formatData.flat()])
+  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), yAxisMax.value, xAxisMax.value, ...formatData.flat()])
   setLoadingStatus()
 }
 
@@ -1423,7 +1423,7 @@ function startXY() {
 const myChart = ref(null)
 const chart = ref(null)
 const xAxisMax = ref(250)
-// const yAxisMax = ref(60)
+const yAxisMax = ref(60)
 // const pieces = ref(100)
 
 function initEcharts() {
@@ -1463,7 +1463,7 @@ function initEcharts() {
     },
     yAxis: {
       min: 0,
-      max: 60,
+      max: yAxisMax.value,
       interval: 20,
       type: 'value',
       splitLine: {
@@ -1574,7 +1574,7 @@ function initEcharts() {
   }
 }
 
-function changeXAxisMax(num) {
+async function changeXAxisMax(num: number) {
   xAxisMax.value = xAxisMax.value + num
   if (xAxisMax.value > 250) {
     xAxisMax.value = 250
@@ -1585,6 +1585,27 @@ function changeXAxisMax(num) {
     // chart.value.setBounds(0, 50, 0, yAxisMax.value)
     return
   }
+
+  console.log(initData.value, 'initData.value')
+
+  await lineDropChange()
+
+  initEcharts()
+}
+
+async function changeYAxisMax(num: number) {
+  yAxisMax.value = yAxisMax.value + num
+  if (yAxisMax.value > 60) {
+    yAxisMax.value = 60
+    return
+  }
+  if (yAxisMax.value < 20) {
+    yAxisMax.value = 20
+    // chart.value.setBounds(0, 50, 0, yAxisMax.value)
+    return
+  }
+
+  await lineDropChange()
 
   initEcharts()
 }
@@ -1716,33 +1737,11 @@ async function onChange(macroName: string, index: number) {
   const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
   await transport?.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + index, ...macroNameArrayBuffer])
   isHovered.value = ''
-  setLoadingStatus()
+  setLoadingStatus('')
 }
 
 const currentActive = ref(0)
 const modeShow = ref(false)
-
-// function observeWidthChange(element) {
-//   // 检查浏览器是否支持ResizeObserver
-//   if (typeof ResizeObserver !== 'undefined') {
-//     const observer = new ResizeObserver((entries) => {
-//       for (const entry of entries) {
-//         const width = entry.contentRect.width
-
-//         if (width < 200) {
-//           modeShow.value = false
-//         }
-//         if (width > 200) {
-//           modeShow.value = true
-//         }
-//       }
-//     })
-//     // 开始观察元素
-//     observer.observe(element)
-//     // 返回一个用于停止观察的函数
-//     return () => observer.disconnect()
-//   }
-// }
 
 function changeModeShow() {
   modeShow.value = true
@@ -1778,6 +1777,38 @@ async function toggleLocales(language: string) {
 
 function mouseButtonClickFn() {
   bottomItem.value = 5
+}
+
+const originalItems = [
+  { id: 0, text: t('title.sensitivity_preset_classic') },
+  { id: 1, text: t('title.sensitivity_preset_natural') },
+  { id: 2, text: t('title.sensitivity_preset_jump') },
+  { id: 3, text: t('title.none') },
+]
+
+const sortedItems = computed(() => {
+  // 过滤出需要显示的项目
+  const filteredItems = originalItems.filter(item =>
+    currentActive.value === item.id || modeShow.value,
+  )
+
+  // 如果当前激活项在过滤后的列表中，把它移到第一个
+  const activeItemIndex = filteredItems.findIndex(item => item.id === currentActive.value)
+  if (activeItemIndex > -1) {
+    const activeItem = filteredItems[activeItemIndex]
+    filteredItems.splice(activeItemIndex, 1)
+    filteredItems.unshift(activeItem)
+  }
+
+  return filteredItems
+})
+
+function selectMode(mode: number) {
+  if (currentActive.value === mode) {
+    return
+  }
+  currentActive.value = mode
+  profileInfo.sensitivityModeIndex = mode
 }
 
 provide('createHong', createHong)
@@ -1873,7 +1904,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
           @change="onMouseButtonChange"
         />
 
-        <div class="absolute right-[-50px] top-0">
+        <div class="color-box absolute right-[-50px] top-0">
           <div class="mb-3" style="width: 18px;height: 18px;background: #8B8B8B; border-radius: 50%;" />
           <div style="width: 18px;height: 18px;background: #fff; border-radius: 50%;" />
         </div>
@@ -2388,20 +2419,32 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div style="padding: 25px 25px 0 25px; flex:1;">
                     <div class="ml-25 flex items-center">
                       <div class="icon-box">
-                        <ElIcon size="18">
+                        <ElIcon size="18" @click.stop="changeYAxisMax(20)">
                           <Plus />
                         </ElIcon>
-                        <ElIcon size="18">
+                        <ElIcon size="18" @click.stop="changeYAxisMax(-20)">
                           <Minus />
                         </ElIcon>
                       </div>
                       <div class="ml-15 flex items-center">
                         <span class="mr-3">{{ t('title.select_preset') }}</span>
                         <div class="mode-box relative flex items-center pl-10" style="height: 32px;  background-color: #242424;border-radius: 30px" @mouseenter="changeModeShow" @mouseleave="changeModeHide">
-                          <span v-if="currentActive === 0 || modeShow" class="mr-10">{{ t('title.sensitivity_preset_classic') }}</span>
-                          <span v-if="currentActive === 1 || modeShow" class="mr-10">{{ t('title.sensitivity_preset_natural') }}</span>
-                          <span v-if="currentActive === 2 || modeShow" class="mr-10">{{ t('title.sensitivity_preset_jump') }}</span>
-                          <span v-if="currentActive === 3 || modeShow" class="mr-10">{{ t('title.none') }}</span>
+                          <span
+                            v-for="item in sortedItems"
+                            :key="item.id"
+                            class="mr-10"
+                            @click="selectMode(item.id)"
+                          >
+
+                            {{
+                              {
+                                0: t('title.sensitivity_preset_classic'),
+                                1: t('title.sensitivity_preset_natural'),
+                                2: t('title.sensitivity_preset_jump'),
+                                3: t('title.none'),
+                              }[item.id]
+                            }}
+                          </span>
                           <ElIcon class="absolute right-3" style="margin-left: 15px;" size="20" color="#DAFF00">
                             <ArrowDownBold v-if="!modeShow" />
                             <ArrowRightBold v-else />
@@ -2431,6 +2474,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_classic') }}</span>
                     <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_natural') }}</span>
                     <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_jump') }}</span>
+                    <!-- 自定义 -->
                     <span style="margin-bottom: 35px;" class="active">{{ t('title.sensitivity_preset_custom') }}</span>
                   </div>
                 </div>
@@ -2933,6 +2977,18 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
   .logo-box:hover {
     height: 254px;
+  }
+
+  .color-box {
+    transition: all 0.5s ease; /* 平滑过渡效果 */
+    border: 1px solid transparent; /* 初始无边框 */
+    cursor: pointer; /* 鼠标悬停样式 */
+    height: 30px;
+    overflow: hidden;
+  }
+
+  .color-box:hover {
+    height: 64px;
   }
 
   .mode-box {
