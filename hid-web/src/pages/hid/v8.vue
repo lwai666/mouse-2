@@ -171,7 +171,15 @@ function initProfileInfo() {
   }
 }
 const localeStr = ref(null)
-const initData = ref([])
+// const initData = ref([])
+
+const initData = ref([
+  [0, 40],
+  [38, 42],
+  [70, 50],
+  [90, 55],
+  [180, 60],
+])
 
 const profileInfo = reactive(initProfileInfo())
 
@@ -195,6 +203,7 @@ const profileList = reactive<ProfileType[]>([
   { title: 'Profile 3', base64: '', uint8Array: [], value: undefined },
   { title: 'Profile 4', base64: '', uint8Array: [], value: undefined },
 ])
+
 const active_profile_index = ref(0)
 
 async function setProfileInfo(index: number) {
@@ -360,7 +369,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       profileInfo.sensitivityModeIndex = res[3]
       const sensitivityLineDataList = res.slice(6, 6 + res[2])
       profileInfo.sensitivityLineData = sensitivityLineDataList
-      initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2)
+      // initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2)
     }
 
     // 获取宏录制名字 profile 名字
@@ -1534,6 +1543,14 @@ function initEcharts() {
           },
           ondragend() {
             lineDropChange()
+            myChart.value.setOption({
+              graphic: initData.value.map((item) => {
+                return {
+                  type: 'circle',
+                  position: myChart.value.convertToPixel('grid', item),
+                }
+              }),
+            })
           },
           z: 100,
         }
@@ -1553,23 +1570,6 @@ function initEcharts() {
           data: initData.value,
         },
       ],
-      graphic: initData.value.map((item, dataIndex) => {
-        return {
-          type: 'circle',
-          position: myChart.value.convertToPixel('grid', item),
-          shape: {
-            cx: 0,
-            cy: 0,
-            r: symbolSize / 2,
-          },
-          invisible: true,
-          draggable: true,
-          ondrag() {
-            onPointDragging(dataIndex, [this.x, this.y])
-          },
-          z: 100,
-        }
-      }),
     })
   }
 }
