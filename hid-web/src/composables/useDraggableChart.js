@@ -13,27 +13,37 @@ class DraggableChart {
       throw new Error('点索引超出范围')
     }
 
-    const prevPoint = pointIndex > 0 ? this.points[pointIndex - 1] : null
-    const nextPoint = pointIndex < this.points.length - 1 ? this.points[pointIndex + 1] : null
+    if (pointIndex !== 0) {
+      const prevPoint = pointIndex > 0 ? this.points[pointIndex - 1] : null
+      const nextPoint = pointIndex < this.points.length - 1 ? this.points[pointIndex + 1] : null
 
-    // 约束X坐标范围
-    let constrainedX = Math.max(this.xMin, Math.min(newX, this.xMax))
+      // 约束X坐标范围
+      let constrainedX = Math.max(this.xMin, Math.min(newX, this.xMax))
 
-    // 约束相邻点的X坐标
-    if (prevPoint && constrainedX < prevPoint[0]) {
-      constrainedX = prevPoint[0]
-    }
+      // 约束相邻点的X坐标
+      if (prevPoint && constrainedX < prevPoint[0]) {
+        constrainedX = prevPoint[0]
+      }
 
-    if (nextPoint && constrainedX > nextPoint[0]) {
-      constrainedX = nextPoint[0]
+      if (nextPoint && constrainedX > nextPoint[0]) {
+        constrainedX = nextPoint[0]
+      }
+      // 约束Y坐标范围
+      let constrainedY = Math.max(this.yMin, Math.min(newY, this.yMax))
+
+      // 更新点坐标
+      this.points[pointIndex] = [constrainedX, constrainedY]
+
+      return [...this.points[pointIndex]] // 返回副本
     }
 
     // 约束Y坐标范围
     let constrainedY = Math.max(this.yMin, Math.min(newY, this.yMax))
 
-    // 更新点坐标
-    this.points[pointIndex] = [constrainedX, constrainedY]
-
+    if (newX > 0) {
+      // 更新点坐标
+      this.points[pointIndex] = [0, constrainedY]
+    }
     return [...this.points[pointIndex]] // 返回副本
   }
 
