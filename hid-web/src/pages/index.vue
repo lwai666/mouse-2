@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plus } from '@element-plus/icons-vue'
+import { CircleClose, Plus } from '@element-plus/icons-vue'
 
 import { ElButton, ElCarousel, ElCarouselItem } from 'element-plus'
 
@@ -65,7 +65,7 @@ nextTick(() => {
   show.value = true
 })
 
-const transportList =  JSON.parse(localStorage.getItem('transportList'));
+const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
 
 async function onNouseClick(item) {
   transport.value = item
@@ -73,7 +73,6 @@ async function onNouseClick(item) {
 }
 
 async function onAddNouseClick() {
-
   transport.value = await createTransportWebHID({
     id: 'v8',
     filters: [
@@ -89,13 +88,26 @@ async function onAddNouseClick() {
   })
 
   if (transport.value) {
-    let transportList = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
-    if(!transportList.find(item=>item.reportId != transport.value.reportId)){
-      transportList.push(transport.value)
-      localStorage.setItem('transportList', JSON.stringify(transportList) );
+    const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
+    const flag = transportListCopy.some(item => item.reportId === transport.value.reportId)
+    if (flag) {
+      router.push(`/hid/v8`)
+      return
     }
+    transportList.value.push(transport.value)
+    localStorage.setItem('transportList', JSON.stringify(transportList.value))
     router.push(`/hid/v8`)
   }
+}
+
+function deleteTransport(item) {
+  let transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
+  // eslint-disable-next-line array-callback-return
+  transportList.value = transportListCopy.filter((k) => {
+    // eslint-disable-next-line ts/no-unused-expressions
+    k.reportId !== item.reportId
+  })
+  localStorage.setItem('transportList', JSON.stringify(transportList.value))
 }
 
 const clickCount = ref(0)
@@ -178,7 +190,7 @@ onMounted(() => {
       </div> -->
 
       <div class="mb-5 h-[251px] w-[800px] border-gray-600" style="overflow: hidden;">
-        <div v-for="item in transportList"  @click="onNouseClick(item)" class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);">
+        <div v-for="item in transportList" class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);" @click="onNouseClick(item)">
           <img style="width: 84px; height:142px;" src="/public/mouse.png" alt="" srcset="">
           <p class="absolute bottom-1" style="color: black; font-weight: bold;font-size: 20px;">
             V6
@@ -187,6 +199,9 @@ onMounted(() => {
             <div class="mb-3" style="width: 18px;height: 18px;background: #333; border-radius: 50%;" />
             <div style="width: 18px;height: 18px;background: #fff; border-radius: 50%;" />
           </div>
+          <el-icon size="5" color="#ffff" class="absolute left-2 top-3" @click.stop="deleteTransport(item)">
+            <CircleClose />
+          </el-icon>
         </div>
         <div class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;float: left;border: 1px solid rgba(255, 255, 255, 0.4);" @click="onAddNouseClick">
           <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
@@ -196,12 +211,6 @@ onMounted(() => {
             <Plus />
           </ElIcon>
         </div>
-        <!-- <div style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1);">
-
-        </div>
-        <div style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1);">
-
-        </div> -->
       </div>
 
       <div class="mb-10">
