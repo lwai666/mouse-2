@@ -9,24 +9,25 @@ import { useClipboard } from '@vueuse/core'
 
 import autofit from 'autofit.js'
 
+import { color } from 'echarts'
 // 引入柱状图图表，图表后缀都为 Chart
 import { LineChart } from 'echarts/charts'
+
 // 引入标题，提示框，直角坐标系，数据集，内置数据转换器组件，组件后缀都为 Component
 import { DatasetComponent, GraphicComponent, GridComponent, TitleComponent, TooltipComponent, TransformComponent, VisualMapComponent } from 'echarts/components'
 
 // 引入 echarts 核心模块，核心模块提供了 echarts 使用必须要的接口。
 import * as echarts from 'echarts/core'
-
 // 标签自动布局、全局过渡动画等特性
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 // 引入 Canvas 渲染器，注意引入 CanvasRenderer 或者 SVGRenderer 是必须的一步
 import { CanvasRenderer } from 'echarts/renderers'
+
 import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, ElLoading, ElProgress, ElScrollbar, ElSlider, ElSpace } from 'element-plus'
 
 import { loadLanguageAsync } from '~/modules/i18n'
 
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/utils'
-
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 const { t, locale } = useI18n()
@@ -167,6 +168,17 @@ function initProfileInfo() {
     },
     // 动态灵敏度折线图
     sensitivityLineData: [],
+
+    // 鼠标当前选中模版状态
+    currentActive: 0,
+
+    // 鼠标链接状态
+
+    mouseConnectionStatus: 0,
+
+    // 鼠标颜色
+
+    mouseColor: 3,
 
   }
 }
@@ -528,24 +540,21 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
 /** **************** 连线逻辑 start */
 
 const mouseButtonRef = ref()
-// const dotsConnections = ref()
-// let dotsAddConnection: any = () => {}
-// let dotsRemoveConnection: any = () => {}
-// let dotsCleanup = ref(() => {})
 
 // 离开页面删除连线
 onBeforeRouteLeave(() => {
-  // dotsCleanup.value()
+
 })
 
 function restartConnection() {
-  // dotsCleanup.value()
-  // createConnection()
+
 }
 
 async function initProfile() {
   await getProfile()
   await sendChargingStatus() // 获取充电状态
+  await sendMouseConnectionStatus()
+  await sendMouseColor()
 }
 
 // 四个配置的数据
@@ -836,6 +845,17 @@ async function onSportsMode(type) {
 async function sendChargingStatus() {
   const res = await transport.value.send([0x20])
   chargingStatus.value = res[3]
+}
+
+// 获取鼠标连接状态 0 为断线，1 为连接
+async function sendMouseConnectionStatus() {
+  const res = await transport.value.send([0x2A])
+}
+// 获取鼠标颜色 1：红色 ，2：黄色 3：黑色 4：白色，后面再增加颜色继续往后移
+async function sendMouseColor() {
+  const res = await transport.value.send([0x2B])
+  console.log(res, 'resresres')
+  profileInfo.mouseColor = res[3]
 }
 
 // 底部功能区
@@ -1268,10 +1288,6 @@ function onInputReport(uint8ArrayRes: Uint8Array) {
 useTransportWebHID('v8', async (instance) => {
   transport.value = instance
   console.log('transport.value ======', transport.value)
-  // if (!transport.value) {
-  //   router.push('/')
-  //   return
-  // }
 
   // 监听鼠标主动事件: 如 DPI 物理按钮变化
   transport.value.on('input-all', onInputReport)
@@ -1722,7 +1738,7 @@ async function deleteMacro(macro: Macro) {
 const loadingShow = ref(false)
 const loadingText = ref('')
 
-function setLoadingStatus(text) {
+function setLoadingStatus(text?: any) {
   loadingShow.value = true
   loadingText.value = text
   setTimeout(() => {
@@ -1740,7 +1756,6 @@ async function onChange(macroName: string, index: number) {
   setLoadingStatus('')
 }
 
-const currentActive = ref(0)
 const modeShow = ref(false)
 
 function changeModeShow() {
@@ -1789,11 +1804,11 @@ const originalItems = [
 const sortedItems = computed(() => {
   // 过滤出需要显示的项目
   const filteredItems = originalItems.filter(item =>
-    currentActive.value === item.id || modeShow.value,
+    profileInfo.currentActive === item.id || modeShow.value,
   )
 
   // 如果当前激活项在过滤后的列表中，把它移到第一个
-  const activeItemIndex = filteredItems.findIndex(item => item.id === currentActive.value)
+  const activeItemIndex = filteredItems.findIndex(item => item.id === profileInfo.currentActive)
   if (activeItemIndex > -1) {
     const activeItem = filteredItems[activeItemIndex]
     filteredItems.splice(activeItemIndex, 1)
@@ -1803,11 +1818,43 @@ const sortedItems = computed(() => {
   return filteredItems
 })
 
-function selectMode(mode: number) {
-  if (currentActive.value === mode) {
+// 1：红色 ，2：黄色 3：黑色 4：白色，后面再增加颜色继续往后移
+
+const colorItems = [
+  { id: 3, color: 'black', backgroundColor: '#8B8B8B' },
+  { id: 4, color: 'white', backgroundColor: '#fff' },
+]
+
+const sortedColorItems = computed(() => {
+  // 过滤出需要显示的项目
+  const filteredItems = colorItems
+
+  // 如果当前激活项在过滤后的列表中，把它移到第一个
+  const activeItemIndex = filteredItems.findIndex(item => item.id === profileInfo.mouseColor)
+  if (activeItemIndex > -1) {
+    const activeItem = filteredItems[activeItemIndex]
+    filteredItems.splice(activeItemIndex, 1)
+    filteredItems.unshift(activeItem)
+  }
+
+  return filteredItems
+})
+
+async function setColor(mode: any) {
+  if (profileInfo.mouseColor === mode.id) {
     return
   }
-  currentActive.value = mode
+  profileInfo.mouseColor = mode.id
+
+  await transport?.value.send([0x29, 0x00, 0x00, mode.id])
+  setLoadingStatus()
+}
+
+function selectMode(mode: number) {
+  if (profileInfo.currentActive === mode) {
+    return
+  }
+  profileInfo.currentActive = mode
   profileInfo.sensitivityModeIndex = mode
 }
 
@@ -1882,7 +1929,12 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
       <div style="position: relative;">
         <!-- 鼠标图片 -->
-        <img src="/mouse4.png" alt="mouse-card" class="mouse">
+        <img
+          :src="`/mouse_${{
+            3: 'black',
+            4: 'white',
+          }[profileInfo.mouseColor]}.png`" alt="mouse-card" class="mouse"
+        >
 
         <!-- sports_arena 竞技模式图片 -->
         <!-- ${profileInfo.sports_arena} -->
@@ -1905,8 +1957,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
         />
 
         <div class="color-box absolute right-[-50px] top-0">
-          <div class="mb-3" style="width: 18px;height: 18px;background: #8B8B8B; border-radius: 50%;" />
-          <div style="width: 18px;height: 18px;background: #fff; border-radius: 50%;" />
+          <div v-for="item in sortedColorItems" :key="item.id" class="mb-3" :style="{ background: item.backgroundColor }" style="width: 18px;height: 18px; border-radius: 50%;" @click="setColor(item)" />
         </div>
       </div>
     </div>
