@@ -1933,24 +1933,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
           :src="`/mouse_${{
             3: 'black',
             4: 'white',
-          }[profileInfo.mouseColor]}.png`" alt="mouse-card" class="mouse"
+          }[profileInfo.mouseColor] || 'black'}.png`" alt="mouse-card" class="mouse"
         >
 
-        <!-- sports_arena 竞技模式图片 -->
-        <!-- ${profileInfo.sports_arena} -->
-        <!-- <img class="absolute" src="/sports_arena_1.png" alt="sports_arena" style="top: 75px;"> -->
-
-        <!-- 鼠标后旋转背景图 -->
-        <!-- :class="['', 'opacity-20', 'opacity-30'][profileInfo.sports_arena]" -->
-        <!-- <img
-          class="absolute top-0 transform" src="/mouse3.png" alt="mouse-card" draggable="false"
-          :style="{ transform: `rotate(0deg)` }"
-        > -->
-
-        <!-- 鼠标左侧设置按钮功能 -->
-        <!-- @mouseenter="setLeftHintCode('button_ball')" -->
-        <!-- @change="onMouseButtonChange" -->
-        <!-- :value="mouseButtonValue" -->
         <MouseButton
           ref="mouseButtonRef" :value="mouseButtonValue" class="absolute right-0 h-full w-200%" style="top: -16px;"
           @change="onMouseButtonChange"
