@@ -1577,7 +1577,8 @@ function initEcharts() {
   function onPointDragging(dataIndex, pos) {
     const [x, y] = myChart.value.convertFromPixel('grid', pos)
 
-    initData.value[dataIndex] = chart.value.dragPoint(dataIndex, x, y)
+    // initData.value[dataIndex] = chart.value.dragPoint(dataIndex, x, y)
+    initData.value = chart.value.dragPoint(dataIndex, x, y)
 
     myChart.value.setOption({
       series: [
