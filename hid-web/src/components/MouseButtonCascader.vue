@@ -41,6 +41,13 @@ const cascaderTopMapp1: Record<number, string> = {
   5: 'top--88px',
 } as const
 
+const cascaderTopMapp2: Record<number, string> = {
+  2: 'top--187px',
+  3: 'top--147px',
+  4: 'top--107px',
+  5: 'top--105px',
+} as const
+
 const show = ref(false)
 
 const showChildren = ref()
@@ -74,6 +81,7 @@ const currentOption = computed(() => {
 const currentOptions = computed<Option[]>(() => {
   const options = JSON.parse(JSON.stringify(props.options)).filter((option: Option) => option.value !== currentOption.value?.value)
   options.splice(props.cascaderTop, 0, currentOption.value)
+  console.log(options, 'options')
   return options
 })
 
@@ -136,6 +144,15 @@ function executeFn(item) {
   onSelect(item, 1999, cIndex)
 }
 
+function getShow(children: Option[]) {
+  for (let i = 0; i < children.length; i++) {
+    if (children[i].label) {
+      return false
+    }
+  }
+  return true
+}
+
 defineExpose({ show, open, close })
 </script>
 
@@ -150,9 +167,9 @@ defineExpose({ show, open, close })
           class="relative transition-all duration-500"
           @click="disabled ? mouseButtonClick() : (value === item.value ? onClick() : onSelect(item))"
         >
-          <template v-if="!item.hidden && item.value !== 1999">
+          <template v-if="item.value !== 1999">
             <div>
-              <div class="relative flex items-center" style="    width: max-content;">
+              <div class="relative flex items-center" style="width: max-content;">
                 <div
                   v-if="item.value > 1999 && item.label"
                   style="z-index: 1; padding: 3px 10px; height: 21.68px;border-radius: 14px;background: #6A0A8280;color: #fff; font-size: 14px;"
@@ -182,7 +199,7 @@ defineExpose({ show, open, close })
             </ul>
           </template>
 
-          <template v-if="!item.hidden && item.value === 1999">
+          <template v-if="item.value === 1999">
             <span v-if="hidden">{{ t(item.label) }}</span>
             <ElIcon v-if="item.children && item.children.length && hidden" size="16" class="absolute left--15px top-12px transform transition-transform" :class="{ 'rotate-90': showChildren === item.value }">
               <CaretLeft />
@@ -198,6 +215,7 @@ defineExpose({ show, open, close })
                 {{ t(child.label) }}
               </li>
             </ul>
+            <span v-if="!hidden && getShow(item.children)" class="absolute" :class="cascaderTopMapp2[cascaderTop]" style="color: red;right:63px ;">没用可用宏</span>
           </template>
         </li>
       </ul>

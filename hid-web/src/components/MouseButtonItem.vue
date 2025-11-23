@@ -40,7 +40,7 @@ watch(() => profileInfo?.macroList, () => {
   data?.children?.forEach((item, index) => {
     item.label = profileInfo?.macroList[index]?.name
   })
-  data.hidden = !profileInfo?.macroList.filter((k: any) => k.name).length
+  // data.hidden = !profileInfo?.macroList.filter((k: any) => k.name).length
   options.value = deepClone(constants.mouseKeyOptions)
 }, { immediate: true, deep: true })
 
