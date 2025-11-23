@@ -141,7 +141,7 @@ export default {
     <div>鼠标按下: {{ mouseButtons.join(', ') }}</div>
     <div>按键: {{ pressedKeys.join(', ') }}</div>
     <div>移动速度: {{ speed }} px/s</div>
-    <div>总移动距离: {{ totalDistance }} px</div>
+    <div>总移动距离: {{ totalDistance }} px11</div>
   </div>
 </template>
 
