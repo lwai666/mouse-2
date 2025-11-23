@@ -151,16 +151,20 @@ defineExpose({ show, open, close })
           @click="disabled ? mouseButtonClick() : (value === item.value ? onClick() : onSelect(item))"
         >
           <template v-if="!item.hidden && item.value !== 1999">
-            <div class="relative flex items-center">
-              <div
-                v-if="item.value > 1999"
-                class="backgroundHover absolute left-[-76px] ml-3 flex items-center justify-center"
-                style="z-index: 1; width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A8280;color: #fff; font-size: 14px;"
-                @click="executeFn(item)" @click.stop="onChangeRadioGroup"
-              >
-                {{ t('button.macro_execute') }}
+            <div>
+              <div class="relative flex items-center" style="    width: max-content;">
+                <div
+                  v-if="item.value > 1999 && item.label"
+                  style="z-index: 1; padding: 3px 10px; height: 21.68px;border-radius: 14px;background: #6A0A8280;color: #fff; font-size: 14px;"
+                  class="backgroundHover absolute left-[-76px] ml--3 flex items-center justify-center" @click.stop="executeFn(item)"
+                >
+                  {{ t('button.macro_execute') }}
+                </div>
+
+                <span :class="[!disabled ? 'hover_text' : '']">
+                  {{ t(item.label) }}
+                </span>
               </div>
-              <span :class="[!disabled ? 'hover_text' : '']">{{ t(item.label) }}</span>
             </div>
 
             <ElIcon v-if="item.children && item.children.length" size="16" class="absolute left--15px top-12px transform transition-transform" :class="{ 'rotate-90': showChildren === item.value }">

@@ -23,8 +23,10 @@ const userStore = useUserStore()
 
 const transport = ref()
 
+const instanceRef = ref()
+
 useTransportWebHID('v8', async (instance) => {
-  transport.value = instance
+  instanceRef.value = instance
 })
 
 const selectLanguageList = ref([
@@ -142,6 +144,37 @@ onMounted(() => {
     notSupportHid.value = true
   }
 })
+
+const colorItems = [
+  { id: 3, color: 'black', backgroundColor: '#8B8B8B' },
+  { id: 4, color: 'white', backgroundColor: '#fff' },
+]
+
+function sortedColorItems(mouseColor: any) {
+  const filteredItems = colorItems
+
+  // 如果当前激活项在过滤后的列表中，把它移到第一个
+  const activeItemIndex = filteredItems.findIndex(item => item.id === mouseColor)
+  if (activeItemIndex > -1) {
+    const activeItem = filteredItems[activeItemIndex]
+    filteredItems.splice(activeItemIndex, 1)
+    filteredItems.unshift(activeItem)
+  }
+
+  return filteredItems
+}
+
+useTransportWebHID('v8', async (instance) => {
+  transport.value = instance
+})
+
+async function setColor(mode: any, profileInfo: any) {
+  if (profileInfo.mouseColor === mode.id) {
+    return
+  }
+  profileInfo.mouseColor = mode.id
+  await instanceRef.value.send([0x29, 0x00, 0x00, mode.id])
+}
 </script>
 
 <template>
@@ -191,14 +224,20 @@ onMounted(() => {
 
       <div class="mb-5 h-[251px] w-[800px] border-gray-600" style="overflow: hidden;">
         <div v-for="item in transportList" class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);" @click="onNouseClick(item)">
-          <img style="width: 84px; height:142px;" src="/public/mouse_black.png" alt="" srcset="">
+          <img
+            style="width: 84px; height:142px;" :src="`/mouse_${{
+              3: 'black',
+              4: 'white',
+            }[item.mouseColor] || 'black'}.png`" alt="" srcset=""
+          >
           <p class="absolute bottom-1" style="color: black; font-weight: bold;font-size: 20px;">
-            V6
+            V8
           </p>
-          <div class="absolute right-3 top-5">
-            <div class="mb-3" style="width: 18px;height: 18px;background: #333; border-radius: 50%;" />
-            <div style="width: 18px;height: 18px;background: #fff; border-radius: 50%;" />
+
+          <div class="color-box absolute right-3 top-5">
+            <div v-for="key in sortedColorItems(item.mouseColor)" :key="key.id" class="mb-2" :style="{ background: key.backgroundColor }" style="width: 18px;height: 18px; border-radius: 50%;" @click.stop="setColor(key, item)" />
           </div>
+
           <el-icon size="5" color="#ffff" class="absolute left-2 top-3" @click.stop="deleteTransport(item)">
             <CircleClose />
           </el-icon>
@@ -270,5 +309,17 @@ onMounted(() => {
 .slide-fade-leave-to {
   transform: translateX(-50px);
   opacity: 0;
+}
+
+.color-box {
+  transition: all 0.5s ease; /* 平滑过渡效果 */
+  border: 1px solid transparent; /* 初始无边框 */
+  cursor: pointer; /* 鼠标悬停样式 */
+  height: 25px;
+  overflow: hidden;
+}
+
+.color-box:hover {
+  height: 64px;
 }
 </style>

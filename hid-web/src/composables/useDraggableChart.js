@@ -98,32 +98,45 @@ class DraggableChart {
       if (currentPoint[0] < prevPoint[0] + minSpacing) {
         // 如果间距小于最小值，调整当前点及后面的所有点
         const adjustment = prevPoint[0] + minSpacing - currentPoint[0]
+        // 向右拖动
         if (isDraggingRight) {
           for (let j = i; j < this.points.length; j++) {
             if (this.points[j][0] - this.points[j - 1][0] <= minSpacing) {
               this.points[j][0] += adjustment
             }
           }
-        }
-        if (isDraggingLeft) {
-          for (let j = i; j < this.points.length; j++) {
-            if (this.points[j + 1]) {
-              if (this.points[j][0] > this.points[j + 1][0]) {
-                this.points[j][0] = this.points[j][0] - 10
+          // // 确保最后一个点不超过xMax
+          const lastPoint = this.points[this.points.length - 1]
+          if (lastPoint[0] > this.xMax) {
+            const overflow = lastPoint[0] - this.xMax
+            for (let i = 0; i < this.points.length; i++) {
+              if (i >= pointIndex) {
+                this.points[i][0] = Math.max(0, this.points[i][0] - overflow)
               }
             }
           }
         }
-      }
-    }
+        // 向左拖动
+        if (isDraggingLeft) {
+          for (let j = i; j < this.points.length; j--) {
+            if (j === -1) {
+              break
+            }
+            if (this.points[j + 1] && this.points[j + 1][0] < this.points[j][0] + minSpacing) {
+              this.points[j][0] -= adjustment
+            }
+          }
 
-    // // 确保最后一个点不超过xMax
-    const lastPoint = this.points[this.points.length - 1]
-    if (lastPoint[0] > this.xMax) {
-      const overflow = lastPoint[0] - this.xMax
-      for (let i = 0; i < this.points.length; i++) {
-        if (i >= pointIndex) {
-          this.points[i][0] = Math.max(0, this.points[i][0] - overflow)
+          // // 确保第一个点不小于 0
+          const firstPoint = this.points[0]
+          if (firstPoint[0] < this.xMin) {
+            const overflow = firstPoint[0]
+            for (let k = i; i < this.points.length; k--) {
+              if (k <= pointIndex) {
+                this.points[k][0] = Math.max(0, this.points[k][0] - overflow)
+              }
+            }
+          }
         }
       }
     }

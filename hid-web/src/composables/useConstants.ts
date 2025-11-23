@@ -85,7 +85,7 @@ export function useConstants(t: any) {
       },
       {
         value: 1999,
-        label: '宏',
+        label: t('macro.Macro'),
         // hidden: true, // 隐藏
         children: [
           {

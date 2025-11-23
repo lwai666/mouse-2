@@ -850,21 +850,32 @@ async function sendChargingStatus() {
 // 获取鼠标连接状态 0 为断线，1 为连接
 async function sendMouseConnectionStatus() {
   const res = await transport.value.send([0x2A])
+  console.log(res, 'resresres')
 }
+
+const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
+
 // 获取鼠标颜色 1：红色 ，2：黄色 3：黑色 4：白色，后面再增加颜色继续往后移
 async function sendMouseColor() {
   const res = await transport.value.send([0x2B])
-  console.log(res, 'resresres')
   profileInfo.mouseColor = res[3]
+
+  transportList.value = transportList.value.map((item: any) => {
+    if (item.reportId === transport.value.reportId) {
+      item.mouseColor = profileInfo.mouseColor
+    }
+    return item
+  })
+  localStorage.setItem('transportList', JSON.stringify(transportList.value))
 }
 
 // 底部功能区
 
-async function onMotionSync() {
-  profileInfo.motion_sync = !profileInfo.motion_sync
-  await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
-  onExecutionSuccess()
-}
+// async function onMotionSync() {
+//   profileInfo.motion_sync = !profileInfo.motion_sync
+//   await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
+//   onExecutionSuccess()
+// }
 interface RecordedKey {
   key: string
   type: number
@@ -1025,23 +1036,23 @@ provide('setLeftHintCode', setLeftHintCode)
 provide('setRightHintCode', setRightHintCode)
 
 async function onPairingConnection() {
-  const connection = async () => {
-    const res = await transport.value.send([0x14])
-    console.log('配对链接成功===========', res)
-    setLoadingStatus(t('message.pairing_connection_success'))
-    // eslint-disable-next-line ts/no-use-before-define
-    window.removeEventListener('keydown', handleSpaceKey)
-  }
-  // 监听空格键按下执行配对方法
-  const handleSpaceKey = async (event: any) => {
-    if (event.code === 'Space') {
-      connection()
-    }
-  }
-  window.addEventListener('keydown', handleSpaceKey)
+  // const connection = async () => {
+  //   const res = await transport.value.send([0x14])
+  //   console.log('配对链接成功===========', res)
+  //   setLoadingStatus(t('message.pairing_connection_success'))
+  //   // eslint-disable-next-line ts/no-use-before-define
+  //   window.removeEventListener('keydown', handleSpaceKey)
+  // }
+  // // 监听空格键按下执行配对方法
+  // const handleSpaceKey = async (event: any) => {
+  //   if (event.code === 'Space') {
+  //     connection()
+  //   }
+  // }
+  // window.addEventListener('keydown', handleSpaceKey)
 
-  connection()
-  window.removeEventListener('keydown', handleSpaceKey)
+  // connection()
+  // window.removeEventListener('keydown', handleSpaceKey)
 }
 
 async function onRestoreFactorySettings() {
@@ -1848,6 +1859,15 @@ async function setColor(mode: any) {
   profileInfo.mouseColor = mode.id
 
   await transport?.value.send([0x29, 0x00, 0x00, mode.id])
+
+  transportList.value = transportList.value.map((item: any) => {
+    if (item.reportId === transport.value.reportId) {
+      item.mouseColor = mode.id
+    }
+    return item
+  })
+  localStorage.setItem('transportList', JSON.stringify(transportList.value))
+
   setLoadingStatus()
 }
 
@@ -2681,7 +2701,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
           <img class="mb-10 h-240px" src="/slideshow/2_zh-CN.png" alt="item.title">
 
-          <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 60px;" @click="onPairingConnection">
+          <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 60px;" @click="bottomItem = 0">
             <span class="active">{{ t('macro.confirm') }}</span>
           </div>
         </div>

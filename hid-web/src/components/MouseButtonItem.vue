@@ -112,6 +112,8 @@ function setName(name) {
 const active = ref('')
 
 function changeActive(type) {
+  console.log(type, 'type')
+
   if (active.value === type) {
     active.value = ''
     return
@@ -121,7 +123,7 @@ function changeActive(type) {
 
 const active1 = ref('')
 
-function changeActive1(type) {
+function changeActive1(type: string) {
   if (active1.value === type) {
     active1.value = ''
     return
@@ -145,79 +147,68 @@ defineExpose({ mouseButtonCascaderRef })
       <!-- <div :key="props.id" :class="`${bgClass} ${props.disabled ? '' : 'dot-b'}`" class="z-2 mr-2 h-18px w-18px rounded-50%" :data-key-id="props.id" /> -->
       <div v-if="props.status === 'connecting'" class="absolute top-[-20px]">
         <div class="flex items-center justify-center">
-          <div class="absolute left-[-105px] flex items-center justify-center">
-            <p v-if="active1 === 'active1'" class="absolute left-[-190px]" style="color: #CF0EFF">
-              {{ t('button.macro_execution_description') }}
-            </p>
-            <img
-              style="margin-right: 5px;"
-              :src="active1 === 'active1' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
-              alt="" srcset="" @click="changeActive1('active1')"
-            >
-            <div style="z-index: 1; width: 49.06px;height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click.stop="onChangeRadioGroup">
+          <div class="absolute right-[75px] flex items-center justify-center">
+            <div class="relative flex items-center">
+              <p v-if="active1 === 'active1'" class="absolute right-[35px] w-[max-content]" style="color: #CF0EFF;max-width: 237px;">
+                {{ t('button.macro_execution_description') }}
+              </p>
+              <img
+                style="margin-right: 5px;z-index: 100;"
+                :src="active1 === 'active1' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
+                alt=""
+                srcset=""
+                @click.stop="changeActive1('active1')"
+              >
+              <div style="width: 15px;height: 15px;" />
+            </div>
+
+            <div style="z-index: 1; width: max-content; min-width: 76px; padding: 3px 10px; height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click.stop="onChangeRadioGroup">
               {{ t('button.macro_execute') }}
             </div>
           </div>
           {{ hongName }}
         </div>
 
-        <div class="absolute left-[-60px] top--100px">
-          <!-- <ElRadioGroup v-model="sendData.cycleMode" class="flex-col items-start" @change="onChangeRadioGroup">
-            <ElRadio :value="4" @click="onEnterKey">
-              <div @mouseenter="setLeftHintCode?.('macro_set')">
-                宏执行
-                <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
-                {{ t('mouseConnection.times') }}
-              </div>
-            </ElRadio>
-            <div class="h-70px w-50px" />
-            <ElRadio :value="1">
-              {{ t('mouseConnection.loopUntilKeyRelease') }}
-            </ElRadio>
-            <ElRadio :value="2">
-              {{ t('mouseConnection.loopUntilAnyKeyPressed') }}
-            </ElRadio>
-            <ElRadio :value="3">
-              {{ t('mouseConnection.loopUntilKeyPressAgain') }}
-            </ElRadio>
-          </ElRadioGroup> -->
+        <div class="absolute left-[-150px] top--100px">
           <div class="flex items-center">
-            <p v-if="active === 'active'" class="absolute left-[-315px]" style="color: #159FFF">
-              {{ t('button.macro_loop_count_input') }}
-            </p>
-            <img
-              style="margin-right: 15px;"
-              :src="active === 'active' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
-              alt="" srcset="" @click="changeActive('active')"
-            >
-            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 4 }" style="width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px">
-              {{ t('button.macro_execution') }}
-
-              <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
-              {{ t('mouseConnection.times') }}
+            <div class="relative flex items-center" style="margin-right: 10px;">
+              <p v-if="active === 'active'" class="absolute right-[50px] w-[max-content]" style="color: #159FFF;max-width: 450px;">
+                {{ t('button.macro_loop_count_input') }}
+              </p>
+              <img
+                style="margin-right: 15px;"
+                :src="active === 'active' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
+                alt="" srcset="" @click="changeActive('active')"
+              >
             </div>
-            <div style="width: 49.06px;height: 21.68px;border-radius: 14px;background: #0E5383;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click="onEnterKey">
+
+            <div class="hover flex items-center" :class="{ hover_active: sendData.cycleMode === 4 }" style="padding: 3px 10px;  height: 30px;background: #333;border-radius: 14px">
+              <div style="width: max-content;">
+                {{ t('button.macro_execution') }}
+              </div>
+              <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
+              <div>{{ t('mouseConnection.times') }}</div>
+            </div>
+            <div style="padding: 3px 8px; min-width: 60px; height: 21.68px;border-radius: 14px;background: #0E5383;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click="onEnterKey">
               {{ t('macro.confirm') }}
             </div>
           </div>
           <div class="mb-3 ml-11 mt-5 flex items-center">
-            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 1 }" style="text-align: right; width: 151px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 1">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 1 }" style="text-align: right; width: max-content; padding: 3px 10px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 1">
               {{ t('button.macro_execution') }}
-
               N
               {{ t('mouseConnection.times') }}
             </div>
           </div>
           <div class="h-60px w-50px" />
-
           <div class="mb-3 flex items-center">
-            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 2 }" style="text-align: right; width: 195px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 2">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 2 }" style="text-align: right; width: max-content;padding: 3px 10px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 2">
               {{ t('button.macro_execute_until_release') }}
             </div>
           </div>
 
           <div class="mb-3 flex items-center">
-            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 3 }" style="text-align: right; width: 249px;height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 3">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 3 }" style="text-align: right; width: max-content;padding: 3px 15px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 3">
               {{ t('button.macro_execute_until_repressed') }}
             </div>
           </div>
