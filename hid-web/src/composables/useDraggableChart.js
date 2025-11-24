@@ -138,6 +138,13 @@ class DraggableChart {
             }
           }
         }
+        return
+      }
+      // 单独约束最后一个点
+      if (pointIndex === 4 && this.points[pointIndex][0] > this.xMax) {
+        const constrainedX = Math.max(this.xMin, Math.min(newX, this.xMax))
+        this.points[pointIndex] = [constrainedX, this.points[pointIndex][1]]
+        return
       }
     }
   }
