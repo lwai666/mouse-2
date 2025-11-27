@@ -7,7 +7,7 @@ class DraggableChart {
     this.yMax = 60 // Y轴最大值
   }
 
-  // // 拖拽点的方法
+  // // 拖拽点的方法-
   // dragPoint(pointIndex, newX, newY) {
   //   if (pointIndex < 0 || pointIndex >= this.points.length) {
   //     throw new Error('点索引超出范围')

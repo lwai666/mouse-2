@@ -14,9 +14,6 @@ export default {
     }
   },
   mounted() {
-    // 确保元素可获取焦点以接收键盘事件
-    this.$el.focus()
-
     // 监听窗口失去焦点事件，清除按键状态
     window.addEventListener('blur', this.clearInputStates)
   },
@@ -130,11 +127,12 @@ export default {
 </script>
 
 <template>
+  <!-- @mousedown="handleMouseDown" @mouseup="handleMouseUp"  -->
   <div
     class="input-container"
     tabindex="0"
     @mousemove="handleMouseMove"
-    @mousedown="handleMouseDown" @mouseup="handleMouseUp" @keydown="handleKeyDown" @keyup="handleKeyUp"
+    @keydown="handleKeyDown" @keyup="handleKeyUp"
   >
     <h3>浏览器输入监听</h3>
     <div>鼠标位置: X: {{ mouse.x }}, Y: {{ mouse.y }}</div>

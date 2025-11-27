@@ -2,14 +2,13 @@
 import type { DraggableChart } from '~/composables/useDraggableChart'
 
 import type { Macro, ProfileInfoType, ProfileType } from '~/types'
+
 import type { TransportWebHIDInstance } from '~/utils/hidHandle'
-
 import { ArrowDownBold, ArrowRightBold, Close, Delete, Download, Minus, Plus, Share, Upload } from '@element-plus/icons-vue'
-import { useClipboard } from '@vueuse/core'
 
+import { useClipboard } from '@vueuse/core'
 import autofit from 'autofit.js'
 
-import { color } from 'echarts'
 // 引入柱状图图表，图表后缀都为 Chart
 import { LineChart } from 'echarts/charts'
 
@@ -18,21 +17,24 @@ import { DatasetComponent, GraphicComponent, GridComponent, TitleComponent, Tool
 
 // 引入 echarts 核心模块，核心模块提供了 echarts 使用必须要的接口。
 import * as echarts from 'echarts/core'
+
 // 标签自动布局、全局过渡动画等特性
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 // 引入 Canvas 渲染器，注意引入 CanvasRenderer 或者 SVGRenderer 是必须的一步
 import { CanvasRenderer } from 'echarts/renderers'
-
 import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, ElLoading, ElProgress, ElScrollbar, ElSlider, ElSpace } from 'element-plus'
 
-import { loadLanguageAsync } from '~/modules/i18n'
+import { set } from 'nprogress'
 
+import { useGlobalInputListener } from '~/composables/useGlobalInputListener.ts'
+
+import { loadLanguageAsync } from '~/modules/i18n'
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/utils'
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 const { t, locale } = useI18n()
 
-// const scale = ref(`scale(${document.body.clientWidth / 1920})`)
+// console.log('Mouse position:', handleMouseMove())
 
 // 注册必须的组件
 echarts.use([
@@ -1425,18 +1427,61 @@ function activeBgChange(type) {
       initEcharts()
       getProfileData(0)
 
+      const {
+        handleMouseMove,
+        dataQueue,
+      } = useGlobalInputListener(myChart.value)
+
+      function handleMouseMoveFn(event: MouseEvent) {
+        handleMouseMove(event)
+
+        // myChart.value.setOption({
+        //   series: [
+        //     {
+        //       id: 'area',
+        //       data: initData.value,
+        //     },
+        //   ],
+        // })
+
+        console.log(dataQueue.value)
+
+        dataQueue.value.forEach(({ x, y, speed }) => {
+          setTimeout(() => {
+            myChart.value.setOption({
+              seriesIndex: 1,
+              visualMap: {
+                pieces: [
+                  {
+                    gt: 0,
+                    lt: x,
+                    color: 'rgba(219, 255, 6, .5)',
+                  },
+                ],
+              },
+            })
+          }, speed)
+        })
+
+        //     visualMap: {
+        //   type: 'piecewise',
+        //   show: false,
+        //   dimension: 0,
+        //   seriesIndex: 1,
+        //   pieces: [
+        //     {
+        //       gt: 0,
+        //       lt: 0.1,
+        //       color: 'rgba(219, 255, 6, .5)',
+        //     },
+        //   ],
+        // },
+      }
+
+      document.body.addEventListener('mousemove', handleMouseMoveFn)
+
       // setTimeout(() => {
-      //   myChart.value.setOption({
-      //     visualMap: {
-      //       pieces: [
-      //         {
-      //           gt: 0,
-      //           lt: 150,
-      //           color: 'rgb(0, 0, 180)',
-      //         },
-      //       ],
-      //     },
-      //   })
+
       // }, 1500)
     })
   }
@@ -1456,8 +1501,8 @@ const startXYFlag = ref(false)
 function startXY() {
   startXYFlag.value = !startXYFlag.value
 }
-const myChart = ref(null)
-const chart = ref(null)
+const myChart = ref(null) as any
+const chart = ref(null) as any
 const xAxisMax = ref(250)
 const yAxisMax = ref(60)
 // const pieces = ref(100)
@@ -1516,34 +1561,49 @@ function initEcharts() {
         },
       },
     },
-    // visualMap: {
-    //   type: 'piecewise',
-    //   show: false,
-    //   dimension: 0,
-    //   seriesIndex: 0,
-    //   pieces: [
-    //     {
-    //       gt: 0,
-    //       lt: 100,
-    //       color: 'rgba(219, 255, 6, .5)',
-    //     },
-    //   ],
-    // },
+    visualMap: {
+      type: 'piecewise',
+      show: false,
+      dimension: 0,
+      seriesIndex: 1,
+      pieces: [
+        {
+          gt: 0,
+          lt: 0.1,
+          color: 'rgba(219, 255, 6, .5)',
+        },
+      ],
+    },
 
     series: [
       {
-        id: 'a',
+        id: 'line',
         type: 'line',
         smooth: 0.6,
         symbolSize,
         data: initData.value,
-        // areaStyle: {},
         itemStyle: {
           color: '#DAFF00', // 折线点颜色（番茄色）
         },
         lineStyle: {
           color: '#DAFF00', // 折线颜色（皇家蓝）
           width: 3,
+        },
+      },
+
+      {
+        id: 'area',
+        type: 'line',
+        smooth: 0.6,
+        symbolSize: 0,
+        data: initData.value,
+        areaStyle: {},
+        itemStyle: {
+          color: 'transparent', // 折线点颜色（番茄色）
+        },
+        lineStyle: {
+          color: 'transparent', // 折线颜色（皇家蓝）
+          width: 0,
         },
       },
     ],
@@ -1570,11 +1630,11 @@ function initEcharts() {
           },
           ondragend() {
             lineDropChange()
-            myChart.value.setOption({
+            myChart.value?.setOption({
               graphic: initData.value.map((item) => {
                 return {
                   type: 'circle',
-                  position: myChart.value.convertToPixel('grid', item),
+                  position: myChart.value?.convertToPixel('grid', item),
                 }
               }),
             })
@@ -1585,7 +1645,7 @@ function initEcharts() {
     })
   }, 0)
 
-  function onPointDragging(dataIndex, pos) {
+  function onPointDragging(dataIndex: number, pos: any) {
     const [x, y] = myChart.value.convertFromPixel('grid', pos)
 
     // initData.value[dataIndex] = chart.value.dragPoint(dataIndex, x, y)
@@ -1594,7 +1654,11 @@ function initEcharts() {
     myChart.value.setOption({
       series: [
         {
-          id: 'a',
+          id: 'line',
+          data: initData.value,
+        },
+        {
+          id: 'area',
           data: initData.value,
         },
       ],
@@ -1613,8 +1677,6 @@ async function changeXAxisMax(num: number) {
     // chart.value.setBounds(0, 50, 0, yAxisMax.value)
     return
   }
-
-  console.log(initData.value, 'initData.value')
 
   await lineDropChange()
 
