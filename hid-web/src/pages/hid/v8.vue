@@ -24,8 +24,6 @@ import { LabelLayout, UniversalTransition } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
 import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, ElLoading, ElProgress, ElScrollbar, ElSlider, ElSpace } from 'element-plus'
 
-import { set } from 'nprogress'
-
 import { useGlobalInputListener } from '~/composables/useGlobalInputListener.ts'
 
 import { loadLanguageAsync } from '~/modules/i18n'
@@ -152,7 +150,6 @@ function initProfileInfo() {
 
     // 高级-灵敏度开关
     sensitivity: 0,
-    sensitivityModeIndex: 0,
     // 直线修正
     lineUpdate: 0,
     // 20K采样率
@@ -172,7 +169,7 @@ function initProfileInfo() {
     sensitivityLineData: [],
 
     // 鼠标当前选中模版状态
-    currentActive: 0,
+    sensitivityModeIndex: 0,
 
     // 鼠标链接状态
 
@@ -187,13 +184,67 @@ function initProfileInfo() {
 const localeStr = ref(null)
 // const initData = ref([])
 
-const initData = ref([
-  [0, 40],
-  [38, 42],
-  [70, 50],
-  [90, 55],
-  [180, 60],
-])
+const initData = ref([])
+
+// 折线图-经典
+const lineDataMap = {
+  // 经典-0
+  0: [
+    [0, 0],
+    [50, 10],
+    [100, 20],
+    [150, 30],
+    [200, 40],
+  ],
+  // 折线图-自然
+  1: [
+    [0, 0],
+    [50, 48],
+    [100, 50],
+    [150, 50],
+    [200, 50],
+  ],
+  // 折线图-跳跃
+  2: [
+    [0, 0],
+    [50, 0],
+    [100, 50],
+    [150, 50],
+    [200, 50],
+  ],
+  // 自定义-无
+  3: [
+    [0, 0],
+    [50, 20],
+    [100, 50],
+    [150, 50],
+    [200, 50],
+  ],
+  // 自定义-经典-4
+  4: [
+    [0, 0],
+    [50, 10],
+    [100, 20],
+    [150, 30],
+    [200, 40],
+  ],
+  // 自定义-经典-5
+  5: [
+    [0, 0],
+    [50, 48],
+    [100, 50],
+    [150, 50],
+    [200, 50],
+  ],
+  // 自定义-经典-6
+  6: [
+    [0, 0],
+    [50, 0],
+    [100, 50],
+    [150, 50],
+    [200, 50],
+  ],
+} as Record<number, [number, number][]>
 
 const profileInfo = reactive(initProfileInfo())
 
@@ -383,7 +434,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       profileInfo.sensitivityModeIndex = res[3]
       const sensitivityLineDataList = res.slice(6, 6 + res[2])
       profileInfo.sensitivityLineData = sensitivityLineDataList
-      // initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2)
+      initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2)
     }
 
     // 获取宏录制名字 profile 名字
@@ -852,7 +903,14 @@ async function sendChargingStatus() {
 // 获取鼠标连接状态 0 为断线，1 为连接
 async function sendMouseConnectionStatus() {
   const res = await transport.value.send([0x2A])
-  console.log(res, 'resresres')
+  profileInfo.mouseConnectionStatus = res[3]
+
+  res[3] === 0 && ElLoading.service({
+    lock: true,
+    text: '',
+    spinner: 'none',
+    background: 'rgba(0, 0, 0, 0.7)',
+  })
 }
 
 const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
@@ -1400,7 +1458,17 @@ async function lineUpdateSent(type) {
 // 动态灵敏度
 async function radioChange1() {
   profileInfo.sensitivity = !profileInfo.sensitivity
-  await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
+  // await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
+
+  if (Number(profileInfo.sensitivity) === 1) {
+    nextTick(() => {
+      initEcharts()
+    })
+    return
+  }
+
+  removeHandleMouseMoveFn()
+
   setLoadingStatus()
 }
 
@@ -1408,7 +1476,7 @@ async function radioChange1() {
 
 async function lineDropChange() {
   const formatData = initData.value.map((item) => {
-    return [Number(item[0].toFixed(2)), Number(item[1].toFixed(2))]
+    return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1]))]
   })
   await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), yAxisMax.value, xAxisMax.value, ...formatData.flat()])
   setLoadingStatus()
@@ -1424,67 +1492,92 @@ function activeBgChange(type) {
 
   if (type === 'advanced') {
     nextTick(() => {
-      initEcharts()
-      getProfileData(0)
-
-      const {
-        handleMouseMove,
-        dataQueue,
-      } = useGlobalInputListener(myChart.value)
-
-      function handleMouseMoveFn(event: MouseEvent) {
-        handleMouseMove(event)
-
-        // myChart.value.setOption({
-        //   series: [
-        //     {
-        //       id: 'area',
-        //       data: initData.value,
-        //     },
-        //   ],
-        // })
-
-        console.log(dataQueue.value)
-
-        dataQueue.value.forEach(({ x, y, speed }) => {
-          setTimeout(() => {
-            myChart.value.setOption({
-              seriesIndex: 1,
-              visualMap: {
-                pieces: [
-                  {
-                    gt: 0,
-                    lt: x,
-                    color: 'rgba(219, 255, 6, .5)',
-                  },
-                ],
-              },
-            })
-          }, speed)
-        })
-
-        //     visualMap: {
-        //   type: 'piecewise',
-        //   show: false,
-        //   dimension: 0,
-        //   seriesIndex: 1,
-        //   pieces: [
-        //     {
-        //       gt: 0,
-        //       lt: 0.1,
-        //       color: 'rgba(219, 255, 6, .5)',
-        //     },
-        //   ],
-        // },
+      // 切换到高级 && 动态灵敏度是开着的情况下,去渲染折线图
+      if (profileInfo.sensitivity === 1) {
+        if (!profileInfo.sensitivityLineData.length) {
+          initData.value = lineDataMap[profileInfo.sensitivityModeIndex] as any
+          lineDropChange()
+        }
+        initEcharts()
+        openHandleMouseMoveFn()
       }
-
-      document.body.addEventListener('mousemove', handleMouseMoveFn)
-
-      // setTimeout(() => {
-
-      // }, 1500)
     })
+    return
   }
+  removeHandleMouseMoveFn()
+}
+
+const mouseMoveTimer = ref<NodeJS.Timeout | null>(null)
+const chartUpdateTimer = ref<NodeJS.Timeout | null>(null)
+
+let flag = false
+
+function handleMouseMoveFn(event: MouseEvent) {
+  // eslint-disable-next-line ts/no-use-before-define
+  const data = handleMouseMoveRefFn.value(event)
+  if (flag) {
+    return
+  }
+
+  flag = true
+  chartUpdateTimer.value = setTimeout(() => {
+    myChart.value?.setOption({
+      seriesIndex: 1,
+      visualMap: {
+        pieces: [
+          {
+            gt: 0,
+            lt: data.x,
+            color: 'rgba(219, 255, 6, .7)',
+          },
+        ],
+      },
+    })
+    flag = false
+  }, data.speed)
+
+  // 设置不活动检测
+  mouseMoveTimer.value = setTimeout(() => {
+    myChart.value?.setOption({
+      seriesIndex: 1,
+      visualMap: {
+        pieces: [
+          {
+            gt: 0,
+            lt: 0.5,
+            color: 'rgba(219, 255, 6, .7)',
+          },
+        ],
+      },
+    })
+    flag = false
+    if (chartUpdateTimer.value) {
+      clearTimeout(chartUpdateTimer.value)
+      chartUpdateTimer.value = null
+    }
+    if (mouseMoveTimer.value) {
+      clearTimeout(mouseMoveTimer.value)
+      mouseMoveTimer.value = null
+    }
+  }, 500)
+}
+
+// 开启 鼠标移动监听
+
+function openHandleMouseMoveFn() {
+  document.body.addEventListener('mousemove', handleMouseMoveFn)
+}
+
+function removeHandleMouseMoveFn() {
+  if (chartUpdateTimer.value) {
+    clearTimeout(chartUpdateTimer.value)
+    chartUpdateTimer.value = null
+  }
+  if (mouseMoveTimer.value) {
+    clearTimeout(mouseMoveTimer.value)
+    mouseMoveTimer.value = null
+  }
+  document.body.removeEventListener('mousemove', handleMouseMoveFn)
 }
 
 // 获取模板的折线点
@@ -1505,11 +1598,12 @@ const myChart = ref(null) as any
 const chart = ref(null) as any
 const xAxisMax = ref(250)
 const yAxisMax = ref(60)
-// const pieces = ref(100)
+const handleMouseMoveRefFn = ref(null) as any
 
 function initEcharts() {
   myChart.value = echarts.init(document.getElementById('myChart'))
-  const symbolSize = 20
+
+  const symbolSize = 15
 
   chart.value = new DraggableChart(initData.value)
 
@@ -1569,8 +1663,8 @@ function initEcharts() {
       pieces: [
         {
           gt: 0,
-          lt: 0.1,
-          color: 'rgba(219, 255, 6, .5)',
+          lt: 250,
+          color: 'rgba(219, 255, 6, 0)',
         },
       ],
     },
@@ -1580,7 +1674,7 @@ function initEcharts() {
         id: 'line',
         type: 'line',
         smooth: 0.6,
-        symbolSize,
+        symbolSize: [0, 1, 2].includes(profileInfo.sensitivityModeIndex) ? 0 : symbolSize,
         data: initData.value,
         itemStyle: {
           color: '#DAFF00', // 折线点颜色（番茄色）
@@ -1612,7 +1706,11 @@ function initEcharts() {
   myChart.value.setOption(option)
 
   setTimeout(() => {
-    // Add shadow circles (which is not visible) to enable drag.
+    // 双重保险-非自定义不可拖拽
+    if ([0, 1, 2].includes(profileInfo.sensitivityModeIndex)) {
+      return
+    }
+
     myChart.value.setOption({
       graphic: initData.value.map((item, dataIndex) => {
         return {
@@ -1629,6 +1727,8 @@ function initEcharts() {
             onPointDragging(dataIndex, [this.x, this.y])
           },
           ondragend() {
+            // 拖拽之后, 设置成自定义-无
+            profileInfo.sensitivityModeIndex = 3
             lineDropChange()
             myChart.value?.setOption({
               graphic: initData.value.map((item) => {
@@ -1644,6 +1744,16 @@ function initEcharts() {
       }),
     })
   }, 0)
+
+  // 数据设置完之后, 启动鼠标移动监听
+
+  nextTick(() => {
+    const { handleMouseMove } = useGlobalInputListener(myChart.value)
+    handleMouseMoveRefFn.value = handleMouseMove
+    setTimeout(() => {
+      openHandleMouseMoveFn()
+    }, 1000)
+  })
 
   function onPointDragging(dataIndex: number, pos: any) {
     const [x, y] = myChart.value.convertFromPixel('grid', pos)
@@ -1869,20 +1979,20 @@ function mouseButtonClickFn() {
 }
 
 const originalItems = [
-  { id: 0, text: t('title.sensitivity_preset_classic') },
-  { id: 1, text: t('title.sensitivity_preset_natural') },
-  { id: 2, text: t('title.sensitivity_preset_jump') },
+  { id: 4, text: t('title.sensitivity_preset_classic') },
+  { id: 5, text: t('title.sensitivity_preset_natural') },
+  { id: 6, text: t('title.sensitivity_preset_jump') },
   { id: 3, text: t('title.none') },
 ]
 
 const sortedItems = computed(() => {
   // 过滤出需要显示的项目
   const filteredItems = originalItems.filter(item =>
-    profileInfo.currentActive === item.id || modeShow.value,
+    profileInfo.sensitivityModeIndex === item.id || modeShow.value,
   )
 
   // 如果当前激活项在过滤后的列表中，把它移到第一个
-  const activeItemIndex = filteredItems.findIndex(item => item.id === profileInfo.currentActive)
+  const activeItemIndex = filteredItems.findIndex(item => item.id === profileInfo.sensitivityModeIndex)
   if (activeItemIndex > -1) {
     const activeItem = filteredItems[activeItemIndex]
     filteredItems.splice(activeItemIndex, 1)
@@ -1934,11 +2044,13 @@ async function setColor(mode: any) {
 }
 
 function selectMode(mode: number) {
-  if (profileInfo.currentActive === mode) {
+  if (profileInfo.sensitivityModeIndex === mode) {
     return
   }
-  profileInfo.currentActive = mode
   profileInfo.sensitivityModeIndex = mode
+  initData.value = lineDataMap[mode]
+  initEcharts()
+  lineDropChange()
 }
 
 provide('createHong', createHong)
@@ -2536,7 +2648,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                 <div class="absolute right-0 flex justify-between" style="width:1250px" :style="{ opacity: showMouseenter === 'show' ? 1 : 0 }">
                   <div v-if="!profileInfo.sensitivity" class="absolute h-100% w-100%" style="z-index:1; background: #0D0D0D;" />
                   <div style="padding: 25px 25px 0 25px; flex:1;">
-                    <div class="ml-25 flex items-center">
+                    <div class="ml-25 flex items-center" style="height: 40px;">
                       <div class="icon-box">
                         <ElIcon size="18" @click.stop="changeYAxisMax(20)">
                           <Plus />
@@ -2545,7 +2657,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <Minus />
                         </ElIcon>
                       </div>
-                      <div class="ml-15 flex items-center">
+                      <div v-if="[3, 4, 5, 6].includes(profileInfo.sensitivityModeIndex)" class="ml-15 flex items-center">
                         <span class="mr-3">{{ t('title.select_preset') }}</span>
                         <div class="mode-box relative flex items-center pl-10" style="height: 32px;  background-color: #242424;border-radius: 30px" @mouseenter="changeModeShow" @mouseleave="changeModeHide">
                           <span
@@ -2554,12 +2666,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                             class="mr-10"
                             @click="selectMode(item.id)"
                           >
-
                             {{
                               {
-                                0: t('title.sensitivity_preset_classic'),
-                                1: t('title.sensitivity_preset_natural'),
-                                2: t('title.sensitivity_preset_jump'),
+                                4: t('title.sensitivity_preset_classic'),
+                                5: t('title.sensitivity_preset_natural'),
+                                6: t('title.sensitivity_preset_jump'),
                                 3: t('title.none'),
                               }[item.id]
                             }}
@@ -2590,11 +2701,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     </div>
                   </div>
                   <div class="config-child-box" style="flex-direction: column; margin-left: 30px; justify-content: center;padding-right:10px">
-                    <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_classic') }}</span>
-                    <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_natural') }}</span>
-                    <span style="margin-bottom: 35px;">{{ t('title.sensitivity_preset_jump') }}</span>
+                    <span style="margin-bottom: 35px;" :class="{ active: profileInfo.sensitivityModeIndex === 0 }" @click="selectMode(0)">{{ t('title.sensitivity_preset_classic') }}</span>
+                    <span style="margin-bottom: 35px;" :class="{ active: profileInfo.sensitivityModeIndex === 1 }" @click="selectMode(1)">{{ t('title.sensitivity_preset_natural') }}</span>
+                    <span style="margin-bottom: 35px;" :class="{ active: profileInfo.sensitivityModeIndex === 2 }" @click="selectMode(2)">{{ t('title.sensitivity_preset_jump') }}</span>
                     <!-- 自定义 -->
-                    <span style="margin-bottom: 35px;" class="active">{{ t('title.sensitivity_preset_custom') }}</span>
+                    <span style="margin-bottom: 35px;" :class="{ active: [3, 4, 5, 6].includes(profileInfo.sensitivityModeIndex) }" @click="selectMode(3)">{{ t('title.sensitivity_preset_custom') }}</span>
                   </div>
                 </div>
                 <Transition name="slide-right">

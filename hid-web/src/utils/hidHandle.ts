@@ -709,6 +709,7 @@ class TransportWebHID extends Transport {
   checkSum(data: number[]) {
     let checksum_v = this.reportId
     checksum_v = data.reduce((accumulator, currentValue) => accumulator + currentValue, checksum_v)
+    console.log(data, checksum_v, 'checksum_v')
     return checksum_v & 0xFF
   }
 
