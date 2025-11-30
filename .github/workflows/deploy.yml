@@ -63,4 +63,6 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             export PATH=$HOME/.nvm/versions/node/v22.19.0/bin:$PATH
-            pm2 restart mouse-2-backend
+            cd ~/mouse-2/hid-web/backend
+            pm2 restart mouse-2-backend || pm2 start dist/server.js --name mouse-2-backend
+            pm2 save
