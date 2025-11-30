@@ -397,8 +397,10 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
 
     // XY 值
     else if (res[0] === 35) {
-      const XYDataList = res.slice(3, (res[2] * 4) + 3)
-      const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 5)
+      const XYDataList = res.slice(4, (res[2] * 4) + 4)
+
+      console.log('XYDataList', XYDataList)
+      const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 4)
       profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
     }
 
@@ -860,12 +862,14 @@ async function sendHibernation() {
 }
 
 async function sendXYElimination() {
+  console.log(profileInfo.XYObjDataList, 'profileInfo.XYObjDataList')
   const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item) => {
     return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
   })
 
-  await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])
   profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index] = (profileInfo.XYObjDataList as { [key: number]: number[] })[profileInfo.dpi_slider_active_index][0]
+
+  await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])
   onExecutionSuccess()
 }
 

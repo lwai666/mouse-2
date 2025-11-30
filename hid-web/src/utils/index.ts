@@ -190,17 +190,17 @@ export function deepClone<T>(obj: T): T {
 
 // 返回格式转换, 5个一组,
 
-export function processArrayToObject(originalArray: any, groupSize = 5) {
+export function processArrayToObject(originalArray: any, groupSize = 4) {
   const result = {} as any
   const totalGroups = originalArray.length / groupSize
 
   for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
     // 计算当前组的起始索引
-    const startIndex = groupIndex * groupSize
+    const startIndex = groupIndex
     // 获取当前组的 key (第一个元素)
     // const key = originalArray[startIndex]
     // 获取当前组的 value (剩余的所有元素)
-    const valueArray = originalArray.slice(startIndex + 1, startIndex + groupSize)
+    const valueArray = originalArray.slice(startIndex * groupSize, startIndex * groupSize + groupSize)
 
     // 将4位的value数组转换为2个数字
     // valueArray = [a, b, c, d]
@@ -215,4 +215,3 @@ export function processArrayToObject(originalArray: any, groupSize = 5) {
 
   return result
 }
-
