@@ -164,7 +164,7 @@ function initProfileInfo() {
       2: [100, 100],
       3: [100, 100],
       4: [100, 100],
-    },
+    } as { [key: number]: number[] },
     // 动态灵敏度折线图
     sensitivityLineData: [],
 
@@ -806,6 +806,10 @@ async function sendDpi(index?: number) {
 
   dpi_progress.value = false
 
+  if (index !== undefined) {
+    profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0] = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
+  }
+
   onExecutionSuccess()
 }
 // newLength: number | undefined, oldLength: number | undefined
@@ -861,7 +865,7 @@ async function sendXYElimination() {
   })
 
   await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])
-
+  profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index] = (profileInfo.XYObjDataList as { [key: number]: number[] })[profileInfo.dpi_slider_active_index][0]
   onExecutionSuccess()
 }
 
@@ -2260,6 +2264,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       </Transition>
                     </div>
                   </div>
+
                   <CustomSlider
                     v-if="!!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"
                     v-model="profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]"
@@ -2887,8 +2892,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
             {{ t('description.factory_reset_confirmation1') }}
           </p>
 
-          <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 100px;" @click="onRestoreFactorySettings">
+          <div class="config-child-box absolute" style="margin-left: -150px; left: 50%; bottom: 100px;" @click="onRestoreFactorySettings">
             <span class="active">{{ t('macro.confirm') }}</span>
+          </div>
+          <div class="config-child-box absolute" style="margin-left: 5px; left: 50%; bottom: 100px;" @click="bottomItem = 0">
+            <span class="button" style="border: 1px solid #daff00;">{{ t('button.cancel') }}</span>
           </div>
         </div>
 
