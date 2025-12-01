@@ -81,7 +81,6 @@ const currentOption = computed(() => {
 const currentOptions = computed<Option[]>(() => {
   const options = JSON.parse(JSON.stringify(props.options)).filter((option: Option) => option.value !== currentOption.value?.value)
   options.splice(props.cascaderTop, 0, currentOption.value)
-  console.log(options, 'options')
   return options
 })
 
@@ -95,7 +94,6 @@ function cascaderListClass(item: Option) {
 }
 
 function onClick() {
-  console.log(111)
   emit('click')
 }
 
@@ -179,7 +177,7 @@ defineExpose({ show, open, close })
                 </div>
 
                 <span :class="[!disabled ? 'hover_text' : '']">
-                  {{ t(item.label) }}
+                  {{ item.label }}
                 </span>
               </div>
             </div>

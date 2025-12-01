@@ -783,7 +783,6 @@ function sendMultimediaMacro(id: MouseButtonType, value: number) {
 
 // 发送鼠标宏
 async function sendKeyMacro(id: MouseButtonType, value: number) {
-  console.log(id, value, '1112')
   const index = mouseButton.indexOf(id)
   console.log('发送鼠标宏======')
   await transport.value.send([0x09, 0x00, 0x01, index, value])
@@ -876,6 +875,8 @@ async function sendXYElimination() {
   })
 
   profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index] = (profileInfo.XYObjDataList as { [key: number]: number[] })[profileInfo.dpi_slider_active_index][0]
+
+  dpi_slider_value.value = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0]
 
   await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])
   onExecutionSuccess()
@@ -1935,16 +1936,16 @@ function setProfileYS() {
 }
 
 async function deleteMacro(macro: Macro) {
-  // console.log(macro.connections.length, 'macro')
-  // if (macro.connections && macro.connections.length > 0) {
-  //   setLoadingStatus(t('message.delete_macro_error'))
-  //   return
-  // }
-
   const macroIndex = profileInfo.macroList.findIndex(item => item === macro)
   console.log('删除组合键宏========', macroIndex)
   await transport?.value.send([0x08, 0x00, 1, 1, 1, 0xFF, macroIndex])
-  // profileInfo.macroList[macroIndex] = { name: '', connections: [], value: [] }
+  const connections = profileInfo.macroList[macroIndex].connections
+  connections.forEach(async (item: any) => {
+    profileInfo[item.keyid] = mouseButton.findIndex(key => key === item.keyid)
+  })
+
+  profileInfo.macroList[macroIndex] = { name: '', connections: [], value: [] }
+  setLoadingStatus(t('message.format_error'))
 }
 
 const loadingShow = ref(false)
