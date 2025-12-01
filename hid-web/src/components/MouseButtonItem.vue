@@ -63,7 +63,8 @@ async function onEnterKey() {
   })
 }
 
-async function onChangeRadioGroup() {
+async function onChangeRadioGroup(cycleMode: number) {
+  sendData.value.cycleMode = cycleMode
   emit('change', props.id, 2000 + props.macroIndex, 1999, {
     cycleTimes: sendData.value.cycleTimes, // 循环次数
     cycleMode: sendData.value.cycleMode, // 循环模式
@@ -148,7 +149,7 @@ defineExpose({ mouseButtonCascaderRef })
       <div v-if="props.status === 'connecting'" class="absolute top-[-20px]">
         <div class="flex items-center justify-center">
           <div class="absolute right-[75px] flex items-center justify-center">
-            <div class="relative flex items-center">
+            <!-- <div class="relative flex items-center">
               <p v-if="active1 === 'active1'" class="absolute right-[35px] w-[max-content]" style="color: #CF0EFF;max-width: 237px;">
                 {{ t('button.macro_execution_description') }}
               </p>
@@ -160,11 +161,11 @@ defineExpose({ mouseButtonCascaderRef })
                 @click.stop="changeActive1('active1')"
               >
               <div style="width: 15px;height: 15px;" />
-            </div>
+            </div> -->
 
-            <div style="z-index: 1; width: max-content; min-width: 76px; padding: 3px 10px; height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click.stop="onChangeRadioGroup">
+            <!-- <div style="z-index: 1; width: max-content; min-width: 76px; padding: 3px 10px; height: 21.68px;border-radius: 14px;background: #6A0A82;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click.stop="onChangeRadioGroup">
               {{ t('button.macro_execute') }}
-            </div>
+            </div> -->
           </div>
           {{ hongName }}
         </div>
@@ -194,7 +195,7 @@ defineExpose({ mouseButtonCascaderRef })
             </div>
           </div>
           <div class="mb-3 ml-11 mt-5 flex items-center">
-            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 1 }" style="text-align: right; width: max-content; padding: 3px 10px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 1">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 1 }" style="text-align: right; width: max-content; padding: 3px 10px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="onChangeRadioGroup(1)">
               {{ t('button.macro_execution') }}
               N
               {{ t('mouseConnection.times') }}
@@ -202,13 +203,13 @@ defineExpose({ mouseButtonCascaderRef })
           </div>
           <div class="h-60px w-50px" />
           <div class="mb-3 flex items-center">
-            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 2 }" style="text-align: right; width: max-content;padding: 3px 10px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 2">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 2 }" style="text-align: right; width: max-content;padding: 3px 10px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="onChangeRadioGroup(2)">
               {{ t('button.macro_execute_until_release') }}
             </div>
           </div>
 
           <div class="mb-3 flex items-center">
-            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 3 }" style="text-align: right; width: max-content;padding: 3px 15px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="sendData.cycleMode = 3">
+            <div class="hover items-center justify-center" :class="{ hover_active: sendData.cycleMode === 3 }" style="text-align: right; width: max-content;padding: 3px 15px; height: 30px;display: flex;background: #333;border-radius: 14px" @click="onChangeRadioGroup(3)">
               {{ t('button.macro_execute_until_repressed') }}
             </div>
           </div>

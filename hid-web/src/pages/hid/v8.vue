@@ -181,10 +181,19 @@ function initProfileInfo() {
 
   }
 }
+
 const localeStr = ref(null)
 // const initData = ref([])
 
 const initData = ref([])
+
+let XYObjDataList = reactive<{ [key: number]: number[] }>({
+  0: [100, 100],
+  1: [100, 100],
+  2: [100, 100],
+  3: [100, 100],
+  4: [100, 100],
+})
 
 // 折线图-经典
 const lineDataMap = {
@@ -398,10 +407,9 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     // XY 值
     else if (res[0] === 35) {
       const XYDataList = res.slice(4, (res[2] * 4) + 4)
-
-      console.log('XYDataList', XYDataList)
       const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 4)
       profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
+      XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
     }
 
     // 灵敏度&速度开关 0 为关，1 为开
@@ -787,6 +795,7 @@ const dpi_progress = ref(false)
 async function sendDpi(index?: number) {
   dpi_progress.value = true
   const dpi_length = profileInfo.dpi_slider_list.length
+
   const list = profileInfo.dpi_slider_list.reduce((arr: number[], item: number) => {
     arr.push(item & 0xFF, item >> 8 & 0xFF)
     return arr
@@ -862,7 +871,6 @@ async function sendHibernation() {
 }
 
 async function sendXYElimination() {
-  console.log(profileInfo.XYObjDataList, 'profileInfo.XYObjDataList')
   const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item) => {
     return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
   })
@@ -1868,7 +1876,7 @@ function createHong(index, buttonType) {
   mouseButtonRef.value.onConnection(index, buttonType)
 }
 
-const dpi_slider_edit = ref(null)
+const dpi_slider_edit = ref()
 const dpi_slider_value = ref('')
 
 const dpiInputRef = ref(null)
@@ -1883,6 +1891,18 @@ function dpiEditValue(editActive, value) {
 
 function inputSendDpi(value, index) {
   profileInfo.dpi_slider_list[index] = value
+
+  if (value < 100) {
+    profileInfo.dpi_slider_list[index] = 100
+    dpi_slider_edit.value = 100
+    return
+  }
+
+  if (value > 30000) {
+    profileInfo.dpi_slider_list[index] = 30000
+    dpi_slider_edit.value = 30000
+  }
+
   sendDpi(index)
 }
 
@@ -1915,16 +1935,16 @@ function setProfileYS() {
 }
 
 async function deleteMacro(macro: Macro) {
-  console.log(macro, 'macro')
-  if (profileInfo.macroList.connections && profileInfo.macroList.connections.length > 0) {
-    setLoadingStatus(t('message.delete_macro_error'))
-    return
-  }
+  // console.log(macro.connections.length, 'macro')
+  // if (macro.connections && macro.connections.length > 0) {
+  //   setLoadingStatus(t('message.delete_macro_error'))
+  //   return
+  // }
 
   const macroIndex = profileInfo.macroList.findIndex(item => item === macro)
   console.log('删除组合键宏========', macroIndex)
   await transport?.value.send([0x08, 0x00, 1, 1, 1, 0xFF, macroIndex])
-  profileInfo.macroList[macroIndex] = { name: '', connections: [], value: [] }
+  // profileInfo.macroList[macroIndex] = { name: '', connections: [], value: [] }
 }
 
 const loadingShow = ref(false)
@@ -2234,11 +2254,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         <template v-else>
                           <span style="font-size:10px">X</span>
                           <div style="width: 69px; text-align: center; border-radius: 10px;">
-                            <input ref="dpiInputRef" v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                            <input v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                           <span style="font-size:10px">Y</span>
                           <div style="width: 69px; text-align: center; border-radius: 10px;">
-                            <input ref="dpiInputRef" v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                            <input v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                         </template>
                       </div>
@@ -2282,7 +2302,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   />
                   <CustomSlider
                     v-if="!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"
-                    v-model="profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0]"
+                    v-model="XYObjDataList[profileInfo.dpi_slider_active_index][0]"
                     class="dpi_slider slider1 absolute bottom-23 w-90%"
                     :bind="sliderOptions.dpi_slider"
                     :default-select-options="sliderDefaultSelectOptions.dpi_slider"
@@ -2296,7 +2316,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   />
                   <CustomSlider
                     v-if="!!profileInfo.DPIStartList[profileInfo.dpi_slider_active_index]"
-                    v-model="profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][1]"
+                    v-model="XYObjDataList[profileInfo.dpi_slider_active_index][1]"
                     class="dpi_slider slider2 absolute bottom-6 w-90%"
                     :bind="sliderOptions.dpi_slider"
                     :default-select-options="sliderDefaultSelectOptions.dpi_slider"
