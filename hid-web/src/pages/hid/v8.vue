@@ -187,7 +187,7 @@ const localeStr = ref(null)
 
 const initData = ref([])
 
-let XYObjDataList = reactive<{ [key: number]: number[] }>({
+let XYObjDataList = ref<{ [key: number]: number[] }>({
   0: [100, 100],
   1: [100, 100],
   2: [100, 100],
@@ -409,7 +409,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const XYDataList = res.slice(4, (res[2] * 4) + 4)
       const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 4)
       profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
-      XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
+      XYObjDataList.value = Object.assign(profileInfo.XYObjDataList, dataObj)
     }
 
     // 灵敏度&速度开关 0 为关，1 为开
@@ -818,6 +818,7 @@ async function sendDpi(index?: number) {
 
   if (index !== undefined) {
     profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0] = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
+    XYObjDataList.value[profileInfo.dpi_slider_active_index][0] = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
   }
 
   onExecutionSuccess()
