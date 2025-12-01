@@ -816,10 +816,10 @@ async function sendDpi(index?: number) {
 
   dpi_progress.value = false
 
-  if (index !== undefined) {
-    profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0] = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
-    XYObjDataList.value[profileInfo.dpi_slider_active_index][0] = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
-  }
+  // if (index !== undefined) {
+  //   profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0] = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
+  //   XYObjDataList.value[profileInfo.dpi_slider_active_index][0] = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
+  // }
 
   onExecutionSuccess()
 }
@@ -875,9 +875,9 @@ async function sendXYElimination() {
     return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
   })
 
-  profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index] = (profileInfo.XYObjDataList as { [key: number]: number[] })[profileInfo.dpi_slider_active_index][0]
+  // profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index] = (profileInfo.XYObjDataList as { [key: number]: number[] })[profileInfo.dpi_slider_active_index][0]
 
-  dpi_slider_value.value = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0]
+  // dpi_slider_value.value = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0]
 
   await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])
   onExecutionSuccess()
