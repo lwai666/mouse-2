@@ -2875,7 +2875,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         :height="297"
                         :img-length="90"
                         :end-stop="false"
-                        url="/public/01/01_00000_0"
+                        url="/01/01_00000_0"
                       />
                     </div>
                   </div>
