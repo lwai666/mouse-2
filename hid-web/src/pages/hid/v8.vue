@@ -1208,7 +1208,9 @@ async function addMacro() {
     return
   }
 
-  const macroName = `Macro ${macroIndex + 1}`
+  console.log(profileInfo.macroList, 'profileInfo.macroList')
+
+  const macroName = profileInfo.macroList[macroIndex].name || `Macro ${macroIndex + 1}`
 
   const data = recordedKeys.value.map((item) => {
     const [_low, _high] = getLowAndHigh8Bits(item.intervalTime)
@@ -1216,9 +1218,11 @@ async function addMacro() {
   })
 
   console.log('添加组合键宏球=======', macroIndex + 1)
+
   await transport.value.send([0x1A + macroIndex, 0x00, recordedKeys.value.length, ...data.flat()])
 
   console.log('设置宏按键名字=======', macroName)
+
   const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
   await transport.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + macroIndex, ...macroNameArrayBuffer])
 
@@ -1996,6 +2000,8 @@ async function onChange(macroName: string, index: number) {
   console.log('设置宏按键名字=======', macroName, index)
   const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
   await transport?.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + index, ...macroNameArrayBuffer])
+
+  profileInfo.macroList[index].name = macroName
   isHovered.value = ''
   setLoadingStatus('')
 }
@@ -2933,7 +2939,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
             {{ t('description.receiver_pairing_instructions') }}
           </p>
 
-          <img class="mb-10 h-240px" src="/slideshow/2_zh-CN.png" alt="item.title">
+          <img class="mb-10 h-240px" :src="`/slideshow/2_${locale}.png`" alt="item.title">
 
           <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 60px;" @click="bottomItem = 0">
             <span class="active">{{ t('macro.confirm') }}</span>
