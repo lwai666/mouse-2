@@ -1436,7 +1436,13 @@ async function setDPIXY() {
   DPIStartListCopy[profileInfo.dpi_slider_active_index] = DPIStartListCopy[profileInfo.dpi_slider_active_index] === 0 ? 1 : 0
   profileInfo.DPIStartList = DPIStartListCopy
   await transport?.value.send([0x25, 0x00, profileInfo.dpi_slider_list.length, ...profileInfo.DPIStartList])
-  setLoadingStatus()
+
+  const dpi_number = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
+  profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index as number] = [dpi_number, dpi_number]
+
+  sendXYElimination()
+
+  // setLoadingStatus()
 }
 
 async function FPSChange(type) {
@@ -1496,6 +1502,7 @@ async function lineDropChange() {
   const formatData = initData.value.map((item) => {
     return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1]))]
   })
+
   await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), yAxisMax.value, xAxisMax.value, ...formatData.flat()])
   setLoadingStatus()
 }
@@ -1530,7 +1537,47 @@ const chartUpdateTimer = ref<NodeJS.Timeout | null>(null)
 
 let flag = false
 
+let lastExecutionTime = 0
+let idleTimer = null
+let isMouseMoving = false
+
 function handleMouseMoveFn(event: MouseEvent) {
+  // 记录下触发的当前时间
+  const currentTime = Date.now()
+
+  // 判断是否超过 1 秒没执行
+
+  // 更新最后执行时间
+  lastExecutionTime = currentTime
+
+  // 清除空闲计时器，重新设置
+  clearTimeout(idleTimer)
+  idleTimer = setTimeout(() => {
+    console.log('鼠标空闲超过 1 秒')
+    myChart.value?.setOption({
+      seriesIndex: 1,
+      visualMap: {
+        pieces: [
+          {
+            gt: 0,
+            lt: 0.5,
+            color: 'rgba(219, 255, 6, .7)',
+          },
+        ],
+      },
+    })
+    flag = false
+    if (chartUpdateTimer.value) {
+      clearTimeout(chartUpdateTimer.value)
+      chartUpdateTimer.value = null
+    }
+  }, 100)
+
+  // 标记鼠标正在移动
+  if (!isMouseMoving) {
+    isMouseMoving = true
+  }
+
   // eslint-disable-next-line ts/no-use-before-define
   const data = handleMouseMoveRefFn.value(event)
   if (flag) {
@@ -1553,31 +1600,6 @@ function handleMouseMoveFn(event: MouseEvent) {
     })
     flag = false
   }, data.speed)
-
-  // 设置不活动检测
-  mouseMoveTimer.value = setTimeout(() => {
-    myChart.value?.setOption({
-      seriesIndex: 1,
-      visualMap: {
-        pieces: [
-          {
-            gt: 0,
-            lt: 0.5,
-            color: 'rgba(219, 255, 6, .7)',
-          },
-        ],
-      },
-    })
-    flag = false
-    if (chartUpdateTimer.value) {
-      clearTimeout(chartUpdateTimer.value)
-      chartUpdateTimer.value = null
-    }
-    if (mouseMoveTimer.value) {
-      clearTimeout(mouseMoveTimer.value)
-      mouseMoveTimer.value = null
-    }
-  }, 500)
 }
 
 // 开启 鼠标移动监听
@@ -1681,7 +1703,7 @@ function initEcharts() {
       pieces: [
         {
           gt: 0,
-          lt: 250,
+          lt: 0.1,
           color: 'rgba(219, 255, 6, 0)',
         },
       ],
@@ -1747,6 +1769,14 @@ function initEcharts() {
           ondragend() {
             // 拖拽之后, 设置成自定义-无
             profileInfo.sensitivityModeIndex = 3
+
+            const formatData = initData.value.map((item) => {
+              return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1]))]
+            })
+            // 拖拽之后修改 无的值
+
+            lineDataMap[profileInfo.sensitivityModeIndex] = formatData as any
+
             lineDropChange()
             myChart.value?.setOption({
               graphic: initData.value.map((item) => {
@@ -1775,9 +1805,9 @@ function initEcharts() {
 
   function onPointDragging(dataIndex: number, pos: any) {
     const [x, y] = myChart.value.convertFromPixel('grid', pos)
-
-    // initData.value[dataIndex] = chart.value.dragPoint(dataIndex, x, y)
-    initData.value = chart.value.dragPoint(dataIndex, x, y)
+    initData.value = chart.value.dragPoint(dataIndex, x, y).map((item: any) => {
+      return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1]))]
+    })
 
     myChart.value.setOption({
       series: [
@@ -2078,7 +2108,7 @@ function selectMode(mode: number) {
     return
   }
   profileInfo.sensitivityModeIndex = mode
-  initData.value = lineDataMap[mode]
+  initData.value = JSON.parse(JSON.stringify(lineDataMap[mode]))
   initEcharts()
   lineDropChange()
 }
