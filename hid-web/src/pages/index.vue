@@ -94,10 +94,13 @@ async function onAddNouseClick() {
     const flag = transportListCopy.some(item => item.reportId === transport.value.reportId)
     if (flag) {
       router.push(`/hid/v8`)
+      localStorage.setItem('tabActive', 'performance')
+
       return
     }
     transportList.value.push(transport.value)
     localStorage.setItem('transportList', JSON.stringify(transportList.value))
+    localStorage.setItem('tabActive', 'performance')
     router.push(`/hid/v8`)
   }
 }

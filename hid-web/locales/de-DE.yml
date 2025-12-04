@@ -143,8 +143,7 @@ tips:
     title: Winkeleinstellung
     description: Sie können den Winkel basierend auf Ihrer bevorzugten Mausgriffhaltung anpassen
   application:
-    description: Alle Einstellungen des aktuellen Modus wurden kopiert und können über Einfügen mit Freunden geteilt werden
-    description1: Zum Anwenden doppelklicken Sie den Code über dem Strich, klicken Sie mit der rechten Maustaste, um zu ersetzen, und wenden Sie an
+    description: Klicken Sie auf die Teilen-Schaltfläche, fügen Sie diesen Code in den sozialen Medien ein, um ihn mit Freunden zu teilen. Ihr Freund kann den Codebereich über dem Strich doppelklicken, einfügen und ersetzen, dann auf Anwenden klicken, um alle Parameter und Einstellungen der aktuellen Seite zu übernehmen.
   macro_set:
     title: Makro-Einstellungen
     description: Klicken Sie auf den unterstrichenen Bereich, geben Sie die Schleifenanzahl (1-40) ein und drücken Sie Enter oder klicken Sie auf die Kugel links von der Option, um auszuführen und zu speichern.

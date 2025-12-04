@@ -144,8 +144,7 @@ tips:
     description: You can adjust to a suitable angle based on your preferred mouse grip posture
 
   application:
-    description: All settings of the current mode have been copied and can be shared with friends by pasting
-    description1: To apply, double-click the code above the line, right-click to paste and replace, then apply.
+    description: Click the Share button, paste this code on social media to share with friends. Your friend can double-click the code area above the dash, paste to replace, then click Apply to apply all parameters and settings from the current page.
   macro_set:
     title: Macro Settings
     description: Click the underlined area, enter loop count from 1 to 40 and press Enter, or click the ball to the left of the option to execute and save.

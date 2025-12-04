@@ -200,10 +200,10 @@ const lineDataMap = {
   // 经典-0
   0: [
     [0, 0],
-    [50, 10],
     [100, 20],
     [150, 30],
     [200, 40],
+    [250, 50],
   ],
   // 折线图-自然
   1: [
@@ -211,7 +211,7 @@ const lineDataMap = {
     [50, 48],
     [100, 50],
     [150, 50],
-    [200, 50],
+    [250, 50],
   ],
   // 折线图-跳跃
   2: [
@@ -219,7 +219,7 @@ const lineDataMap = {
     [50, 0],
     [100, 50],
     [150, 50],
-    [200, 50],
+    [250, 50],
   ],
   // 自定义-无
   3: [
@@ -227,15 +227,15 @@ const lineDataMap = {
     [50, 20],
     [100, 50],
     [150, 50],
-    [200, 50],
+    [250, 50],
   ],
   // 自定义-经典-4
   4: [
     [0, 0],
-    [50, 10],
     [100, 20],
     [150, 30],
     [200, 40],
+    [250, 50],
   ],
   // 自定义-经典-5
   5: [
@@ -243,7 +243,7 @@ const lineDataMap = {
     [50, 48],
     [100, 50],
     [150, 50],
-    [200, 50],
+    [250, 50],
   ],
   // 自定义-经典-6
   6: [
@@ -251,7 +251,7 @@ const lineDataMap = {
     [50, 0],
     [100, 50],
     [150, 50],
-    [200, 50],
+    [250, 50],
   ],
 } as Record<number, [number, number][]>
 
@@ -417,6 +417,9 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const start_index = 3
       const sensitivity = res[start_index]
       profileInfo.sensitivity = sensitivity
+      if (profileInfo.sensitivity === 1 && activeBg.value === 'advanced') {
+        initEcharts()
+      }
     }
 
     // DPD XY轴开关
@@ -1392,6 +1395,8 @@ useTransportWebHID('v8', async (instance) => {
 
 onMounted(() => {
   userStore.fetchLatestVersion()
+  const tabActive = localStorage.getItem('tabActive') ? localStorage.getItem('tabActive') : 'performance'
+  activeBgChange(tabActive)
   autofit.init({
     dh: 1080,
     dw: 1920,
@@ -1486,7 +1491,7 @@ async function lineUpdateSent(type) {
 // 动态灵敏度
 async function radioChange1() {
   profileInfo.sensitivity = !profileInfo.sensitivity
-  // await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
+  await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
 
   if (Number(profileInfo.sensitivity) === 1) {
     nextTick(() => {
@@ -1518,9 +1523,11 @@ function activeBgChange(type) {
     return
   }
   activeBg.value = type
+  localStorage.setItem('tabActive', type)
 
   if (type === 'advanced') {
     nextTick(() => {
+      console.log(profileInfo.sensitivity, '切换到高级模式')
       // 切换到高级 && 动态灵敏度是开着的情况下,去渲染折线图
       if (profileInfo.sensitivity === 1) {
         if (!profileInfo.sensitivityLineData.length) {
@@ -1645,6 +1652,7 @@ const yAxisMax = ref(60)
 const handleMouseMoveRefFn = ref(null) as any
 
 function initEcharts() {
+  console.log('触发了')
   myChart.value = echarts.init(document.getElementById('myChart'))
 
   const symbolSize = 15
@@ -1865,9 +1873,15 @@ async function changeYAxisMax(num: number) {
 const bottomItem = ref(0)
 
 function bottomItemChange(type) {
+  if (type === 1 && profileInfo.sports_arena !== 0) {
+    onSportsMode(0)
+    return
+  }
+
   if (bottomItem.value === type) {
     return
   }
+
   bottomItem.value = type
 }
 
@@ -1970,7 +1984,8 @@ function setProfileYS() {
   }
 }
 
-async function deleteMacro(macro: Macro) {
+async function deleteMacro(macro: Macro, index: number) {
+  console.log(index, currentMacroButtonRecordedKeyIndex.value, 'indexindexindexindex')
   const macroIndex = profileInfo.macroList.findIndex(item => item === macro)
   console.log('删除组合键宏========', macroIndex)
   await transport?.value.send([0x08, 0x00, 1, 1, 1, 0xFF, macroIndex])
@@ -1980,7 +1995,11 @@ async function deleteMacro(macro: Macro) {
   })
 
   profileInfo.macroList[macroIndex] = { name: '', connections: [], value: [] }
-  setLoadingStatus(t('message.format_error'))
+
+  if (currentMacroButtonRecordedKeyIndex.value === index) {
+    recordedKeys.value = []
+  }
+  // setLoadingStatus(t('message.format_error'))
 }
 
 const loadingShow = ref(false)
@@ -2160,11 +2179,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
       <img style="margin-left: 10px;width: 20px ;height: 20px;" :src="`/v9/wenhao${hover === 'share' ? '_active' : ''}.png`" srcset="" @mouseenter="mouseenter('share')" @mouseleave="mouseenter('share')">
 
-      <p v-if="hover === 'share'" class="absolute top-11 w-[401px]" style="font-size:16px; color:#DAFF00">
+      <p v-if="hover === 'share'" class="absolute top-8 w-[401px]" style="font-size:16px; color:#DAFF00;text-align: left;">
         <!-- 已复制当前模式所有设置，可以通过粘贴分享给好友应用
         应用时双击横杠上代码点击鼠标右键粘贴替换，应用即可 -->
         {{ t('tips.application.description') }}
-        {{ t('tips.application.description1') }}
       </p>
     </div>
 
@@ -2518,7 +2536,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                             </div>
                             <ElInput v-show="isHovered === index" v-model="item.name" class="macro-button-item-input mx-1" :placeholder="item.name" style="width: 100px" :input-style="{ textAlign: 'right' }" :maxlength="10" @blur="onChange(item.name, index)" />
 
-                            <ElIcon size="20" @click.stop="deleteMacro(item)">
+                            <ElIcon size="20" @click.stop="deleteMacro(item, index)">
                               <Delete />
                             </ElIcon>
                           </div>
@@ -2912,8 +2930,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
           </p>
 
           <div class="flex" style="margin-top: 30px;">
-            <div class="config-child-box config-child-box1 mr-2" @click="onSportsMode(0)">
-              <span>{{ t('macro.cancel') }}</span>
+            <div class="config-child-box config-child-box1 mr-2" @click="bottomItem = 0">
+              <span>{{ t('button.cancel') }}</span>
             </div>
             <div class="config-child-box" @click="onSportsMode(1)">
               <span class="active">{{ t('macro.confirm') }}</span>

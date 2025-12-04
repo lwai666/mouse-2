@@ -75,8 +75,7 @@ message:
 
 tips:
   application:
-    description: 已复制当前模式所有设置，可以通过粘贴分享给好友应用
-    description1: 应用时双击横杠上代码点击鼠标右键粘贴替换，应用即可
+    description: 点击分享按钮， 在社交媒体上粘贴这串代码给好友， 好友通过双击横杠上代码粘贴替换点击应用, 即可应用当前页面所有参数和设置
 
   clone:
     title: 克隆
