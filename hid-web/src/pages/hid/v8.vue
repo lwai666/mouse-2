@@ -18,6 +18,7 @@ import { DatasetComponent, GraphicComponent, GridComponent, TitleComponent, Tool
 // 引入 echarts 核心模块，核心模块提供了 echarts 使用必须要的接口。
 import * as echarts from 'echarts/core'
 
+
 // 标签自动布局、全局过渡动画等特性
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 // 引入 Canvas 渲染器，注意引入 CanvasRenderer 或者 SVGRenderer 是必须的一步
@@ -29,6 +30,7 @@ import { useGlobalInputListener } from '~/composables/useGlobalInputListener.ts'
 import { loadLanguageAsync } from '~/modules/i18n'
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/utils'
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { pad } from 'node_modules/cypress/types/lodash'
 
 const { t, locale } = useI18n()
 
@@ -165,6 +167,8 @@ function initProfileInfo() {
       3: [100, 100],
       4: [100, 100],
     } as { [key: number]: number[] },
+
+
     // 动态灵敏度折线图
     sensitivityLineData: [],
 
@@ -271,7 +275,7 @@ const mouseButtonValue = computed(() => {
   }
 })
 
-const profileList = reactive<ProfileType[]>([
+let profileList = reactive([
   { title: 'Profile 1', base64: '', uint8Array: [], value: undefined },
   { title: 'Profile 2', base64: '', uint8Array: [], value: undefined },
   { title: 'Profile 3', base64: '', uint8Array: [], value: undefined },
@@ -281,22 +285,18 @@ const profileList = reactive<ProfileType[]>([
 const active_profile_index = ref(0)
 
 async function setProfileInfo(index: number) {
-  // 切换时保存最新配置
-  if (profileList[active_profile_index.value].value) {
-    profileList[active_profile_index.value].value = JSON.parse(JSON.stringify(profileInfo))
-  }
 
   active_profile_index.value = index
 
   // 有缓存数据则直接使用
   if (profileList[index].value) {
-    Object.assign(profileInfo, profileList[index].value)
+    Object.assign(profileInfo, JSON.parse(JSON.stringify(profileList[index].value)))
   }
   // 没有缓存数据则使用获取到的 uint8Array 数据
   else {
     Object.assign(profileInfo, uint8ArrayToProfileInfo(profileList[active_profile_index.value].uint8Array))
     profileList[active_profile_index.value].base64 = insertAt9th(jsonToBase64(profileInfo), 'd')
-    profileList[index].value = JSON.parse(JSON.stringify(profileInfo))
+    profileList[active_profile_index.value].value = JSON.parse(JSON.stringify(profileInfo))
   }
 
   // 创建连线监听
@@ -485,6 +485,8 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
 }
 
 function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
+
+  console.log(profileInfo, 'profileInfoprofileInfoprofileInfo')
   const uint8Array: Uint8Array[] = []
 
   // 获取 profile 基础配置信息：0
@@ -594,6 +596,30 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
     }
   })
 
+  // 高级-灵敏度开关
+  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])))
+
+  // 直线修正
+  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x28, 0x00, 0x00, profileInfo.lineUpdate])))
+  
+  // 20K采样率
+  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x27, 0x00, 0x00, profileInfo.FPS])))
+  
+  // XY DPI 开关
+  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x25, 0x00, profileInfo.dpi_slider_list.length, ...profileInfo.DPIStartList])))
+
+
+  // XY 每一个档位的 XY值 {0:[400,400],1:[400,400]}
+  const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item:any) => {
+    return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
+  })
+  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])))
+
+    
+  // 动态灵敏度折线图
+
+  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), yAxisMax.value, xAxisMax.value, ...profileInfo.sensitivityLineData.flat()])))
+
   // 当前第几个配置
   // uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1E, 0x00, 0x01, active_profile_index.value])))
 
@@ -680,6 +706,8 @@ async function getProfile() {
   })
 }
 
+
+
 // 粘贴分享设置 Profile
 async function setProfile(index: number, type: string) {
   console.log(index, 'indexindex')
@@ -690,7 +718,7 @@ async function setProfile(index: number, type: string) {
   console.log(profileList, 'profileList[active_profile_index.value].base64')
 
   try {
-    profileInfo = base64ToJson(removeAt9th(profileList[active_profile_index.value].base64))
+    profileInfo = base64ToJson(removeAt9th(base64.value))
     console.log(profileInfo, 'profileInfoprofileInfo')
   }
   catch (e) {
@@ -728,9 +756,25 @@ async function setProfile(index: number, type: string) {
   }
   loading.close()
 
-  Object.assign(profileInfo, JSON.parse(JSON.stringify(newProfileInfo)))
+
+
+profileList[active_profile_index.value].value = newProfileInfo;
+
+
+
+  console.log(profileList,'111122')
+
+
+
+
+
+
+
   setProfileInfo(active_profile_index.value)
   setLoadingStatus(t('message.profile_success'))
+  // setTimeout(() => {
+  //   location.reload()
+  // }, 500)
 }
 
 function onExecutionSuccess() {
@@ -877,10 +921,6 @@ async function sendXYElimination() {
   const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item) => {
     return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
   })
-
-  // profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index] = (profileInfo.XYObjDataList as { [key: number]: number[] })[profileInfo.dpi_slider_active_index][0]
-
-  // dpi_slider_value.value = profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index][0]
 
   await transport.value.send([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])
   onExecutionSuccess()
@@ -1532,6 +1572,8 @@ function activeBgChange(type) {
       if (profileInfo.sensitivity === 1) {
         if (!profileInfo.sensitivityLineData.length) {
           initData.value = lineDataMap[profileInfo.sensitivityModeIndex] as any
+          profileInfo.sensitivityLineData = initData.value as any
+
           lineDropChange()
         }
         initEcharts()
@@ -1789,6 +1831,8 @@ function initEcharts() {
 
             lineDataMap[profileInfo.sensitivityModeIndex] = formatData as any
 
+            profileInfo.sensitivityLineData = lineDataMap[profileInfo.sensitivityModeIndex] as any
+
             lineDropChange()
             myChart.value?.setOption({
               graphic: initData.value.map((item) => {
@@ -1904,9 +1948,15 @@ const buttonType = ref('share')
 
 const profileInputField = ref()
 
+let dblClickIndex = ref()
+
+
 async function onProfileDblClick() {
   isEditingProfile.value = true
   tempBase64.value = ''
+  // 这里记录一下需要分享的 配置文件索引 后面应用的时候会用到
+  dblClickIndex.value = active_profile_index.value
+
   await nextTick()
   if (profileInputField.value) {
     profileInputField.value.focus()
@@ -2134,6 +2184,7 @@ function selectMode(mode: number) {
   }
   profileInfo.sensitivityModeIndex = mode
   initData.value = JSON.parse(JSON.stringify(lineDataMap[mode]))
+  profileInfo.sensitivityLineData = initData.value as any
   initEcharts()
   lineDropChange()
 }
@@ -2263,7 +2314,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
         </div>
         <div style="width: 100%;flex:1;align-items: center;" class="flex">
           <div class="left-item-box">
-            <div :class="{ activeBg: activeBg === 'performance' }" @click="activeBgChange('performance')">
+            <div :class="{ activeBg: activeBg === 'performance' }" @click="activeBgChange('performance')" :style="{ textAlign: locale == 'ja-JP' ? 'left' : '', paddingLeft: locale == 'ja-JP' ? '10px' : '' }">
               <!-- 性能 -->
               {{ t('tabs.Performance') }}
             </div>
@@ -2799,7 +2850,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <div style="font-size: 20px;text-align: left">
                         {{ t('macro.dynamicSensitivity') }}
                       </div>
-                      <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                      <div style="width: 205px; text-align: left; color: #A6A6A6;margin-top: 10px;">
                         {{ t('description.main_ui_subheading') }}
                       </div>
                     </div>

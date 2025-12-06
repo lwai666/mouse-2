@@ -4,7 +4,7 @@ import { ElIcon } from 'element-plus'
 
 const props = withDefaults(defineProps<Props>(), {})
 
-const emit = defineEmits(['click', 'change', 'setName'])
+const emit = defineEmits(['click', 'change', 'setName', 'handleClickOutsideEmit'])
 
 const createHong = inject<() => void>('createHong', () => {})
 
@@ -45,7 +45,7 @@ const cascaderTopMapp2: Record<number, string> = {
   2: 'top--187px',
   3: 'top--147px',
   4: 'top--107px',
-  5: 'top--105px',
+  5: 'top--67px',
 } as const
 
 const show = ref(false)
@@ -96,6 +96,8 @@ function cascaderListClass(item: Option) {
 function onClick() {
   emit('click')
 }
+
+
 
 const hidden = ref(true)
 
@@ -150,6 +152,8 @@ function getShow(children: Option[]) {
   }
   return true
 }
+
+
 
 defineExpose({ show, open, close })
 </script>
@@ -213,7 +217,7 @@ defineExpose({ show, open, close })
                 {{ t(child.label) }}
               </li>
             </ul>
-            <span v-if="!hidden && getShow(item.children)" class="absolute" :class="cascaderTopMapp2[cascaderTop]" style="color: red;right:63px ;">没用可用宏</span>
+            <span v-if="!hidden && getShow(item.children)" @click.stop="onClick"  class="absolute" :class="cascaderTopMapp2[cascaderTop]" style="color: red;right:102% ;"> <span style="font-size: 20px;margin-right: 10px;"><</span>{{ t('title.no_available_macros') }}</span>
           </template>
         </li>
       </ul>

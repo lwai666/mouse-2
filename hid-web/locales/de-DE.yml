@@ -193,6 +193,11 @@ title:
   lod_height: LOD-Höhe
   key_response: Tastenansprechzeit
   new_device: Neues Gerät
+  connect_device: "Gerät verbinden"
+  disconnect_device: "Verbindung trennen"
+  device_name: "Gerätename"
+  no_available_macros: Keine verfügbaren Makros
+
   sleep_time: Ruhezeit
   rotation_angle: Drehwinkel
   key_list: Tastenliste

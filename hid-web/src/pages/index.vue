@@ -40,7 +40,7 @@ const selectLanguageList = ref([
 const languageShow = ref(false)
 
 const slideshowList = computed(() => [
-  { title: t('index.pairingGuide'), img: `/slideshow/2_${locale.value}.png` },
+  // { title: t('index.pairingGuide'), img: `/slideshow/2_${locale.value}.png` },
   { title: t('index.schematicGuide'), img: `/slideshow/2.png` },
 ])
 
@@ -273,7 +273,16 @@ async function setColor(mode: any, profileInfo: any) {
           @change="onChangeCarousel"
         >
           <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="flex items-center justify-center">
-            <img class="h-100%" :src="item.img" alt="item.title">
+            <div class="h-100%" style="position: relative;">
+                <img class="h-100%" :src="item.img" alt="item.title"></img>
+                <div class="h-100% w-100%" style="position: absolute; left: 0;top: 0; color: black;font-size: 12px;">
+                    <span style="color: aliceblue; font-size: 12px;" class="absolute top-103px left-45%">{{ t('title.new_device') }}</span>
+                    <span class="absolute left-20px top-40px">{{ t('title.device_name') }}</span>
+                    <span style="font-size: 10px;" class="absolute left-80px top-118px">{{ t('title.connect_device') }}</span>
+                    <span style="font-size: 10px;" class="absolute left-111px top-118px">{{ t('title.disconnect_device') }}</span>
+                </div>
+            </div>
+            
           </ElCarouselItem>
         </ElCarousel>
       </div>

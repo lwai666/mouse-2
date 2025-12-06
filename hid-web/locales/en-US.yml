@@ -193,6 +193,11 @@ title:
   lod_height: LOD Height
   key_response: Key Response
   new_device: New Device
+  connect_device: "Connect Device"
+  disconnect_device: "Disconnect"
+  device_name: "Device Name"
+  no_available_macros: No available macros
+
   sleep_time: Sleep Time
   rotation_angle: Rotation Angle
   key_list: Key List

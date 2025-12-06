@@ -30,6 +30,7 @@ const profileList = ref([
 ])
 
 watch(props.profileList, () => {
+  console.log('props.profileList changed:', props.profileList);
   profileList.value = props.profileList
 })
 
@@ -50,6 +51,7 @@ watch(props.profileList, () => {
 
 
 function onClick(index: number) {
+  console.log('ProfileItem clicked:', index);
   if (index === currentProfileIndex.value) { return }
   currentProfileIndex.value = index
   onChange(index)
@@ -59,6 +61,8 @@ function onChange(index?: number) {
   let profileInfo = '';
   try {
     profileInfo = base64ToJson(removeAt9th(profileList.value[currentProfileIndex.value].base64));
+
+    console.log('profileInfo in ProfileList:', profileList.value, profileInfo,currentProfileIndex.value);
   } catch (e) {
     // console.error("格式错误=======", e)
   }

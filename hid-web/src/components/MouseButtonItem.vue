@@ -45,7 +45,11 @@ watch(() => profileInfo?.macroList, () => {
 
 watch(() => language, () => {
   const constants = useConstants(t)
-  options.value = constants.mouseKeyOptions
+  const data = constants.mouseKeyOptions.find(item => item.value === 1999)
+  data?.children?.forEach((item, index) => {
+    item.label = profileInfo?.macroList[index]?.name
+  })
+  options.value = deepClone(constants.mouseKeyOptions)
 }, { immediate: true, deep: true })
 
 const sendData = ref({

@@ -206,6 +206,10 @@ title:
   straight_line_correction_action: 系统将修正鼠标光标移动轨迹时
   straight_line_correction_reason: 因动作抖动产生的轻微的轨迹曲率。
   straight_line_correction_warning: 因运行算法的介入，会导致微小的数据延迟。追求极致电竞体验慎用。
+  connect_device: "连接"
+  disconnect_device: "取消"
+  device_name: 设备名称
+  no_available_macros: 没有可用宏
 macro:
   Macro: 宏
   newMacro: 新建宏

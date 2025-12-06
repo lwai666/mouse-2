@@ -194,6 +194,10 @@ title:
   lod_height: LOD 높이
   key_response: 키 응답
   new_device: 새 장치
+  connect_device: "장치 연결"
+  disconnect_device: "연결 해제"
+  device_name: "장치 이름"
+  no_available_macros: 사용 가능한 매크로 없음
   sleep_time: 대기 시간
   rotation_angle: 회전 각도
   key_list: 키 목록

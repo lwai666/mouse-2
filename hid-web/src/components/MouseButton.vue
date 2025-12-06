@@ -107,7 +107,7 @@ function resetConnection() {
 function handleClickOutside(event: MouseEvent) {
   const cascaderElement = document.querySelector('.mouse-button-container')
   if (cascaderElement && !cascaderElement.contains(event.target as Node)) {
-    console.log(mouseButtonItemRef.value, userStore.mouseButtonStatus)
+    console.log(mouseButtonItemRef.value, userStore.mouseButtonStatus,111111)
     if (mouseButtonItemRef.value) {
       mouseButtonItemRef.value.forEach((item: any) => {
         item.mouseButtonCascaderRef?.close()
@@ -119,6 +119,8 @@ function handleClickOutside(event: MouseEvent) {
     }
   }
 }
+
+
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
@@ -133,6 +135,6 @@ defineExpose({ onConnection, resetConnection })
 
 <template>
   <div class="mouse-button-container">
-    <MouseButtonItem v-for="item in mouseButtonList" :id="item.id" ref="mouseButtonItemRef" :key="item.id" :class="{ hidden: !item.show }" v-bind="item" :status="userStore.mouseButtonStatus" :macro-index="macroIndex" @click="onClick(item.id)" @change="onChange" />
+    <MouseButtonItem v-for="item in mouseButtonList" :id="item.id" ref="mouseButtonItemRef" :key="item.id" :class="{ hidden: !item.show }" v-bind="item" :status="userStore.mouseButtonStatus" :macro-index="macroIndex" @click="onClick(item.id)" @change="onChange"  />
   </div>
 </template>

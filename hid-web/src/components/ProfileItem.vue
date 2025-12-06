@@ -55,7 +55,7 @@ function setProfile() {
     buttonType.value = 'share'
   }
   else {
-    showMessage(t('message.format_error'))
+    showMessage(t('message.format_error')) 
     buttonType.value = 'share'
   }
 }
