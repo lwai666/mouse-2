@@ -197,7 +197,6 @@ title:
   disconnect_device: "Disconnect"
   device_name: "Device Name"
   no_available_macros: No available macros
-
   sleep_time: Sleep Time
   rotation_angle: Rotation Angle
   key_list: Key List
