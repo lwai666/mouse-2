@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DraggableChart } from '~/composables/useDraggableChart'
 
-import type { Macro, ProfileInfoType, ProfileType } from '~/types'
+import type { Macro, ProfileInfoType } from '~/types'
 
 import type { TransportWebHIDInstance } from '~/utils/hidHandle'
 import { ArrowDownBold, ArrowRightBold, Close, Delete, Download, Minus, Plus, Share, Upload } from '@element-plus/icons-vue'
@@ -30,7 +30,6 @@ import { useGlobalInputListener } from '~/composables/useGlobalInputListener.ts'
 import { loadLanguageAsync } from '~/modules/i18n'
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/utils'
 import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
-import { pad } from 'node_modules/cypress/types/lodash'
 
 const { t, locale } = useI18n()
 
@@ -175,6 +174,9 @@ function initProfileInfo() {
     // 鼠标当前选中模版状态
     sensitivityModeIndex: 0,
 
+    xAxisMax: 250,
+    yAxisMax: 6,
+
     // 鼠标链接状态
 
     mouseConnectionStatus: 0,
@@ -182,6 +184,7 @@ function initProfileInfo() {
     // 鼠标颜色
 
     mouseColor: 3,
+
 
   }
 }
@@ -204,58 +207,58 @@ const lineDataMap = {
   // 经典-0
   0: [
     [0, 0],
-    [100, 20],
-    [150, 30],
-    [200, 40],
-    [250, 50],
+    [100, 0.6],
+    [150, 0.8],
+    [200, 1.0],
+    [250, 1.2],
   ],
   // 折线图-自然
   1: [
     [0, 0],
-    [50, 48],
-    [100, 50],
-    [150, 50],
-    [250, 50],
+    [50, 0.8],
+    [100, 1.2],
+    [150, 1.2],
+    [250, 1.2],
   ],
   // 折线图-跳跃
   2: [
     [0, 0],
     [50, 0],
-    [100, 50],
-    [150, 50],
-    [250, 50],
+    [100, 1],
+    [150, 1],
+    [250, 1],
   ],
   // 自定义-无
   3: [
     [0, 0],
-    [50, 20],
-    [100, 50],
-    [150, 50],
-    [250, 50],
+    [50, 0.2],
+    [100, 0.6],
+    [150, 0.6],
+    [250, 0.6],
   ],
   // 自定义-经典-4
   4: [
     [0, 0],
-    [100, 20],
-    [150, 30],
-    [200, 40],
-    [250, 50],
+    [100, 0.6],
+    [150, 0.8],
+    [200, 1.0],
+    [250, 1.2],
   ],
-  // 自定义-经典-5
+  // 自定义-自然-5
   5: [
     [0, 0],
-    [50, 48],
-    [100, 50],
-    [150, 50],
-    [250, 50],
+    [50, 0.8],
+    [100, 1.2],
+    [150, 1.2],
+    [250, 1.2],
   ],
-  // 自定义-经典-6
+  // 自定义-跳跃-6
   6: [
     [0, 0],
     [50, 0],
-    [100, 50],
-    [150, 50],
-    [250, 50],
+    [100, 1],
+    [150, 1],
+    [250, 1],
   ],
 } as Record<number, [number, number][]>
 
@@ -446,6 +449,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     else if (res[0] === 38) {
       profileInfo.sensitivityModeIndex = res[3]
       const sensitivityLineDataList = res.slice(6, 6 + res[2])
+
       profileInfo.sensitivityLineData = sensitivityLineDataList
       initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2)
     }
@@ -618,7 +622,7 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
     
   // 动态灵敏度折线图
 
-  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), yAxisMax.value, xAxisMax.value, ...profileInfo.sensitivityLineData.flat()])))
+  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...profileInfo.sensitivityLineData.flat()])))
 
   // 当前第几个配置
   // uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1E, 0x00, 0x01, active_profile_index.value])))
@@ -758,23 +762,13 @@ async function setProfile(index: number, type: string) {
 
 
 
-profileList[active_profile_index.value].value = newProfileInfo;
-
-
-
-  console.log(profileList,'111122')
-
-
-
-
+  profileList[active_profile_index.value].value = newProfileInfo;
 
 
 
   setProfileInfo(active_profile_index.value)
   setLoadingStatus(t('message.profile_success'))
-  // setTimeout(() => {
-  //   location.reload()
-  // }, 500)
+
 }
 
 function onExecutionSuccess() {
@@ -1532,10 +1526,16 @@ async function lineUpdateSent(type) {
 async function radioChange1() {
   profileInfo.sensitivity = !profileInfo.sensitivity
   await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
-
   if (Number(profileInfo.sensitivity) === 1) {
     nextTick(() => {
-      initEcharts()
+        if (!profileInfo.sensitivityLineData.length) {
+          initData.value = lineDataMap[profileInfo.sensitivityModeIndex] as any
+          profileInfo.sensitivityLineData = initData.value as any
+          initEcharts()
+          lineDropChange()
+          return
+        }
+        initEcharts()
     })
     return
   }
@@ -1549,10 +1549,10 @@ async function radioChange1() {
 
 async function lineDropChange() {
   const formatData = initData.value.map((item) => {
-    return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1]))]
+    return [Number(Math.ceil(item[0] * 10)), Number(Math.ceil(item[1] * 10))]
   })
 
-  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), yAxisMax.value, xAxisMax.value, ...formatData.flat()])
+  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...formatData.flat()])
   setLoadingStatus()
 }
 
@@ -1573,7 +1573,6 @@ function activeBgChange(type) {
         if (!profileInfo.sensitivityLineData.length) {
           initData.value = lineDataMap[profileInfo.sensitivityModeIndex] as any
           profileInfo.sensitivityLineData = initData.value as any
-
           lineDropChange()
         }
         initEcharts()
@@ -1690,7 +1689,7 @@ function startXY() {
 const myChart = ref(null) as any
 const chart = ref(null) as any
 const xAxisMax = ref(250)
-const yAxisMax = ref(60)
+const yAxisMax = ref(6)
 const handleMouseMoveRefFn = ref(null) as any
 
 function initEcharts() {
@@ -1711,7 +1710,7 @@ function initEcharts() {
     },
     xAxis: {
       min: 0,
-      max: xAxisMax.value,
+      max: profileInfo.xAxisMax,
       interval: 50,
       type: 'value',
 
@@ -1732,8 +1731,8 @@ function initEcharts() {
     },
     yAxis: {
       min: 0,
-      max: yAxisMax.value,
-      interval: 20,
+      max: profileInfo.yAxisMax,
+      interval: 1,
       type: 'value',
       splitLine: {
         lineStyle: {
@@ -1881,14 +1880,14 @@ function initEcharts() {
 }
 
 async function changeXAxisMax(num: number) {
-  xAxisMax.value = xAxisMax.value + num
-  if (xAxisMax.value > 250) {
-    xAxisMax.value = 250
+  profileInfo.xAxisMax = profileInfo.xAxisMax + num
+  if (profileInfo.xAxisMax > 250) {
+    profileInfo.xAxisMax = 250
     return
   }
-  if (xAxisMax.value < 50) {
-    xAxisMax.value = 50
-    // chart.value.setBounds(0, 50, 0, yAxisMax.value)
+  if (profileInfo.xAxisMax < 50) {
+    profileInfo.xAxisMax = 50
+    // chart.value.setBounds(0, 50, 0, profileInfo.yAxisMax)
     return
   }
 
@@ -1898,14 +1897,14 @@ async function changeXAxisMax(num: number) {
 }
 
 async function changeYAxisMax(num: number) {
-  yAxisMax.value = yAxisMax.value + num
-  if (yAxisMax.value > 60) {
-    yAxisMax.value = 60
+  profileInfo.yAxisMax = profileInfo.yAxisMax + num
+  if (profileInfo.yAxisMax > 60) {
+    profileInfo.yAxisMax = 60
     return
   }
-  if (yAxisMax.value < 20) {
-    yAxisMax.value = 20
-    // chart.value.setBounds(0, 50, 0, yAxisMax.value)
+  if (profileInfo.yAxisMax < 20) {
+    profileInfo.yAxisMax = 20
+    // chart.value.setBounds(0, 50, 0, profileInfo.yAxisMax)
     return
   }
 

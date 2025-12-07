@@ -26,7 +26,7 @@ export function useGlobalInputListener(myChart?: any) {
   const convertToChartCoordinates = (mouseX: number, mouseY: number) => {
     // 将鼠标坐标转换为图表坐标
     // 这里可以根据需要调整转换逻辑
-    const pointInGrid = myChartRef.convertFromPixel({ seriesIndex: 1 }, [mouseX * 2, mouseY / 10])
+    const pointInGrid = myChartRef.convertFromPixel({ seriesIndex: 1 }, [mouseX, mouseY])
 
     return { chartX: pointInGrid[0], chartY: pointInGrid[1] }
   }
@@ -52,7 +52,7 @@ export function useGlobalInputListener(myChart?: any) {
     lastMouseTime.value = currentTime
 
     // 将数据添加到队列
-    const chartCoords = convertToChartCoordinates(distance + 50, event.clientY)
+    const chartCoords = convertToChartCoordinates(distance + 20, event.clientY)
 
     const dataPoint = {
       x: Math.abs(chartCoords.chartX),
