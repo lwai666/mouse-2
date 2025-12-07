@@ -1688,8 +1688,7 @@ function startXY() {
 }
 const myChart = ref(null) as any
 const chart = ref(null) as any
-const xAxisMax = ref(250)
-const yAxisMax = ref(6)
+
 const handleMouseMoveRefFn = ref(null) as any
 
 function initEcharts() {
@@ -1898,12 +1897,12 @@ async function changeXAxisMax(num: number) {
 
 async function changeYAxisMax(num: number) {
   profileInfo.yAxisMax = profileInfo.yAxisMax + num
-  if (profileInfo.yAxisMax > 60) {
-    profileInfo.yAxisMax = 60
+  if (profileInfo.yAxisMax > 6) {
+    profileInfo.yAxisMax = 6
     return
   }
-  if (profileInfo.yAxisMax < 20) {
-    profileInfo.yAxisMax = 20
+  if (profileInfo.yAxisMax < 1) {
+    profileInfo.yAxisMax = 1
     // chart.value.setBounds(0, 50, 0, profileInfo.yAxisMax)
     return
   }
@@ -2785,10 +2784,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div style="padding: 25px 25px 0 25px; flex:1;">
                     <div class="ml-25 flex items-center" style="height: 40px;">
                       <div class="icon-box">
-                        <ElIcon size="18" @click.stop="changeYAxisMax(20)">
+                        <ElIcon size="18" @click.stop="changeYAxisMax(1)">
                           <Plus />
                         </ElIcon>
-                        <ElIcon size="18" @click.stop="changeYAxisMax(-20)">
+                        <ElIcon size="18" @click.stop="changeYAxisMax(-1)">
                           <Minus />
                         </ElIcon>
                       </div>
