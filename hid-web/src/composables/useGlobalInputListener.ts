@@ -42,7 +42,7 @@ export function useGlobalInputListener(myChart?: any) {
 
     // 计算速度（px/s）
     if (lastMouseTime.value > 0) {
-      const deltaTime = (currentTime - lastMouseTime.value) / 1000
+      const deltaTime = (currentTime - lastMouseTime.value) / 100
       speed.value = deltaTime > 0 ? Math.round(distance / deltaTime) : 0
     }
 
@@ -52,7 +52,7 @@ export function useGlobalInputListener(myChart?: any) {
     lastMouseTime.value = currentTime
 
     // 将数据添加到队列
-    const chartCoords = convertToChartCoordinates(distance + 25 , event.clientY)
+    const chartCoords = convertToChartCoordinates(distance , event.clientY)
 
     const dataPoint = {
       x: Math.abs(chartCoords.chartX),

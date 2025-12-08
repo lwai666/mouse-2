@@ -175,7 +175,7 @@ function initProfileInfo() {
     sensitivityModeIndex: 0,
 
     xAxisMax: 250,
-    yAxisMax: 6,
+    yAxisMax: 1.5,
 
     // 鼠标链接状态
 
@@ -208,9 +208,9 @@ const lineDataMap = {
   0: [
     [0, 0],
     [100, 0.6],
-    [150, 0.8],
-    [200, 1.0],
-    [250, 1.2],
+    [150, 0.9],
+    [200, 1.2],
+    [250, 1.5],
   ],
   // 折线图-自然
   1: [
@@ -240,9 +240,9 @@ const lineDataMap = {
   4: [
     [0, 0],
     [100, 0.6],
-    [150, 0.8],
-    [200, 1.0],
-    [250, 1.2],
+    [150, 0.9],
+    [200, 1.2],
+    [250, 1.5],
   ],
   // 自定义-自然-5
   5: [
@@ -1605,7 +1605,7 @@ function handleMouseMoveFn(event: MouseEvent) {
   // 清除空闲计时器，重新设置
   clearTimeout(idleTimer)
   idleTimer = setTimeout(() => {
-    console.log('鼠标空闲超过 1 秒')
+
     myChart.value?.setOption({
       seriesIndex: 1,
       visualMap: {
@@ -1675,11 +1675,11 @@ function removeHandleMouseMoveFn() {
 // 获取模板的折线点
 // 0:是经典,1:自然，2;跳跃，3;无，4，不能修改
 
-async function getProfileData(type) {
-  const data = await transport?.value.send([0x26, 0, 0, type])
+// async function getProfileData(type) {
+//   const data = await transport?.value.send([0x26, 0, 0, type])
 
-  console.log(data, 'datadata0x26')
-}
+//   console.log(data, 'datadata0x26')
+// }
 
 const startXYFlag = ref(false)
 
@@ -1731,7 +1731,7 @@ function initEcharts() {
     yAxis: {
       min: 0,
       max: profileInfo.yAxisMax,
-      interval: 1,
+      interval: 0.1,
       type: 'value',
       splitLine: {
         lineStyle: {
@@ -1860,8 +1860,10 @@ function initEcharts() {
   function onPointDragging(dataIndex: number, pos: any) {
     const [x, y] = myChart.value.convertFromPixel('grid', pos)
     initData.value = chart.value.dragPoint(dataIndex, x, y).map((item: any) => {
-      return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1]))]
+      return [item[0], item[1]]
     })
+
+    console.log('initData.value===', initData.value)
 
     myChart.value.setOption({
       series: [
@@ -1896,13 +1898,13 @@ async function changeXAxisMax(num: number) {
 }
 
 async function changeYAxisMax(num: number) {
-  profileInfo.yAxisMax = profileInfo.yAxisMax + num
+  profileInfo.yAxisMax = Number((profileInfo.yAxisMax + num).toFixed(1))
   if (profileInfo.yAxisMax > 6) {
     profileInfo.yAxisMax = 6
     return
   }
-  if (profileInfo.yAxisMax < 1) {
-    profileInfo.yAxisMax = 1
+  if (profileInfo.yAxisMax < 0.1) {
+    profileInfo.yAxisMax = 0.1
     // chart.value.setBounds(0, 50, 0, profileInfo.yAxisMax)
     return
   }
@@ -2784,10 +2786,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div style="padding: 25px 25px 0 25px; flex:1;">
                     <div class="ml-25 flex items-center" style="height: 40px;">
                       <div class="icon-box">
-                        <ElIcon size="18" @click.stop="changeYAxisMax(1)">
+                        <ElIcon size="18" @click.stop="changeYAxisMax(0.5)">
                           <Plus />
                         </ElIcon>
-                        <ElIcon size="18" @click.stop="changeYAxisMax(-1)">
+                        <ElIcon size="18" @click.stop="changeYAxisMax(-0.5)">
                           <Minus />
                         </ElIcon>
                       </div>

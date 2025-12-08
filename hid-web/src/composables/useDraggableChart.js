@@ -4,7 +4,7 @@ class DraggableChart {
     this.xMin = 0 // X轴最小值
     this.xMax = 250 // X轴最大值
     this.yMin = 0 // Y轴最小值
-    this.yMax = 60 // Y轴最大值
+    this.yMax = 6 // Y轴最大值
   }
 
   // // 拖拽点的方法-
@@ -58,9 +58,12 @@ class DraggableChart {
   // }
 
   dragPoint(pointIndex, newX, newY) {
+
     if (pointIndex < 0 || pointIndex >= this.points.length) {
       throw new Error('点索引超出范围')
     }
+
+    console.log('dragPoint===', newX, newY)
 
     // 约束Y坐标范围
     const constrainedY = Math.max(this.yMin, Math.min(newY, this.yMax))
