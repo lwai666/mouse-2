@@ -451,7 +451,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const sensitivityLineDataList = res.slice(6, 6 + res[2])
 
       profileInfo.sensitivityLineData = sensitivityLineDataList
-      initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2)
+      initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2, (a, b) => [a, b / 10])
     }
 
     // 获取宏录制名字 profile 名字
@@ -942,7 +942,9 @@ async function sendAngle() {
 /** 设置性能模式（电竞模式） */
 async function onSportsMode(type) {
   // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
+
   profileInfo.sports_arena = type
+  type === 1 && sendPolling(6)
   await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
   // eslint-disable-next-line ts/no-use-before-define
   bottomItem.value = 0
@@ -1549,8 +1551,10 @@ async function radioChange1() {
 
 async function lineDropChange() {
   const formatData = initData.value.map((item) => {
-    return [Number(Math.ceil(item[0] * 10)), Number(Math.ceil(item[1] * 10))]
+    return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
   })
+
+  console.log(formatData,'formatDataformatData')
 
   await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...formatData.flat()])
   setLoadingStatus()
@@ -1921,6 +1925,8 @@ function bottomItemChange(type) {
     onSportsMode(0)
     return
   }
+
+
 
   if (bottomItem.value === type) {
     return

@@ -63,7 +63,7 @@ class DraggableChart {
       throw new Error('点索引超出范围')
     }
 
-    console.log('dragPoint===', newX, newY)
+
 
     // 约束Y坐标范围
     const constrainedY = Math.max(this.yMin, Math.min(newY, this.yMax))

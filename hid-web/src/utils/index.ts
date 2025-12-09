@@ -18,11 +18,18 @@ export function sleep(ms: number) {
  * @param size 分组长度
  * @returns 将数组按 size 长度分组
  */
-export function chunkArray(arr: number[], size: number) {
+export function chunkArray(arr: number[], size: number, fn?: (a: number, b: number) => any) {
   const result = []
 
   for (let i = 0; i < arr.length; i += size) {
-    result.push(arr.slice(i, i + size))
+    const chunk = arr.slice(i, i + size)
+    if (fn) {
+      // cast to a tuple so the spread matches the function signature
+      result.push(fn(...(chunk as [number, number])))
+    }
+    else {
+      result.push(chunk)
+    }
   }
 
   return result
