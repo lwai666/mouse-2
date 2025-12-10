@@ -257,3 +257,9 @@ description:
   left_button_restriction: Die linke Taste muss beibehalten werden.
   left_button_restriction1: Die linke Taste ist entscheidend für die Auswahl und kann daher nicht geändert werden.
   power_consumption_increase_note: Der Stromverbrauch wird entsprechend steigen.
+  mouse_pairing_instructions1: Bitte versetzen Sie die Maus in den Kopplungsmodus
+  mouse_pairing_instructions1_sub: Drücken Sie gleichzeitig linke, mittlere und rechte Taste 3 Sekunden lang, bis die Anzeigeleuchte blinkt
+  mouse_pairing_instructions2: Verbinden oder stecken Sie den Empfänger
+  mouse_pairing_instructions2_sub: in den USB-Anschluss des PCs und bringen Sie die Maus in die Nähe des Empfängers
+  mouse_pairing_instructions3: Bitte verbinden Sie den Empfänger
+  mouse_pairing_instructions3_sub: über den USB-Anschluss mit dem PC

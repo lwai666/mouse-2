@@ -257,3 +257,9 @@ description:
   left_button_restriction: 左ボタンは保持する必要があります。
   left_button_restriction1: 左ボタンは選択時に決定的な役割を果たすため、変更できません。
   power_consumption_increase_note: 同時に消費電力も相応に増加します。
+  mouse_pairing_instructions1: マウスをペアリングモードにしてください
+  mouse_pairing_instructions1_sub: 左、中央、右のボタンを同時に3秒間押し、インジケータライトが点滅するまで待ちます
+  mouse_pairing_instructions2: レシーバーを接続または挿入してください
+  mouse_pairing_instructions2_sub: PCのUSBポートに接続し、マウスをレシーバーの近くに置いてください
+  mouse_pairing_instructions3: レシーバーを接続してください
+  mouse_pairing_instructions3_sub: USBポートを介してPCに接続します

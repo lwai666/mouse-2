@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AnimateCanvas: typeof import('./components/animateCanvas.vue')['default']
     AnimateLoading: typeof import('./components/animateLoading.vue')['default']
+    copy: typeof import('./components/MouseButtonItem copy.vue')['default']
     CustomMessageBox: typeof import('./components/CustomMessageBox/CustomMessageBox.vue')['default']
     CustomSlider: typeof import('./components/CustomSlider.vue')['default']
     CustomSliderLabel: typeof import('./components/CustomSliderLabel.vue')['default']
@@ -18,6 +19,7 @@ declare module 'vue' {
     MouseButtonCascader: typeof import('./components/MouseButtonCascader.vue')['default']
     MouseButtonCascaderItem: typeof import('./components/MouseButtonCascaderItem.vue')['default']
     MouseButtonItem: typeof import('./components/MouseButtonItem.vue')['default']
+    MouseCarouseItem: typeof import('./components/MouseCarouseItem.vue')['default']
     ProfileItem: typeof import('./components/ProfileItem.vue')['default']
     ProfileList: typeof import('./components/ProfileList.vue')['default']
     README: typeof import('./components/README.md')['default']

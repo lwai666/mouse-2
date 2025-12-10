@@ -9,6 +9,8 @@ import { useRouter } from 'vue-router'
 import { availableLocales, loadLanguageAsync } from '~/modules/i18n'
 import { createTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
+import autofit from 'autofit.js'
+
 defineOptions({
   name: 'Scyrox',
 })
@@ -40,8 +42,8 @@ const selectLanguageList = ref([
 const languageShow = ref(false)
 
 const slideshowList = computed(() => [
-  { title: t('index.pairingGuide'), img: `/slideshow/2_${locale.value}.png` },
-  { title: t('index.schematicGuide'), img: `/slideshow/2.png` },
+  { title: t('index.pairingGuide'), type:'img',  img: `/slideshow/2.png` },
+  { title: t('index.schematicGuide'), type:'component',  component: 'MouseCarouseItem' },
 ])
 
 const carouselRef = ref(null)
@@ -146,6 +148,13 @@ onMounted(() => {
   if (!navigator.hid) {
     notSupportHid.value = true
   }
+   autofit.init({
+    dh: 1080,
+    dw: 1920,
+    el: '#app',
+    resize: true,
+    allowScroll: true,
+  })
 })
 
 const colorItems = [
@@ -261,11 +270,12 @@ async function setColor(mode: any, profileInfo: any) {
             {{ item.title }}
           </div>
         </div>
+
         <!-- type="card" -->
         <ElCarousel
           ref="carouselRef"
-          class="min-w-[400px] w-60vw"
-          height="300px"
+          class="min-w-[400px] w-1500px"
+          height="400px"
           direction="vertical"
           :interval="2400"
           :autoplay="true"
@@ -273,14 +283,12 @@ async function setColor(mode: any, profileInfo: any) {
           @change="onChangeCarousel"
         >
           <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="flex items-center justify-center">
-            <div class="h-100%" style="position: relative;">
-                <img class="h-100%" :src="item.img" alt="item.title"></img>
-                <!-- <div class="h-100% w-100%" style="position: absolute; left: 0;top: 0; color: black;font-size: 12px;" v-if="item.title == t('index.schematicGuide')">
-                    <span style="color: aliceblue; font-size: 12px;" class="absolute top-103px left-45%">{{ t('title.new_device') }}</span>
-                    <span class="absolute left-20px top-40px">{{ t('title.device_name') }}</span>
-                    <span style="font-size: 10px;" class="absolute left-80px top-118px">{{ t('title.connect_device') }}</span>
-                    <span style="font-size: 10px;" class="absolute left-111px top-118px">{{ t('title.disconnect_device') }}</span>
-                </div> -->
+            <div class="h-100% w-1500px" style="position: relative;">
+
+              <div class="w-100% flex justify-center" v-if="item.type == 'img'">
+                <img :src="item.img" alt="item.title"></img>
+              </div>
+              <MouseCarouseItem v-else> </MouseCarouseItem>
             </div>
             
           </ElCarouselItem>
@@ -302,12 +310,19 @@ async function setColor(mode: any, profileInfo: any) {
 
 <style scoped>
 .contain-content {
-  height: 100%;
-  width: 100%;
+  height: 1080px;
+  /* width: 100%; */
   background-image: url('/public/v9/bg-s.png');
   background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  transform-origin: 0 0;
+  width: 100%;
 }
 .slide-fade-enter-active {
   transition: all 0.3s ease-out;

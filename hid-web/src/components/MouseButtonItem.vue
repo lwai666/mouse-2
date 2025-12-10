@@ -36,6 +36,7 @@ const language = inject('language')
 
 const options = ref()
 watch(() => profileInfo?.macroList, () => {
+  const constants = useConstants(t)
   const data = constants.mouseKeyOptions.find(item => item.value === 1999)
   data?.children?.forEach((item, index) => {
     item.label = profileInfo?.macroList[index]?.name
@@ -109,15 +110,13 @@ function validateInput() {
 
 const hongName = ref('')
 
-function setName(name) {
+function setName(name:any) {
   hongName.value = name
 }
 
 const active = ref('')
 
-function changeActive(type) {
-  console.log(type, 'type')
-
+function changeActive(type:string) {
   if (active.value === type) {
     active.value = ''
     return
@@ -182,7 +181,7 @@ defineExpose({ mouseButtonCascaderRef })
               <img
                 style="margin-right: 15px;"
                 :src="active === 'active' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
-                alt="" srcset="" @click="changeActive('active')"
+                alt="" srcset="" @mouseenter="changeActive('active')" @mouseleave="changeActive('active')"
               >
             </div>
 

@@ -449,9 +449,8 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     else if (res[0] === 38) {
       profileInfo.sensitivityModeIndex = res[3]
       const sensitivityLineDataList = res.slice(6, 6 + res[2])
-
-      profileInfo.sensitivityLineData = sensitivityLineDataList
       initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2, (a, b) => [a, b / 10])
+      profileInfo.sensitivityLineData = initData.value
     }
 
     // 获取宏录制名字 profile 名字
@@ -3014,7 +3013,14 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
             {{ t('description.receiver_pairing_instructions') }}
           </p>
 
-          <img class="mb-10 h-240px" :src="`/slideshow/2_${locale}.png`" alt="item.title">
+          <div style="width: 100%;height: 400px;">
+            <MouseCarouseItem> </MouseCarouseItem>
+          </div>
+
+          
+
+
+          <!-- <img class="mb-10 h-240px" :src="`/slideshow/2_${locale}.png`" alt="item.title"> -->
 
           <div class="config-child-box absolute" style="margin-left: -50px; left: 50%; bottom: 60px;" @click="bottomItem = 0">
             <span class="active">{{ t('macro.confirm') }}</span>
@@ -3062,8 +3068,6 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
   background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;
-
-  /* backdrop-filter: blur(5px); */
   padding: 32px 0px;
   display: flex;
   flex-direction: column;
