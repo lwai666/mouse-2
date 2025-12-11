@@ -189,7 +189,7 @@ mouseKeyOptions:
 title:
   sensitivity_settings_heading: Sensitivity Settings
   sensitivity_level: Level
-  polling_rate: Polling Rate
+  polling_rate: Polling
   lod_height: LOD Height
   key_response: Key Response
   new_device: New Device
@@ -263,3 +263,6 @@ description:
   mouse_pairing_instructions2_sub: to the PC's USB port and bring the mouse close to the receiver
   mouse_pairing_instructions3: Please connect the receiver
   mouse_pairing_instructions3_sub: to the PC via USB port
+  click_to_add_device: Click to add a device
+  click_to_select_device: Click to select the device to connect
+  click_to_connect_device: Click to connect the device

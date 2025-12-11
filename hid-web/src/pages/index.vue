@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { CircleClose, Plus } from '@element-plus/icons-vue'
 
-import { ElButton, ElCarousel, ElCarouselItem } from 'element-plus'
+import { ElCarousel, ElCarouselItem } from 'element-plus'
 
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { availableLocales, loadLanguageAsync } from '~/modules/i18n'
+import { loadLanguageAsync } from '~/modules/i18n'  
 import { createTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+
+
 
 import autofit from 'autofit.js'
 
@@ -71,9 +73,18 @@ nextTick(() => {
 
 const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
 
-async function onNouseClick(item) {
-  transport.value = item
-  router.push(`/hid/v8`)
+async function onNouseClick(item:any) {
+  useTransportWebHID('v8', async (instance) => {
+    instanceRef.value = instance
+      // console.log(item,instanceRef.value, 'item=====')
+      if(!instanceRef.value){
+        // 没有连接的设备
+        return
+      }
+      transport.value = item
+      router.push(`/hid/v8`)
+  })
+
 }
 
 async function onAddNouseClick() {
@@ -91,17 +102,17 @@ async function onAddNouseClick() {
     },
   })
 
+
   if (transport.value) {
     const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
     const flag = transportListCopy.some(item => item.reportId === transport.value.reportId)
     if (flag) {
       router.push(`/hid/v8`)
       localStorage.setItem('tabActive', 'performance')
-
       return
     }
-    transportList.value.push(transport.value)
-    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+    transportList.value.push({...transport.value,productId: transport.value.device.productId, vendorId: transport.value.device.vendorId, productName: transport.value.device.productName,collections: transport.value.device.collections})
+    localStorage.setItem('transportList',JSON.stringify(transportList.value))
     localStorage.setItem('tabActive', 'performance')
     router.push(`/hid/v8`)
   }
@@ -285,8 +296,15 @@ async function setColor(mode: any, profileInfo: any) {
           <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="flex items-center justify-center">
             <div class="h-100% w-1500px" style="position: relative;">
 
-              <div class="w-100% flex justify-center" v-if="item.type == 'img'">
-                <img :src="item.img" alt="item.title"></img>
+              <div class="flex justify-center" v-if="item.type == 'img'">
+                <div class="relative" style="display: flex;justify-content: center;">
+                  <img :src="item.img" alt="item.title"></img>
+                   <div class="w-100% absolute flex justify-between top-85%" style="font-size: 12px;">
+                    <div class="w-300px">{{ t('description.click_to_add_device') }}</div>
+                    <div class="w-300px">{{ t('description.click_to_select_device') }}</div>
+                    <div class="w-300px">{{ t('description.click_to_connect_device') }}</div>
+                  </div>
+                </div>
               </div>
               <MouseCarouseItem v-else> </MouseCarouseItem>
             </div>

@@ -230,7 +230,7 @@ const lineDataMap = {
   ],
   // 自定义-无
   3: [
-    [0, 0],
+    [0, 0.1],
     [50, 0.2],
     [100, 0.6],
     [150, 0.6],
@@ -238,7 +238,7 @@ const lineDataMap = {
   ],
   // 自定义-经典-4
   4: [
-    [0, 0],
+    [0, 0.1],
     [100, 0.6],
     [150, 0.9],
     [200, 1.2],
@@ -246,7 +246,7 @@ const lineDataMap = {
   ],
   // 自定义-自然-5
   5: [
-    [0, 0],
+    [0, 0.1],
     [50, 0.8],
     [100, 1.2],
     [150, 1.2],
@@ -254,8 +254,8 @@ const lineDataMap = {
   ],
   // 自定义-跳跃-6
   6: [
-    [0, 0],
-    [50, 0],
+    [0, 0.1],
+    [50, 0.1],
     [100, 1],
     [150, 1],
     [250, 1],
@@ -1824,14 +1824,7 @@ function initEcharts() {
           ondragend() {
             // 拖拽之后, 设置成自定义-无
             profileInfo.sensitivityModeIndex = 3
-
-            const formatData = initData.value.map((item) => {
-              return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1]))]
-            })
-            // 拖拽之后修改 无的值
-
-            lineDataMap[profileInfo.sensitivityModeIndex] = formatData as any
-
+            lineDataMap[profileInfo.sensitivityModeIndex] = initData.value as any
             profileInfo.sensitivityLineData = lineDataMap[profileInfo.sensitivityModeIndex] as any
 
             lineDropChange()
@@ -1866,7 +1859,7 @@ function initEcharts() {
       return [item[0], item[1]]
     })
 
-    console.log('initData.value===', initData.value)
+
 
     myChart.value.setOption({
       series: [
@@ -2447,13 +2440,13 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div v-if="!startXYFlag" class="absolute flex" style="flex:1;">
                       <div class="right-s-b" style="margin-left: 10px;padding: 50px 25px 25px 25px;position: relative;">
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px; min-width: 100px;text-align: right;">
+                          <p style="font-size: 20px; min-width: 100px;text-align: left;">
                             {{ t('title.polling_rate') }}
                           </p>
 
                           <!-- <CustomSliderLabel
                             v-model="profileInfo.polling_slider"
-                            class="transparent-slider dpi_slider absolute right-5 w-66%"
+                          <p style="font-size: 20px; min-width: 100px;text-align: left-5 w-66%"
                             :bind="sliderOptions.polling_slider"
                             :default-select-options="sliderDefaultSelectOptions.polling_slider"
                             :show-fixed="true"
@@ -2474,7 +2467,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px;min-width: 100px;text-align: right;">
+                          <p style="font-size: 20px; min-width: 100px;text-align: left;">
                             <!-- LOD 高度 -->
                             {{ t('title.lod_height') }}
                           </p>
@@ -2492,7 +2485,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px;min-width: 100px;text-align: right;">
+                          <p style="font-size: 20px; min-width: 100px;text-align: left;">
                             {{ t('title.key_response') }}
                           </p>
                           <div style="flex:1;height: 100%;" class="relative">
@@ -2507,7 +2500,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           </div>
                         </div>
                         <div class="flex items-center justify-between">
-                          <p style="font-size: 20px;min-width: 100px;text-align: right;">
+                          <p style="font-size: 20px; min-width: 100px;text-align: left;">
                             <!-- 休眠时间 -->
                             {{ t('title.sleep_time') }}
                           </p>

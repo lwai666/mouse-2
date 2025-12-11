@@ -222,3 +222,5 @@ export function processArrayToObject(originalArray: any, groupSize = 4) {
 
   return result
 }
+
+

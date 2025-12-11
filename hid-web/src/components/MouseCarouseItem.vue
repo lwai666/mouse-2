@@ -33,21 +33,30 @@ watch(() => language, () => {
         <img style="height: 1px;" src="/public/mouseCarouseItem/line.png" alt="" srcset="">
         <img src="/public/mouseCarouseItem/3.png" alt="" srcset="">
     </div>
-    <div class="flex justify-between" style="width: 86%;margin-top: 20px;align-items:flex-start">
+    <div class="flex justify-between" style="width: 86%;margin-top: 20px;">
       <div class="flex justify-between items-center" style="flex-direction: column;width: 300px;">
-          <p >{{ t('description.mouse_pairing_instructions1') }}</p>
-          <p style="margin-bottom: 5px;">({{ t('description.mouse_pairing_instructions1_sub') }})</p>
+          <div style="margin-bottom: 5px;">
+            <p >{{ t('description.mouse_pairing_instructions1') }}</p>
+            <p >({{ t('description.mouse_pairing_instructions1_sub') }})</p>
+          </div>
           <img src="/public/mouseCarouseItem/icon1.png" alt="" srcset="">
       </div>
 
       <div  class="flex justify-between items-center" style="flex-direction: column;width: 300px;">
+        <div style="margin-bottom: 5px;">
           <p >{{ t('description.mouse_pairing_instructions2') }}</p>
           <p style="margin-bottom: 5px;">{{ t('description.mouse_pairing_instructions2_sub') }}</p>
+        </div>
+          
           <img src="/public/mouseCarouseItem/icon2.png" alt="" srcset="">
       </div>
       <div  class="flex justify-between items-center" style="flex-direction: column;width: 300px;">
+        <div style="margin-bottom: 5px;">
           <p >{{ t('description.mouse_pairing_instructions3') }}</p>
           <p style="margin-bottom: 5px;">{{ t('description.mouse_pairing_instructions3_sub') }}</p>
+        </div>
+
+          
           <img src="/public/mouseCarouseItem/icon3.png" alt="" srcset="">
       </div>
     </div>

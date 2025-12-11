@@ -189,7 +189,7 @@ mouseKeyOptions:
 title:
   sensitivity_settings_heading: Empfindlichkeitseinstellungen
   sensitivity_level: Stufe
-  polling_rate: Abtastrate
+  polling_rate: Abfragen
   lod_height: LOD-Höhe
   key_response: Tastenansprechzeit
   new_device: Neues Gerät
@@ -263,3 +263,6 @@ description:
   mouse_pairing_instructions2_sub: in den USB-Anschluss des PCs und bringen Sie die Maus in die Nähe des Empfängers
   mouse_pairing_instructions3: Bitte verbinden Sie den Empfänger
   mouse_pairing_instructions3_sub: über den USB-Anschluss mit dem PC
+  click_to_add_device: Klicken, um ein Gerät hinzuzufügen
+  click_to_select_device: Klicken, um das zu verbindende Gerät auszuwählen
+  click_to_connect_device: Klicken, um das Gerät zu verbinden

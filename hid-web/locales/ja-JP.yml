@@ -154,7 +154,7 @@ tips:
 title:
   sensitivity_settings_heading: 感度設定
   sensitivity_level: レベル
-  polling_rate: ポーリングレート
+  polling_rate: ポーリング
   lod_height: LOD 高さ
   key_response: キー応答
   new_device: 新規デバイス
@@ -263,3 +263,6 @@ description:
   mouse_pairing_instructions2_sub: PCのUSBポートに接続し、マウスをレシーバーの近くに置いてください
   mouse_pairing_instructions3: レシーバーを接続してください
   mouse_pairing_instructions3_sub: USBポートを介してPCに接続します
+  click_to_add_device: デバイス追加をクリック
+  click_to_select_device: 接続するデバイス名を選択するにはクリック
+  click_to_connect_device: デバイス接続をクリック

@@ -187,7 +187,7 @@ mouseKeyOptions:
 title:
   sensitivity_settings_heading: 灵敏度设置
   sensitivity_level: 等级
-  polling_rate: 轮询率
+  polling_rate: 轮询
   lod_height: LOD 高度
   key_response: 按键响应
   sleep_time: 休眠时间
@@ -260,4 +260,7 @@ description:
   mouse_pairing_instructions2_sub: PC端的usb接口并将鼠标靠近接收器
   mouse_pairing_instructions3: 请将接收器
   mouse_pairing_instructions3_sub: 与PC端通过USB接口连接
+  click_to_add_device: 点击新增设备
+  click_to_select_device: 点击选择需要连接的设备名称
+  click_to_connect_device: 点击连接设备
 

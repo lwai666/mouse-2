@@ -190,7 +190,7 @@ mouseKeyOptions:
 title:
   sensitivity_settings_heading: 감도 설정
   sensitivity_level: 레벨
-  polling_rate: 폴링 레이트
+  polling_rate: 폴링
   lod_height: LOD 높이
   key_response: 키 응답
   new_device: 새 장치
@@ -264,3 +264,6 @@ description:
   mouse_pairing_instructions2_sub: PC의 USB 포트에 연결하고 마우스를 수신기 가까이에 두세요
   mouse_pairing_instructions3: 수신기를 연결하세요
   mouse_pairing_instructions3_sub: USB 포트를 통해 PC에 연결합니다
+  click_to_add_device: 장치 추가를 클릭하세요
+  click_to_select_device: 연결할 장치 이름을 선택하려면 클릭하세요
+  click_to_connect_device: 장치 연결을 클릭하세요
