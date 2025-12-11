@@ -987,11 +987,13 @@ async function sendMouseColor() {
 
 // 底部功能区
 
-// async function onMotionSync() {
-//   profileInfo.motion_sync = !profileInfo.motion_sync
-//   await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
-//   onExecutionSuccess()
-// }
+async function onMotionSync() {
+  profileInfo.motion_sync = Number(!profileInfo.motion_sync)
+  await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
+  onExecutionSuccess()
+}
+
+
 interface RecordedKey {
   key: string
   type: number
@@ -1918,6 +1920,11 @@ function bottomItemChange(type) {
     return
   }
 
+  if(type === 0){
+    onMotionSync()
+    return
+  }
+
 
 
   if (bottomItem.value === type) {
@@ -2277,8 +2284,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     <div class="bottom-con relative">
       <div class="config-box">
         <div class="flex items-center" @click="bottomItemChange(0)">
-          <img :src="`/v9/Motion${bottomItem === 0 ? '_active' : ''}.png`" alt="Motion" style="margin-right: 5px;">
-          <span :style="{ color: bottomItem === 0 ? '#DAFF00' : '' }">
+          <img :src="`/v9/Motion${profileInfo.motion_sync === 1 ? '_active' : ''}.png`" alt="Motion" style="margin-right: 5px;">
+          <span :style="{ color: profileInfo.motion_sync === 1 ? '#DAFF00' : '' }">
             <!-- 运动模式 -->
             {{ t('tabs.MotionMode') }}
           </span>
