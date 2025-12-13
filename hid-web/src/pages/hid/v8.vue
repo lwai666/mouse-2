@@ -18,7 +18,6 @@ import { DatasetComponent, GraphicComponent, GridComponent, TitleComponent, Tool
 // 引入 echarts 核心模块，核心模块提供了 echarts 使用必须要的接口。
 import * as echarts from 'echarts/core'
 
-
 // 标签自动布局、全局过渡动画等特性
 import { LabelLayout, UniversalTransition } from 'echarts/features'
 // 引入 Canvas 渲染器，注意引入 CanvasRenderer 或者 SVGRenderer 是必须的一步
@@ -158,7 +157,7 @@ function initProfileInfo() {
     // XY DPI 开关
     DPIStartList: [0, 0, 0, 0, 0],
 
-    // XY 每一个档位的 XY值 {0:[400,400],1:[400,400]}
+    // XY 每一个档位的 XY值 {0:[400,400],1:[400,400]} - 控制XY拖动
     XYObjDataList: {
       0: [100, 100],
       1: [100, 100],
@@ -167,14 +166,13 @@ function initProfileInfo() {
       4: [100, 100],
     } as { [key: number]: number[] },
 
-
     // 动态灵敏度折线图
     sensitivityLineData: [],
 
     // 鼠标当前选中模版状态
     sensitivityModeIndex: 0,
 
-    xAxisMax: 250,
+    xAxisMax: 70,
     yAxisMax: 1.5,
 
     // 鼠标链接状态
@@ -185,7 +183,6 @@ function initProfileInfo() {
 
     mouseColor: 3,
 
-
   }
 }
 
@@ -194,7 +191,7 @@ const localeStr = ref(null)
 
 const initData = ref([])
 
-let XYObjDataList = ref<{ [key: number]: number[] }>({
+const XYObjDataList = ref<{ [key: number]: number[] }>({
   0: [100, 100],
   1: [100, 100],
   2: [100, 100],
@@ -207,58 +204,58 @@ const lineDataMap = {
   // 经典-0
   0: [
     [0, 0],
-    [100, 0.6],
-    [150, 0.9],
-    [200, 1.2],
-    [250, 1.5],
+    [17.5, 0.6],
+    [35, 0.9],
+    [52.5, 1.2],
+    [70, 1.5],
   ],
   // 折线图-自然
   1: [
     [0, 0],
-    [50, 0.8],
-    [100, 1.2],
-    [150, 1.2],
-    [250, 1.2],
+    [20, 0.8],
+    [40, 1.2],
+    [50, 1.2],
+    [70, 1.2],
   ],
   // 折线图-跳跃
   2: [
     [0, 0],
-    [50, 0],
-    [100, 1],
-    [150, 1],
-    [250, 1],
+    [20, 0],
+    [40, 1],
+    [50, 1],
+    [70, 1],
   ],
   // 自定义-无
   3: [
-    [0, 0.1],
-    [50, 0.2],
-    [100, 0.6],
-    [150, 0.6],
-    [250, 0.6],
+    [0, 1],
+    [20, 1],
+    [30, 1.1],
+    [50, 1.3],
+    [70, 1.5],
   ],
   // 自定义-经典-4
   4: [
     [0, 0.1],
-    [100, 0.6],
-    [150, 0.9],
-    [200, 1.2],
-    [250, 1.5],
+    [17.5, 0.6],
+    [35, 0.9],
+    [52.5, 1.2],
+    [70, 1.5],
   ],
   // 自定义-自然-5
   5: [
     [0, 0.1],
-    [50, 0.8],
-    [100, 1.2],
-    [150, 1.2],
-    [250, 1.2],
+    [20, 0.8],
+    [40, 1.2],
+    [50, 1.2],
+    [70, 1.2],
   ],
   // 自定义-跳跃-6
   6: [
     [0, 0.1],
-    [50, 0.1],
-    [100, 1],
-    [150, 1],
-    [250, 1],
+    [20, 0],
+    [40, 1],
+    [50, 1],
+    [70, 1],
   ],
 } as Record<number, [number, number][]>
 
@@ -288,7 +285,6 @@ let profileList = reactive([
 const active_profile_index = ref(0)
 
 async function setProfileInfo(index: number) {
-
   active_profile_index.value = index
 
   // 有缓存数据则直接使用
@@ -412,7 +408,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const XYDataList = res.slice(4, (res[2] * 4) + 4)
       const dataObj = processArrayToObject(decodeArrayBufferToArray(XYDataList), 4)
       profileInfo.XYObjDataList = Object.assign(profileInfo.XYObjDataList, dataObj)
-      XYObjDataList.value = Object.assign(profileInfo.XYObjDataList, dataObj)
+      XYObjDataList.value = JSON.parse(JSON.stringify(Object.assign(profileInfo.XYObjDataList, dataObj)))
     }
 
     // 灵敏度&速度开关 0 为关，1 为开
@@ -421,7 +417,9 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const sensitivity = res[start_index]
       profileInfo.sensitivity = sensitivity
       if (profileInfo.sensitivity === 1 && activeBg.value === 'advanced') {
-        initEcharts()
+        nextTick(() => {
+          initEcharts()
+        })
       }
     }
 
@@ -429,6 +427,14 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     else if (res[0] === 37) {
       const DPIStartList = res.slice(3, 3 + res[2])
       profileInfo.DPIStartList = decodeArrayBufferToArray(DPIStartList)
+    }
+
+    // 折线图
+    else if (res[0] === 38) {
+      profileInfo.sensitivityModeIndex = res[3]
+      const sensitivityLineDataList = res.slice(6, 6 + res[2])
+      initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2, (a, b) => [a, b / 10])
+      profileInfo.sensitivityLineData = initData.value
     }
 
     // 20K采样率开关 0 为关，1 为开
@@ -443,14 +449,6 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const start_index = 3
       const lineUpdate = res[start_index]
       profileInfo.lineUpdate = lineUpdate
-    }
-
-    // 折线图
-    else if (res[0] === 38) {
-      profileInfo.sensitivityModeIndex = res[3]
-      const sensitivityLineDataList = res.slice(6, 6 + res[2])
-      initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2, (a, b) => [a, b / 10])
-      profileInfo.sensitivityLineData = initData.value
     }
 
     // 获取宏录制名字 profile 名字
@@ -488,7 +486,6 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
 }
 
 function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
-
   console.log(profileInfo, 'profileInfoprofileInfoprofileInfo')
   const uint8Array: Uint8Array[] = []
 
@@ -604,21 +601,19 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
 
   // 直线修正
   uint8Array.push(transport.value.generatePacket(new Uint8Array([0x28, 0x00, 0x00, profileInfo.lineUpdate])))
-  
+
   // 20K采样率
   uint8Array.push(transport.value.generatePacket(new Uint8Array([0x27, 0x00, 0x00, profileInfo.FPS])))
-  
+
   // XY DPI 开关
   uint8Array.push(transport.value.generatePacket(new Uint8Array([0x25, 0x00, profileInfo.dpi_slider_list.length, ...profileInfo.DPIStartList])))
 
-
   // XY 每一个档位的 XY值 {0:[400,400],1:[400,400]}
-  const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item:any) => {
+  const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item: any) => {
     return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
   })
   uint8Array.push(transport.value.generatePacket(new Uint8Array([0x23, 0x00, 5, profileInfo.dpi_slider_active_index, ...currentLowAndHigh8.flat()])))
 
-    
   // 动态灵敏度折线图
 
   uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...profileInfo.sensitivityLineData.flat()])))
@@ -709,8 +704,6 @@ async function getProfile() {
   })
 }
 
-
-
 // 粘贴分享设置 Profile
 async function setProfile(index: number, type: string) {
   console.log(index, 'indexindex')
@@ -759,15 +752,10 @@ async function setProfile(index: number, type: string) {
   }
   loading.close()
 
-
-
-  profileList[active_profile_index.value].value = newProfileInfo;
-
-
+  profileList[active_profile_index.value].value = newProfileInfo
 
   setProfileInfo(active_profile_index.value)
   setLoadingStatus(t('message.profile_success'))
-
 }
 
 function onExecutionSuccess() {
@@ -910,7 +898,13 @@ async function sendHibernation() {
   onExecutionSuccess()
 }
 
+function XYEliminationChange() {
+  XYObjDataList.value = JSON.parse(JSON.stringify(profileInfo.XYObjDataList))
+}
+
 async function sendXYElimination() {
+  profileInfo.XYObjDataList = JSON.parse(JSON.stringify(XYObjDataList.value))
+
   const currentLowAndHigh8 = Object.values(profileInfo.XYObjDataList).map((item) => {
     return [...getLowAndHigh8Bits(item[0]), ...getLowAndHigh8Bits(item[1])]
   })
@@ -992,7 +986,6 @@ async function onMotionSync() {
   await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
   onExecutionSuccess()
 }
-
 
 interface RecordedKey {
   key: string
@@ -1485,6 +1478,7 @@ async function setDPIXY() {
 
   const dpi_number = profileInfo.dpi_slider_list[profileInfo.dpi_slider_active_index]
   profileInfo.XYObjDataList[profileInfo.dpi_slider_active_index as number] = [dpi_number, dpi_number]
+  XYObjDataList.value[profileInfo.dpi_slider_active_index as number] = [dpi_number, dpi_number]
 
   sendXYElimination()
 
@@ -1531,14 +1525,14 @@ async function radioChange1() {
   await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
   if (Number(profileInfo.sensitivity) === 1) {
     nextTick(() => {
-        if (!profileInfo.sensitivityLineData.length) {
-          initData.value = lineDataMap[profileInfo.sensitivityModeIndex] as any
-          profileInfo.sensitivityLineData = initData.value as any
-          initEcharts()
-          lineDropChange()
-          return
-        }
+      if (!profileInfo.sensitivityLineData.length) {
+        initData.value = lineDataMap[profileInfo.sensitivityModeIndex] as any
+        profileInfo.sensitivityLineData = initData.value as any
         initEcharts()
+        lineDropChange()
+        return
+      }
+      initEcharts()
     })
     return
   }
@@ -1555,7 +1549,7 @@ async function lineDropChange() {
     return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
   })
 
-  console.log(formatData,'formatDataformatData')
+  console.log(formatData, 'formatDataformatData')
 
   await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...formatData.flat()])
   setLoadingStatus()
@@ -1610,7 +1604,6 @@ function handleMouseMoveFn(event: MouseEvent) {
   // 清除空闲计时器，重新设置
   clearTimeout(idleTimer)
   idleTimer = setTimeout(() => {
-
     myChart.value?.setOption({
       seriesIndex: 1,
       visualMap: {
@@ -1697,7 +1690,6 @@ const chart = ref(null) as any
 const handleMouseMoveRefFn = ref(null) as any
 
 function initEcharts() {
-  console.log('触发了')
   myChart.value = echarts.init(document.getElementById('myChart'))
 
   const symbolSize = 15
@@ -1705,6 +1697,18 @@ function initEcharts() {
   chart.value = new DraggableChart(initData.value)
 
   const option = {
+
+    tooltip: {
+      triggerOn: 'none',
+      formatter(params: any) {
+        return (
+          `X: ${
+            params.data[0].toFixed(2)
+          } Y: ${
+            params.data[1].toFixed(2)}`
+        )
+      },
+    },
 
     grid: {
       top: '8%',
@@ -1715,7 +1719,7 @@ function initEcharts() {
     xAxis: {
       min: 0,
       max: profileInfo.xAxisMax,
-      interval: 50,
+      interval: profileInfo.xAxisMax / 7,
       type: 'value',
 
       splitLine: {
@@ -1736,8 +1740,13 @@ function initEcharts() {
     yAxis: {
       min: 0,
       max: profileInfo.yAxisMax,
-      interval: 0.1,
+      interval: profileInfo.yAxisMax / 6,
       type: 'value',
+      axisLabel: {
+        formatter(value: any, index: any) {
+          return index % 2 === 0 ? value : ''
+        },
+      },
       splitLine: {
         lineStyle: {
           color: '#262626', // 轴线颜色
@@ -1823,6 +1832,12 @@ function initEcharts() {
           ondrag() {
             onPointDragging(dataIndex, [this.x, this.y])
           },
+          onmousemove() {
+            showTooltip(dataIndex)
+          },
+          onmouseout() {
+            hideTooltip()
+          },
           ondragend() {
             // 拖拽之后, 设置成自定义-无
             profileInfo.sensitivityModeIndex = 3
@@ -1854,14 +1869,24 @@ function initEcharts() {
       openHandleMouseMoveFn()
     }, 1000)
   })
+  function showTooltip(dataIndex: any) {
+    myChart.value.dispatchAction({
+      type: 'showTip',
+      seriesIndex: 0,
+      dataIndex,
+    })
+  }
+  function hideTooltip() {
+    myChart.value.dispatchAction({
+      type: 'hideTip',
+    })
+  }
 
   function onPointDragging(dataIndex: number, pos: any) {
     const [x, y] = myChart.value.convertFromPixel('grid', pos)
     initData.value = chart.value.dragPoint(dataIndex, x, y).map((item: any) => {
       return [item[0], item[1]]
     })
-
-
 
     myChart.value.setOption({
       series: [
@@ -1880,12 +1905,12 @@ function initEcharts() {
 
 async function changeXAxisMax(num: number) {
   profileInfo.xAxisMax = profileInfo.xAxisMax + num
-  if (profileInfo.xAxisMax > 250) {
-    profileInfo.xAxisMax = 250
+  if (profileInfo.xAxisMax > 280) {
+    profileInfo.xAxisMax = 280
     return
   }
-  if (profileInfo.xAxisMax < 50) {
-    profileInfo.xAxisMax = 50
+  if (profileInfo.xAxisMax < 35) {
+    profileInfo.xAxisMax = 35
     // chart.value.setBounds(0, 50, 0, profileInfo.yAxisMax)
     return
   }
@@ -1901,8 +1926,8 @@ async function changeYAxisMax(num: number) {
     profileInfo.yAxisMax = 6
     return
   }
-  if (profileInfo.yAxisMax < 0.1) {
-    profileInfo.yAxisMax = 0.1
+  if (profileInfo.yAxisMax < 1.5) {
+    profileInfo.yAxisMax = 1.5
     // chart.value.setBounds(0, 50, 0, profileInfo.yAxisMax)
     return
   }
@@ -1920,12 +1945,10 @@ function bottomItemChange(type) {
     return
   }
 
-  if(type === 0){
+  if (type === 0) {
     onMotionSync()
     return
   }
-
-
 
   if (bottomItem.value === type) {
     return
@@ -1954,7 +1977,6 @@ const buttonType = ref('share')
 const profileInputField = ref()
 
 let dblClickIndex = ref()
-
 
 async function onProfileDblClick() {
   isEditingProfile.value = true
@@ -2319,7 +2341,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
         </div>
         <div style="width: 100%;flex:1;align-items: center;" class="flex">
           <div class="left-item-box">
-            <div :class="{ activeBg: activeBg === 'performance' }" @click="activeBgChange('performance')" :style="{ textAlign: locale == 'ja-JP' ? 'left' : '', paddingLeft: locale == 'ja-JP' ? '10px' : '' }">
+            <div :class="{ activeBg: activeBg === 'performance' }" :style="{ textAlign: locale == 'ja-JP' ? 'left' : '', paddingLeft: locale == 'ja-JP' ? '10px' : '' }" @click="activeBgChange('performance')">
               <!-- 性能 -->
               {{ t('tabs.Performance') }}
             </div>
@@ -2366,11 +2388,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         <template v-else>
                           <span style="font-size:10px">X</span>
                           <div style="width: 69px; text-align: center; border-radius: 10px;">
-                            <input v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                            <input v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @change="XYEliminationChange" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                           <span style="font-size:10px">Y</span>
                           <div style="width: 69px; text-align: center; border-radius: 10px;">
-                            <input v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                            <input v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @change="XYEliminationChange" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                         </template>
                       </div>
@@ -2715,12 +2737,12 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                 <div style="padding: 25px 25px 0 25px;">
                   <div>
                     <div style="font-size: 20px; display: flex; align-items: center;">
-                      <div style="width: 170px;" class="flex items-center">
-                        <div style="text-align:left">
+                      <div style="width: 170px; margin-right: 10px;" class="flex items-center">
+                        <div style="text-align:left;">
                           {{ t('macro.dynamicSensitivity') }}
                         </div>
                         <img
-                          style=" margin-left: 5px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' : ''}.png`" srcset=""
+                          style="margin-left: 10px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' : ''}.png`" srcset=""
                           @mouseenter="showMouseenterChange('showMouseenter')"
                           @mouseleave="showMouseenterChange('showMouseenter')"
                         >
@@ -2791,10 +2813,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div style="padding: 25px 25px 0 25px; flex:1;">
                     <div class="ml-25 flex items-center" style="height: 40px;">
                       <div class="icon-box">
-                        <ElIcon size="18" @click.stop="changeYAxisMax(0.5)">
+                        <ElIcon size="18" @click.stop="changeYAxisMax(-1.5)">
                           <Plus />
                         </ElIcon>
-                        <ElIcon size="18" @click.stop="changeYAxisMax(-0.5)">
+                        <ElIcon size="18" @click.stop="changeYAxisMax(1.5)">
                           <Minus />
                         </ElIcon>
                       </div>
@@ -2829,10 +2851,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div style="width:100%" class="relative flex">
                       <div id="myChart" style="flex:1; height:350px;" />
                       <div class="icon-box absolute bottom-0 right-0">
-                        <ElIcon size="18" @click.stop="changeXAxisMax(-50)">
+                        <ElIcon size="18" @click.stop="changeXAxisMax(35)">
                           <Minus />
                         </ElIcon>
-                        <ElIcon size="18" @click.stop="changeXAxisMax(50)">
+                        <ElIcon size="18" @click.stop="changeXAxisMax(-35)">
                           <Plus />
                         </ElIcon>
                       </div>
@@ -2855,7 +2877,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <div style="font-size: 20px;text-align: left">
                         {{ t('macro.dynamicSensitivity') }}
                       </div>
-                      <div style="width: 205px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                      <div style="width: 215px; text-align: left; color: #A6A6A6;margin-top: 10px;">
                         {{ t('description.main_ui_subheading') }}
                       </div>
                     </div>
@@ -2953,7 +2975,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <AnimateCanvas
                         :width="593"
                         :height="297"
-                        :img-length="90"
+                        :img-length="60"
                         :end-stop="false"
                         url="/01/01_00000_0"
                       />
@@ -3014,11 +3036,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
           </p>
 
           <div style="width: 100%;height: 400px;">
-            <MouseCarouseItem> </MouseCarouseItem>
+            <MouseCarouseItem />
           </div>
-
-          
-
 
           <!-- <img class="mb-10 h-240px" :src="`/slideshow/2_${locale}.png`" alt="item.title"> -->
 

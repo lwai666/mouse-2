@@ -58,12 +58,9 @@ class DraggableChart {
   // }
 
   dragPoint(pointIndex, newX, newY) {
-
     if (pointIndex < 0 || pointIndex >= this.points.length) {
       throw new Error('点索引超出范围')
     }
-
-
 
     // 约束Y坐标范围
     const constrainedY = Math.max(this.yMin, Math.min(newY, this.yMax))
@@ -86,7 +83,7 @@ class DraggableChart {
 
   // 确保所有点保持最小间距
   enforceMinSpacing(pointIndex, newX, originalX) {
-    const minSpacing = 10
+    const minSpacing = 3
 
     for (let i = 1; i < this.points.length; i++) {
       const prevPoint = this.points[i - 1]
