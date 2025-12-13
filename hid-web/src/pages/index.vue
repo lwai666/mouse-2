@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import { CircleClose, Plus } from '@element-plus/icons-vue'
 
-import { ElCarousel, ElCarouselItem } from 'element-plus'
+import autofit from 'autofit.js'
 
+import { ElCarousel, ElCarouselItem } from 'element-plus'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { loadLanguageAsync } from '~/modules/i18n'  
+import { loadLanguageAsync } from '~/modules/i18n'
+
 import { createTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
-
-
-
-import autofit from 'autofit.js'
 
 defineOptions({
   name: 'Scyrox',
@@ -44,8 +42,8 @@ const selectLanguageList = ref([
 const languageShow = ref(false)
 
 const slideshowList = computed(() => [
-  { title: t('index.pairingGuide'), type:'img',  img: `/slideshow/2.png` },
-  { title: t('index.schematicGuide'), type:'component',  component: 'MouseCarouseItem' },
+  { title: t('index.pairingGuide'), type: 'img', img: `/slideshow/2.png` },
+  { title: t('index.schematicGuide'), type: 'component', component: 'MouseCarouseItem' },
 ])
 
 const carouselRef = ref(null)
@@ -73,18 +71,17 @@ nextTick(() => {
 
 const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
 
-async function onNouseClick(item:any) {
+async function onNouseClick(item: any) {
   useTransportWebHID('v8', async (instance) => {
     instanceRef.value = instance
-      // console.log(item,instanceRef.value, 'item=====')
-      if(!instanceRef.value){
-        // 没有连接的设备
-        return
-      }
-      transport.value = item
-      router.push(`/hid/v8`)
+    // console.log(item,instanceRef.value, 'item=====')
+    if (!instanceRef.value) {
+      // 没有连接的设备
+      return
+    }
+    transport.value = item
+    router.push(`/hid/v8`)
   })
-
 }
 
 async function onAddNouseClick() {
@@ -102,7 +99,6 @@ async function onAddNouseClick() {
     },
   })
 
-
   if (transport.value) {
     const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
     const flag = transportListCopy.some(item => item.reportId === transport.value.reportId)
@@ -111,8 +107,8 @@ async function onAddNouseClick() {
       localStorage.setItem('tabActive', 'performance')
       return
     }
-    transportList.value.push({...transport.value,productId: transport.value.device.productId, vendorId: transport.value.device.vendorId, productName: transport.value.device.productName,collections: transport.value.device.collections})
-    localStorage.setItem('transportList',JSON.stringify(transportList.value))
+    transportList.value.push({ ...transport.value, productId: transport.value.device.productId, vendorId: transport.value.device.vendorId, productName: transport.value.device.productName, collections: transport.value.device.collections })
+    localStorage.setItem('transportList', JSON.stringify(transportList.value))
     localStorage.setItem('tabActive', 'performance')
     router.push(`/hid/v8`)
   }
@@ -159,7 +155,7 @@ onMounted(() => {
   if (!navigator.hid) {
     notSupportHid.value = true
   }
-   autofit.init({
+  autofit.init({
     dh: 1080,
     dw: 1920,
     el: '#app',
@@ -248,7 +244,7 @@ async function setColor(mode: any, profileInfo: any) {
       <div class="mb-5 h-[251px] w-[800px] border-gray-600" style="overflow: hidden;">
         <div v-for="item in transportList" class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);" @click="onNouseClick(item)">
           <img
-            style="width: 84px; height:142px;" :src="`/mouse_${{
+            style="width: 84px; height:142px;object-fit: contain;" :src="`/mouse_${{
               3: 'black',
               4: 'white',
             }[item.mouseColor] || 'black'}.png`" alt="" srcset=""
@@ -295,20 +291,24 @@ async function setColor(mode: any, profileInfo: any) {
         >
           <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="flex items-center justify-center">
             <div class="h-100% w-1500px" style="position: relative;">
-
-              <div class="flex justify-center" v-if="item.type == 'img'">
+              <div v-if="item.type == 'img'" class="flex justify-center">
                 <div class="relative" style="display: flex;justify-content: center;">
                   <img :src="item.img" alt="item.title"></img>
-                   <div class="w-100% absolute flex justify-between top-85%" style="font-size: 12px;">
-                    <div class="w-300px">{{ t('description.click_to_add_device') }}</div>
-                    <div class="w-300px">{{ t('description.click_to_select_device') }}</div>
-                    <div class="w-300px">{{ t('description.click_to_connect_device') }}</div>
+                  <div class="absolute top-85% w-100% flex justify-between" style="font-size: 12px;">
+                    <div class="w-300px">
+                      {{ t('description.click_to_add_device') }}
+                    </div>
+                    <div class="w-300px">
+                      {{ t('description.click_to_select_device') }}
+                    </div>
+                    <div class="w-300px">
+                      {{ t('description.click_to_connect_device') }}
+                    </div>
                   </div>
                 </div>
               </div>
-              <MouseCarouseItem v-else> </MouseCarouseItem>
+              <MouseCarouseItem v-else />
             </div>
-            
           </ElCarouselItem>
         </ElCarousel>
       </div>
