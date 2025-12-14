@@ -1700,6 +1700,7 @@ function initEcharts() {
 
     tooltip: {
       triggerOn: 'none',
+      position: 'top',
       formatter(params: any) {
         return (
           `X: ${
