@@ -204,9 +204,9 @@ const lineDataMap = {
   // 经典-0
   0: [
     [0, 0],
-    [17.5, 0.6],
-    [35, 0.9],
-    [52.5, 1.2],
+    [17.5, 0.38],
+    [35, 0.75],
+    [52.5, 1.13],
     [70, 1.5],
   ],
   // 折线图-自然
@@ -236,9 +236,9 @@ const lineDataMap = {
   // 自定义-经典-4
   4: [
     [0, 0.1],
-    [17.5, 0.6],
-    [35, 0.9],
-    [52.5, 1.2],
+    [17.5, 0.45],
+    [35, 0.8],
+    [52.5, 1.15],
     [70, 1.5],
   ],
   // 自定义-自然-5
@@ -252,7 +252,7 @@ const lineDataMap = {
   // 自定义-跳跃-6
   6: [
     [0, 0.1],
-    [20, 0],
+    [20, 0.1],
     [40, 1],
     [50, 1],
     [70, 1],
@@ -432,8 +432,14 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     // 折线图
     else if (res[0] === 38) {
       profileInfo.sensitivityModeIndex = res[3]
-      const sensitivityLineDataList = res.slice(6, 6 + res[2])
-      initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2, (a, b) => [a, b / 10])
+      // 如果模版是自定义，则使用自定义数据
+      if (profileInfo.sensitivityModeIndex === 3) {
+        const sensitivityLineDataList = res.slice(6, 6 + res[2])
+        initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2, (a, b) => [a, b / 10]) as any
+        profileInfo.sensitivityLineData = initData.value
+        return
+      }
+      initData.value = lineDataMap[profileInfo.sensitivityModeIndex] as any
       profileInfo.sensitivityLineData = initData.value
     }
 
@@ -1690,6 +1696,9 @@ const chart = ref(null) as any
 const handleMouseMoveRefFn = ref(null) as any
 
 function initEcharts() {
+  // if(!myChart.value){
+
+  // }
   myChart.value = echarts.init(document.getElementById('myChart'))
 
   const symbolSize = 15
@@ -1722,7 +1731,6 @@ function initEcharts() {
       max: profileInfo.xAxisMax,
       interval: profileInfo.xAxisMax / 7,
       type: 'value',
-
       splitLine: {
         lineStyle: {
           color: '#262626', // 轴线颜色
@@ -1776,18 +1784,21 @@ function initEcharts() {
       ],
     },
 
+    animation: false,
+
     series: [
       {
         id: 'line',
         type: 'line',
+
         smooth: 0.6,
         symbolSize: [0, 1, 2].includes(profileInfo.sensitivityModeIndex) ? 0 : symbolSize,
         data: initData.value,
         itemStyle: {
-          color: '#DAFF00', // 折线点颜色（番茄色）
+          color: '#DAFF00',
         },
         lineStyle: {
-          color: '#DAFF00', // 折线颜色（皇家蓝）
+          color: '#DAFF00',
           width: 3,
         },
       },
@@ -1795,15 +1806,16 @@ function initEcharts() {
       {
         id: 'area',
         type: 'line',
+
         smooth: 0.6,
         symbolSize: 0,
         data: initData.value,
         areaStyle: {},
         itemStyle: {
-          color: 'transparent', // 折线点颜色（番茄色）
+          color: 'transparent',
         },
         lineStyle: {
-          color: 'transparent', // 折线颜色（皇家蓝）
+          color: 'transparent',
           width: 0,
         },
       },
