@@ -622,7 +622,12 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
 
   // 动态灵敏度折线图
 
-  uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...profileInfo.sensitivityLineData.flat()])))
+  if (profileInfo.sensitivityLineData.length) {
+    const formatData = profileInfo.sensitivityLineData.map((item: any) => {
+      return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
+    })
+    uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...formatData.flat()])))
+  }
 
   // 当前第几个配置
   // uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1E, 0x00, 0x01, active_profile_index.value])))
@@ -759,6 +764,11 @@ async function setProfile(index: number, type: string) {
   loading.close()
 
   profileList[active_profile_index.value].value = newProfileInfo
+
+  // 用于回显折线图
+  if (newProfileInfo.sensitivityLineData.length) {
+    initData.value = newProfileInfo.sensitivityLineData
+  }
 
   setProfileInfo(active_profile_index.value)
   setLoadingStatus(t('message.profile_success'))
@@ -904,7 +914,11 @@ async function sendHibernation() {
   onExecutionSuccess()
 }
 
-function XYEliminationChange() {
+function XYEliminationChange(index: number) {
+  const xNum = XYObjDataList.value[index][0]
+  const yNum = XYObjDataList.value[index][1]
+
+  profileInfo.XYObjDataList[index] = [xNum + (Math.abs(50 - xNum % 50)), yNum + (Math.abs(50 - yNum % 50))]
   XYObjDataList.value = JSON.parse(JSON.stringify(profileInfo.XYObjDataList))
 }
 
@@ -1469,7 +1483,7 @@ async function radioChange() {
     return
   }
 
-  if (profileInfo.sports_arena === 1 && profileInfo.polling_slider === 5) {
+  if (profileInfo.sports_arena === 1 && profileInfo.polling_slider >= 5) {
     showMouseenter.value = 'FPS'
     return
   }
@@ -1497,6 +1511,15 @@ async function FPSChange(type) {
     return
   }
   await transport?.value.send([0x27, 0x00, 0x00, type])
+
+  // 会出现竞技模式打开 && 但是轮询率低于 4k 的情况, 这时候先关闭竞技模式, 在打开就行了, 就会自动打开 8k
+  if (showMouseenter.value === 'FPS1') {
+    if (profileInfo.sports_arena === 1 && profileInfo.polling_slider < 5) {
+      await onSportsMode(0)
+      await onSportsMode(1)
+    }
+  }
+
   profileInfo.FPS = !!type
   setLoadingStatus('')
   showMouseenter.value = 'show'
@@ -1554,8 +1577,6 @@ async function lineDropChange() {
   const formatData = initData.value.map((item) => {
     return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
   })
-
-  console.log(formatData, 'formatDataformatData')
 
   await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...formatData.flat()])
   setLoadingStatus()
@@ -1696,9 +1717,6 @@ const chart = ref(null) as any
 const handleMouseMoveRefFn = ref(null) as any
 
 function initEcharts() {
-  // if(!myChart.value){
-
-  // }
   myChart.value = echarts.init(document.getElementById('myChart'))
 
   const symbolSize = 15
@@ -1713,9 +1731,9 @@ function initEcharts() {
       formatter(params: any) {
         return (
           `X: ${
-            params.data[0].toFixed(2)
+            Math.ceil(params.data[0])
           } Y: ${
-            params.data[1].toFixed(2)}`
+            params.data[1].toFixed(1)}`
         )
       },
     },
@@ -1855,8 +1873,9 @@ function initEcharts() {
             // 拖拽之后, 设置成自定义-无
             profileInfo.sensitivityModeIndex = 3
             lineDataMap[profileInfo.sensitivityModeIndex] = initData.value as any
-            profileInfo.sensitivityLineData = lineDataMap[profileInfo.sensitivityModeIndex] as any
-
+            profileInfo.sensitivityLineData = initData.value.map((item: any) => {
+              return [Math.ceil(item[0]), Number(item[1].toFixed(1))]
+            })
             lineDropChange()
             myChart.value?.setOption({
               graphic: initData.value.map((item) => {
@@ -1953,6 +1972,9 @@ async function changeYAxisMax(num: number) {
 const bottomItem = ref(0)
 
 function bottomItemChange(type) {
+  if (type === 1) {
+    showMouseenter.value = 'show'
+  }
   if (type === 1 && profileInfo.sports_arena !== 0) {
     onSportsMode(0)
     return
@@ -2029,16 +2051,18 @@ function dpiEditValue(editActive, value) {
   })
 }
 
-function inputSendDpi(value, index) {
-  profileInfo.dpi_slider_list[index] = value
+function inputSendDpi(value: number, index: number) {
+  const formatValue = value + (Math.abs(50 - value % 50)) as any
+  dpi_slider_value.value = formatValue
+  profileInfo.dpi_slider_list[index] = formatValue
 
-  if (value < 100) {
+  if (formatValue < 100) {
     profileInfo.dpi_slider_list[index] = 100
     dpi_slider_edit.value = 100
     return
   }
 
-  if (value > 30000) {
+  if (formatValue > 30000) {
     profileInfo.dpi_slider_list[index] = 30000
     dpi_slider_edit.value = 30000
   }
@@ -2399,13 +2423,13 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </div>
 
                         <template v-else>
-                          <span style="font-size:10px">X</span>
+                          <span style="font-size:10px">X1</span>
                           <div style="width: 69px; text-align: center; border-radius: 10px;">
-                            <input v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @change="XYEliminationChange" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                            <input v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @change="XYEliminationChange(index)" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                           <span style="font-size:10px">Y</span>
                           <div style="width: 69px; text-align: center; border-radius: 10px;">
-                            <input v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @change="XYEliminationChange" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
+                            <input v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @change="XYEliminationChange(index)" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                         </template>
                       </div>
@@ -2914,7 +2938,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <Close />
                     </ElIcon> -->
                   </div>
-                  <div v-else-if="showMouseenter === 'FPS'" style="width: 50%; padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
+                  <div v-else-if="showMouseenter === 'FPS'" style="width: 75%; padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
                     <div>
                       <div style="font-size: 20px;text-align: left">
                         20K FPS

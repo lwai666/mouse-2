@@ -27,10 +27,6 @@ const transport = ref()
 
 const instanceRef = ref()
 
-useTransportWebHID('v8', async (instance) => {
-  instanceRef.value = instance
-})
-
 const selectLanguageList = ref([
   { title: 'Deutsch', img: '/flag/DE.png', language: 'de-DE' },
   { title: 'English', img: '/flag/US.png', language: 'en-US' },
@@ -72,16 +68,12 @@ nextTick(() => {
 const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
 
 async function onNouseClick(item: any) {
-  useTransportWebHID('v8', async (instance) => {
-    instanceRef.value = instance
-    // console.log(item,instanceRef.value, 'item=====')
-    if (!instanceRef.value) {
-      // 没有连接的设备
-      return
-    }
-    transport.value = item
-    router.push(`/hid/v8`)
-  })
+  if (!instanceRef.value) {
+    // 没有连接的设备
+    return
+  }
+  transport.value = item
+  router.push(`/hid/v8`)
 }
 
 async function onAddNouseClick() {
@@ -182,9 +174,15 @@ function sortedColorItems(mouseColor: any) {
 
   return filteredItems
 }
+function onDisconnect(event: HIDConnectionEvent) {
+  instanceRef.value = null
+}
 
 useTransportWebHID('v8', async (instance) => {
+  instanceRef.value = instance
   transport.value = instance
+  // 监听鼠标断开
+  navigator.hid.addEventListener('disconnect', onDisconnect)
 })
 
 async function setColor(mode: any, profileInfo: any) {
