@@ -771,6 +771,7 @@ async function setProfile(index: number, type: string) {
   // 用于回显折线图
   if (newProfileInfo.sensitivityLineData.length) {
     initData.value = newProfileInfo.sensitivityLineData
+    initEcharts()
   }
 
   setProfileInfo(active_profile_index.value)
