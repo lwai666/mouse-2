@@ -908,6 +908,12 @@ async function sendDpiLength(type) {
 async function sendPolling(value) {
   profileInfo.polling_slider = value
   await transport.value.send([0x0C, 0x00, 0x01, profileInfo.polling_slider])
+
+  if (value < 5) {
+    // 关闭竞技模式
+    profileInfo.sports_arena = 0
+    onSportsMode(0)
+  }
   onExecutionSuccess()
 }
 
@@ -957,7 +963,7 @@ async function sendAngle() {
 }
 
 /** 设置性能模式（电竞模式） */
-async function onSportsMode(type) {
+async function onSportsMode(type: any) {
   // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
 
   profileInfo.sports_arena = type
@@ -1518,10 +1524,7 @@ async function FPSChange(type) {
 
   // 会出现竞技模式打开 && 但是轮询率低于 4k 的情况, 这时候先关闭竞技模式, 在打开就行了, 就会自动打开 8k
   if (showMouseenter.value === 'FPS1') {
-    if (profileInfo.sports_arena === 1 && profileInfo.polling_slider < 5) {
-      await onSportsMode(0)
-      await onSportsMode(1)
-    }
+    await onSportsMode(1)
   }
 
   profileInfo.FPS = !!type
