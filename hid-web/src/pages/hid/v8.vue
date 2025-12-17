@@ -432,6 +432,9 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     // 折线图
     else if (res[0] === 38) {
       profileInfo.sensitivityModeIndex = res[3]
+      profileInfo.yAxisMax = res[4] / 10
+      profileInfo.xAxisMax = res[5]
+
       // 如果模版是自定义，则使用自定义数据
       if (profileInfo.sensitivityModeIndex === 3) {
         const sensitivityLineDataList = res.slice(6, 6 + res[2])
@@ -626,7 +629,7 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
     const formatData = profileInfo.sensitivityLineData.map((item: any) => {
       return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
     })
-    uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...formatData.flat()])))
+    uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, profileInfo.xAxisMax, ...formatData.flat()])))
   }
 
   // 当前第几个配置
@@ -1578,7 +1581,7 @@ async function lineDropChange() {
     return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
   })
 
-  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax, profileInfo.xAxisMax, ...formatData.flat()])
+  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, profileInfo.xAxisMax, ...formatData.flat()])
   setLoadingStatus()
 }
 
@@ -1771,7 +1774,7 @@ function initEcharts() {
       type: 'value',
       axisLabel: {
         formatter(value: any, index: any) {
-          return index % 2 === 0 ? value : ''
+          return index % 2 === 0 ? (value.toFixed(1)) : ''
         },
       },
       splitLine: {
