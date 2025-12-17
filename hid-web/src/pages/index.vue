@@ -82,7 +82,7 @@ async function onAddNouseClick() {
     filters: [
       ...toRaw(userStore.devices),
       // 其他设备
-      // { vendorId: 0x3554, productId: 0xF5F6 },
+      { vendorId: 0x1532, productId: 0x00BF },
       // { vendorId: 0x3554, productId: 0xF5F7 },
       // { vendorId: 0x3554, productId: 0xF5F4 },
     ],
