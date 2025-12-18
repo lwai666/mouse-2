@@ -971,11 +971,13 @@ async function onSportsMode(type: any) {
 
   profileInfo.sports_arena = type
 
-  if (type === 1) {
-    setTimeOut(() => {
-      sendPolling(6)
-    })
-  }
+  type === 1 && sendPolling(6)
+
+  // if (type === 1) {
+  //   setTimeOut(() => {
+  //     sendPolling(6)
+  //   }, 1000)
+  // }
   // eslint-disable-next-line ts/no-use-before-define
   bottomItem.value = 0
   onExecutionSuccess()
@@ -1531,9 +1533,7 @@ async function FPSChange(type) {
 
   // 会出现竞技模式打开 && 但是轮询率低于 4k 的情况, 这时候先关闭竞技模式, 在打开就行了, 就会自动打开 8k
   if (showMouseenter.value === 'FPS1') {
-    setTimeout(() => {
-      onSportsMode(1)
-    }, 1000)
+    onSportsMode(1)
   }
 
   profileInfo.FPS = !!type
