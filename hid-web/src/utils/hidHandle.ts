@@ -1,4 +1,6 @@
+import { ElLoading } from 'element-plus'
 import { type App, inject } from 'vue'
+
 import { sleep } from '.'
 
 export interface IResult {
@@ -545,6 +547,8 @@ export const keyMap: KeyMap = {
 
 type Listener<T = any> = (...args: T[]) => void
 
+let loading = null as any
+
 class EventEmitter {
   events: Record<string, Listener[]> = {}
 
@@ -660,6 +664,8 @@ class TransportWebHID extends Transport {
     const data = new Uint8Array(e.data.buffer)
     console.log('回复=========', data)
 
+    loading.close()
+
     // 错误应答处理
     if (data[this.packetSize - 3] === 1) {
       // 错误次数计数
@@ -734,6 +740,14 @@ class TransportWebHID extends Transport {
     })
 
     console.log('发送=========', this.reportId, arrayBuffer)
+
+    loading = ElLoading.service({
+      lock: true,
+      text: '',
+      spinner: 'none',
+      background: 'rgba(0, 0, 0, 0.7)',
+    })
+
     if (timeout) {
       this.device.sendReport(this.reportId, arrayBuffer) // 有 timeout 说明耗时久，会报错，但是又能正常回复（鼠标BUG）！
       await sleep(100)
