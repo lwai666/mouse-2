@@ -439,10 +439,12 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       if (profileInfo.sensitivityModeIndex === 3) {
         const sensitivityLineDataList = res.slice(6, 6 + res[2])
         initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2, (a, b) => [a, b / 10]) as any
+        // 存着用于分享
         profileInfo.sensitivityLineData = initData.value
         return
       }
       initData.value = lineDataMap[profileInfo.sensitivityModeIndex] as any
+      // 存着用于分享
       profileInfo.sensitivityLineData = initData.value
     }
 
@@ -495,9 +497,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
 }
 
 function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
-  console.log(profileInfo, 'profileInfoprofileInfoprofileInfo')
   const uint8Array: Uint8Array[] = []
-
   // 获取 profile 基础配置信息：0
   let uint8Array0: number[] = []
   const dpi_data = profileInfo.dpi_slider_list.reduce((arr: number[], item: number) => {
@@ -626,6 +626,7 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
   // 动态灵敏度折线图
 
   if (profileInfo.sensitivityLineData.length) {
+    // 存起来的折线图数据需要格式化之后才能发给硬件
     const formatData = profileInfo.sensitivityLineData.map((item: any) => {
       return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
     })
@@ -720,16 +721,12 @@ async function getProfile() {
 
 // 粘贴分享设置 Profile
 async function setProfile(index: number, type: string) {
-  console.log(index, 'indexindex')
   if (index === active_profile_index.value && type === 'top') { return }
 
   let profileInfo = ''
 
-  console.log(profileList, 'profileList[active_profile_index.value].base64')
-
   try {
     profileInfo = base64ToJson(removeAt9th(base64.value))
-    console.log(profileInfo, 'profileInfoprofileInfo')
   }
   catch (e) {
     console.error('格式错误=======', e)
@@ -840,6 +837,7 @@ async function sendKeyMacro(id: MouseButtonType, value: number) {
 }
 
 const dpi_progress = ref(false)
+
 /** dpi设置 */
 async function sendDpi(index?: number) {
   dpi_progress.value = true
@@ -850,7 +848,7 @@ async function sendDpi(index?: number) {
     return arr
   }, [])
 
-  if (profileInfo.dpi_slider_active_index != index) {
+  if (profileInfo.dpi_slider_active_index !== index) {
     // eslint-disable-next-line ts/no-use-before-define
     dpi_slider_edit.value = null
     // eslint-disable-next-line ts/no-use-before-define
@@ -874,6 +872,7 @@ async function sendDpi(index?: number) {
   onExecutionSuccess()
 }
 // newLength: number | undefined, oldLength: number | undefined
+// Dpi加减
 async function sendDpiLength(type) {
   if (dpi_progress.value) {
     return
@@ -912,9 +911,9 @@ async function sendPolling(value: any) {
   profileInfo.polling_slider = value
   if (value < 5) {
     // 关闭竞技模式
-    profileInfo.sports_arena = 0
-    onSportsMode(0)
+    profileInfo.sports_arena === 1 && onSportsMode(0)
   }
+
   onExecutionSuccess()
 }
 
@@ -968,7 +967,10 @@ async function onSportsMode(type: any) {
   // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
   await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
 
+  await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
+
   profileInfo.sports_arena = type
+
   type === 1 && sendPolling(6)
 
   // eslint-disable-next-line ts/no-use-before-define
@@ -1537,7 +1539,7 @@ async function FPSChange(type) {
 
   // 会出现竞技模式打开 && 但是轮询率低于 4k 的情况, 这时候先关闭竞技模式, 在打开就行了, 就会自动打开 8k
   if (showMouseenter.value === 'FPS1') {
-    await onSportsMode(1)
+    onSportsMode(1)
   }
 
   profileInfo.FPS = !!type
@@ -1613,7 +1615,7 @@ function activeBgChange(type) {
 
   if (type === 'advanced') {
     nextTick(() => {
-      console.log(profileInfo.sensitivity, '切换到高级模式')
+      console.log('切换到高级模式')
       // 切换到高级 && 动态灵敏度是开着的情况下,去渲染折线图
       if (profileInfo.sensitivity === 1) {
         if (!profileInfo.sensitivityLineData.length) {
@@ -1635,19 +1637,10 @@ const chartUpdateTimer = ref<NodeJS.Timeout | null>(null)
 
 let flag = false
 
-let lastExecutionTime = 0
 let idleTimer = null
 let isMouseMoving = false
 
 function handleMouseMoveFn(event: MouseEvent) {
-  // 记录下触发的当前时间
-  const currentTime = Date.now()
-
-  // 判断是否超过 1 秒没执行
-
-  // 更新最后执行时间
-  lastExecutionTime = currentTime
-
   // 清除空闲计时器，重新设置
   clearTimeout(idleTimer)
   idleTimer = setTimeout(() => {
@@ -1893,6 +1886,7 @@ function initEcharts() {
             // 拖拽之后, 设置成自定义-无
             profileInfo.sensitivityModeIndex = 3
             lineDataMap[profileInfo.sensitivityModeIndex] = initData.value as any
+            // 存着用于分享
             profileInfo.sensitivityLineData = initData.value.map((item: any) => {
               return [Math.ceil(item[0]), Number(item[1].toFixed(1))]
             })
@@ -2268,6 +2262,7 @@ function selectMode(mode: number) {
   }
   profileInfo.sensitivityModeIndex = mode
   initData.value = JSON.parse(JSON.stringify(lineDataMap[mode]))
+  // 存着用于分享
   profileInfo.sensitivityLineData = initData.value as any
   initEcharts()
   lineDropChange()

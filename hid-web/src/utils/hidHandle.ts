@@ -549,6 +549,8 @@ export const keyMap: KeyMap = {
 
 type Listener<T = any> = (...args: T[]) => void
 
+const loading = null as any
+
 class EventEmitter {
   events: Record<string, Listener[]> = {}
 
@@ -759,6 +761,7 @@ class TransportWebHID extends Transport {
     }
 
     console.log('发送=========', this.reportId, arrayBuffer)
+
     if (timeout) {
       this.device.sendReport(this.reportId, arrayBuffer) // 有 timeout 说明耗时久，会报错，但是又能正常回复（鼠标BUG）！
       await sleep(100)

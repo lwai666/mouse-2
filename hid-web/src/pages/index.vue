@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { loadLanguageAsync } from '~/modules/i18n'
 
-import { createTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { createTransportWebHID, getTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 defineOptions({
   name: 'Scyrox',
@@ -68,7 +68,8 @@ nextTick(() => {
 const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
 
 async function onNouseClick(item: any) {
-  if (!instanceRef.value) {
+  const devices = await getTransportWebHID({ id: 'V8' })
+  if (!devices) {
     // 没有连接的设备
     return
   }
@@ -107,11 +108,9 @@ async function onAddNouseClick() {
 }
 
 function deleteTransport(item) {
-  let transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
-  // eslint-disable-next-line array-callback-return
+  const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
   transportList.value = transportListCopy.filter((k) => {
-    // eslint-disable-next-line ts/no-unused-expressions
-    k.reportId !== item.reportId
+    return k.reportId !== item.reportId
   })
   localStorage.setItem('transportList', JSON.stringify(transportList.value))
 }
@@ -174,7 +173,7 @@ function sortedColorItems(mouseColor: any) {
 
   return filteredItems
 }
-function onDisconnect(event: HIDConnectionEvent) {
+function onDisconnect() {
   instanceRef.value = null
 }
 
