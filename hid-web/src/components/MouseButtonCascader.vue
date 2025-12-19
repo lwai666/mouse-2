@@ -188,7 +188,7 @@ defineExpose({ show, open, close })
                     </p>
                     <img
                       style="margin-right: 5px;z-index: 100; width: 15px;"
-                      :src="active === 'active' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
+                      :src="active === 'active' ? '/v9/wenhao_active.png' : '/v9/wenhao.png'"
                       alt=""
                       srcset=""
                       @mouseenter="changeActive('active')" @mouseleave="changeActive('active')"
