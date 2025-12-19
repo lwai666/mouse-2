@@ -110,13 +110,13 @@ function validateInput() {
 
 const hongName = ref('')
 
-function setName(name:any) {
+function setName(name: any) {
   hongName.value = name
 }
 
 const active = ref('')
 
-function changeActive(type:string) {
+function changeActive(type: string) {
   if (active.value === type) {
     active.value = ''
     return
@@ -124,15 +124,15 @@ function changeActive(type:string) {
   active.value = type
 }
 
-const active1 = ref('')
+// const active1 = ref('')
 
-function changeActive1(type: string) {
-  if (active1.value === type) {
-    active1.value = ''
-    return
-  }
-  active1.value = type
-}
+// function changeActive1(type: string) {
+//   if (active1.value === type) {
+//     active1.value = ''
+//     return
+//   }
+//   active1.value = type
+// }
 
 const cascaderTopMapp: Record<number, string> = {
   2: '204px',
@@ -180,7 +180,7 @@ defineExpose({ mouseButtonCascaderRef })
               </p>
               <img
                 style="margin-right: 15px;"
-                :src="active === 'active' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
+                :src="active === 'active' ? '/v9/wenhao_active.png' : '/v9/wenhao.png'"
                 alt="" srcset="" @mouseenter="changeActive('active')" @mouseleave="changeActive('active')"
               >
             </div>

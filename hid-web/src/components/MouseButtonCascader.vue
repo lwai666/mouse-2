@@ -97,8 +97,6 @@ function onClick() {
   emit('click')
 }
 
-
-
 const hidden = ref(true)
 
 function onSelect(item: Option, parentValue?: number, index?: number) {
@@ -139,8 +137,8 @@ function mouseButtonClick() {
 }
 
 function executeFn(item) {
-  let kIndex = props.options.findIndex(k => k.value == 1999)
-  let cIndex = props.options[kIndex].children.findIndex(j => j.value == item.value)
+  const kIndex = props.options.findIndex(k => k.value == 1999)
+  const cIndex = props.options[kIndex].children.findIndex(j => j.value == item.value)
   onSelect(item, 1999, cIndex)
 }
 
@@ -153,7 +151,15 @@ function getShow(children: Option[]) {
   return true
 }
 
+const active = ref('')
 
+function changeActive(type: string) {
+  if (active.value === type) {
+    active.value = ''
+    return
+  }
+  active.value = type
+}
 
 defineExpose({ show, open, close })
 </script>
@@ -174,10 +180,26 @@ defineExpose({ show, open, close })
               <div class="relative flex items-center" style="width: max-content;">
                 <div
                   v-if="item.value > 1999 && item.label"
-                  style="z-index: 1; padding: 3px 10px; height: 21.68px;border-radius: 14px;background: #6A0A8280;color: #fff; font-size: 14px;"
-                  class="backgroundHover absolute left-[-76px] ml--3 flex items-center justify-center" @click.stop="executeFn(item)"
+                  class="absolute left-[-110px] ml--3 flex items-center justify-center"
                 >
-                  {{ t('button.macro_execute') }}
+                  <div class="relative flex items-center">
+                    <p v-if="active === 'active'" class="absolute right-[35px] w-[max-content]" style="color: #CF0EFF;max-width: 237px;">
+                      {{ t('button.macro_execution_description') }}
+                    </p>
+                    <img
+                      style="margin-right: 5px;z-index: 100; width: 15px;"
+                      :src="active === 'active' ? '/public/v9/wenhao_active.png' : '/public/v9/wenhao.png'"
+                      alt=""
+                      srcset=""
+                      @mouseenter="changeActive('active')" @mouseleave="changeActive('active')"
+                    >
+                    <!-- <div style="width: 15px;height: 15px;" /> -->
+                  </div>
+
+                  <div style="z-index: 1; width: max-content; min-width: 76px; padding: 3px 10px; height: 21.68px;border-radius: 14px;background: #6A0A8290;color: #fff; font-size: 14px;" class="backgroundHover ml-3 flex items-center justify-center" @click.stop="executeFn(item)">
+                    {{ t('button.macro_execute') }}
+                  </div>
+                  <!-- {{ t('button.macro_execute') }} -->
                 </div>
 
                 <span :class="[!disabled ? 'hover_text' : '']">
@@ -217,7 +239,7 @@ defineExpose({ show, open, close })
                 {{ t(child.label) }}
               </li>
             </ul>
-            <span v-if="!hidden && getShow(item.children)" @click.stop="onClick"  class="absolute" :class="cascaderTopMapp2[cascaderTop]" style="color: red;right:102% ;"> <span style="font-size: 20px;margin-right: 10px;"><</span>{{ t('title.no_available_macros') }}</span>
+            <span v-if="!hidden && getShow(item.children)" class="absolute" :class="cascaderTopMapp2[cascaderTop]" style="color: red;right:102% ;" @click.stop="onClick"> <span style="font-size: 20px;margin-right: 10px;"><</span>{{ t('title.no_available_macros') }}</span>
           </template>
         </li>
       </ul>

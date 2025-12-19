@@ -1,6 +1,6 @@
-import { ElMessage } from 'element-plus';
+import { ElMessage } from 'element-plus'
 
-export const showMessage = (message: string) => {
+export function showMessage(message: string) {
   ElMessage({
     dangerouslyUseHTMLString: true,
     customClass: 'custom-class-el-message',
@@ -14,5 +14,5 @@ export const showMessage = (message: string) => {
         </div>
       </div>
     `,
-  });
-};
+  })
+}

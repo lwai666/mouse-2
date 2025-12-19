@@ -275,7 +275,7 @@ const mouseButtonValue = computed(() => {
   }
 })
 
-let profileList = reactive([
+const profileList = reactive([
   { title: 'Profile 1', base64: '', uint8Array: [], value: undefined },
   { title: 'Profile 2', base64: '', uint8Array: [], value: undefined },
   { title: 'Profile 3', base64: '', uint8Array: [], value: undefined },
@@ -771,7 +771,9 @@ async function setProfile(index: number, type: string) {
   // 用于回显折线图
   if (newProfileInfo.sensitivityLineData.length) {
     initData.value = newProfileInfo.sensitivityLineData
-    initEcharts()
+    nextTick(() => {
+      initEcharts()
+    })
   }
 
   setProfileInfo(active_profile_index.value)
@@ -905,10 +907,9 @@ async function sendDpiLength(type) {
 }
 
 /** 设置回报率 */
-async function sendPolling(value) {
-  profileInfo.polling_slider = value
+async function sendPolling(value: any) {
   await transport.value.send([0x0C, 0x00, 0x01, profileInfo.polling_slider])
-
+  profileInfo.polling_slider = value
   if (value < 5) {
     // 关闭竞技模式
     profileInfo.sports_arena = 0
@@ -965,10 +966,11 @@ async function sendAngle() {
 /** 设置性能模式（电竞模式） */
 async function onSportsMode(type: any) {
   // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
+  await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
 
   profileInfo.sports_arena = type
   type === 1 && sendPolling(6)
-  await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
+
   // eslint-disable-next-line ts/no-use-before-define
   bottomItem.value = 0
   onExecutionSuccess()
@@ -1147,6 +1149,7 @@ const leftHintCode = ref('')
 const leftTransitionShow = ref(true)
 let leftHintCodeTimer: NodeJS.Timeout = setTimeout(() => {}, 0)
 const setLeftHintCode = useThrottleFn((code: string) => {
+  console.log(code, 'codecode')
   if (leftHintCode.value === code)
     return
   clearTimeout(leftHintCodeTimer)
@@ -1381,6 +1384,8 @@ function onDragOver(event: DragEvent, index: number) {
     // 放在当前项下方
     dropLinePosition.value = listItem.offsetTop + listItem.offsetHeight
   }
+
+  recordedKeyHighlightIndex.value = index
 }
 
 function onDrop(event: DragEvent, dropIndex: number) {
@@ -1453,10 +1458,18 @@ useTransportWebHID('v8', async (instance) => {
   initProfile()
 })
 
+const ElDropdownRef = ref(null)
+
 onMounted(() => {
   userStore.fetchLatestVersion()
   const tabActive = localStorage.getItem('tabActive') ? localStorage.getItem('tabActive') : 'performance'
   activeBgChange(tabActive)
+
+  console.log(ElDropdownRef.value, 'ElDropdownRef')
+
+  // const dropdownMenu = this.$refs['elDropdown'].$children[0] // 找到dropdown下面的dropdownMenu
+  // dropdownMenu.$data.currentPlacement = 'start'
+
   autofit.init({
     dh: 1080,
     dw: 1920,
@@ -2018,7 +2031,7 @@ const buttonType = ref('share')
 
 const profileInputField = ref()
 
-let dblClickIndex = ref()
+const dblClickIndex = ref()
 
 async function onProfileDblClick() {
   isEditingProfile.value = true
@@ -2272,10 +2285,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     </a>
 
     <div class="logo-box absolute right-90px top-50px">
-      <img v-for="item in selectLanguageList" :key="item.title" class="h-38px w-38px" :src="item.img" :alt="item.title" style="margin-bottom: 5px;border-radius:50%; object-fit: cover;" @click="toggleLocales(item.language)">
+      <img v-for="item in selectLanguageList" :key="item.title" class="h-38px w-38px" :src="item.img" :alt="item.title" style="margin-bottom: 12px;border-radius:50%; object-fit: cover;" @click="toggleLocales(item.language)">
     </div>
 
-    <div class="profile-item absolute right-190px top-260px w-24% flex items-center">
+    <div class="profile-item absolute right-190px top-260px w-24% flex items-center" style="height: 50px;">
       <template v-if="isEditingProfile">
         <ElInput
           ref="profileInputField"
@@ -2674,7 +2687,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <span style="border: 0; justify-content: flex-start; background: transparent">{{ t('title.key_list') }}</span>
                     </div>
 
-                    <ElDropdown :teleported="false" class="" trigger="click" popper-class="custom-popper custom-dropdown-popper" @command="insertMacro">
+                    <ElDropdown ref="ElDropdownRef" :teleported="false" class="" trigger="click" popper-class="custom-popper custom-dropdown-popper" @command="insertMacro">
                       <div class="flex items-center justify-center" style="width: 122px;height: 36px;  background-color: #242424;;border-radius: 30px">
                         {{ t('macro.insertMacro') }}
                         <ElIcon class="absolute right-3" style="margin-left: 10px;" size="20" color="#DAFF00">
@@ -2709,13 +2722,16 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div class="relative flex">
                     <div ref="keyboardRecordingListRef" class="hide-scrollbar right-s-b relative overflow-auto" style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;">
                       <ul ref="innerRef">
-                        <!-- <div v-if="isDragging" class="absolute z-10 h-[2px] w-full bg-blue-500 transition-all duration-200" :style="{ top: `${dropLinePosition}px` }" /> -->
+                        <div
+                          v-if="isDragging" class="absolute z-10 h-[2px] w-full transition-all duration-200" style="border-top:2px dashed #daff00" :style="{ top: `${dropLinePosition}px`,
+                          }"
+                        />
                         <li
                           v-for="(item, index) in recordedKeys"
                           :key="index"
                           class="hong_active"
                           :class="[recordedKeyHighlightIndex === index ? 'hong' : '']"
-                          style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 8px;"
+                          style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 10px;"
                           draggable="true"
                           @click="recordedKeyHighlightIndex = index"
                           @dragstart="onDragStart($event, index)"
@@ -3287,6 +3303,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
   }
 
   .left-item-box > div {
+    padding-right: 35px;
     font-size: 20px;
     width: 219px;
     height: 107px;
@@ -3555,6 +3572,14 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     --el-input-text-color: #fff;
   }
 }
+.el-dropdown-menu__item {
+  width: 90%;
+  display: flex;
+  justify-content: center;
+  border-radius: 5px;
+  padding: 0 16px;
+  margin-bottom: 5px;
+}
 .el-dropdown-menu__item:not(.is-disabled):focus {
   background-color: #daff00;
   color: #333;
@@ -3562,6 +3587,19 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 .el-dropdown-menu__item:hover {
   background-color: #daff00 !important;
   color: #333 !important;
+}
+
+.custom-popper {
+  top: 40px !important;
+  left: 0px !important;
+  width: 100%;
+  .el-dropdown-menu {
+    background-color: #21212190;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 5px;
+  }
 }
 
 .slider1 .el-slider__button {

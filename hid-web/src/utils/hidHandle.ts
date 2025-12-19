@@ -1,4 +1,6 @@
+import { ElLoading, ElMessage } from 'element-plus'
 import { type App, inject } from 'vue'
+
 import { sleep } from '.'
 
 export interface IResult {
@@ -13,6 +15,8 @@ interface KeyItem {
 }
 
 type KeyMap = Record<string, KeyItem>
+
+let loadingRef: any = null
 
 export const keyMap: KeyMap = {
   Escape: {
@@ -660,6 +664,10 @@ class TransportWebHID extends Transport {
     const data = new Uint8Array(e.data.buffer)
     console.log('回复=========', data)
 
+    loadingRef && loadingRef.close()
+
+    loadingRef = null
+
     // 错误应答处理
     if (data[this.packetSize - 3] === 1) {
       // 错误次数计数
@@ -729,9 +737,26 @@ class TransportWebHID extends Transport {
 
     const type = data[0]
     const sendPromise = new Promise((resolve, reject) => {
-      const timer = setTimeout(() => this.replyPromiseMap[type]?.reject(`0x${type.toString(16)} Response timeout`), timeout || 5000)
+      const timer = setTimeout(
+        () => {
+          this.replyPromiseMap[type]?.reject(`0x${type.toString(16)} Response timeout`)
+          loadingRef && loadingRef.close()
+          loadingRef = null
+          showMessage(`0x${type.toString(16)} Response timeout`)
+        },
+        timeout || 5000,
+      )
       this.replyPromiseMap[type] = { reject, resolve: (data: any) => { clearTimeout(timer); resolve(data) } }
     })
+
+    if (!loadingRef) {
+      loadingRef = ElLoading.service({
+        lock: true,
+        text: '',
+        spinner: 'none',
+        background: 'rgba(0, 0, 0, 0.7)',
+      })
+    }
 
     console.log('发送=========', this.reportId, arrayBuffer)
     if (timeout) {
@@ -775,7 +800,7 @@ export async function createTransportWebHID(config: { id: string, filters: HIDDe
   const devices = typeof window !== 'undefined' ? await window.navigator.hid.requestDevice({ filters: config.filters }) : []
   if (devices.length == 0) { return false }
 
-  let currentTransportWebHID = transportWebHID?._s.get(config.id)
+  const currentTransportWebHID = transportWebHID?._s.get(config.id)
   if (currentTransportWebHID) {
     return currentTransportWebHID
   }
