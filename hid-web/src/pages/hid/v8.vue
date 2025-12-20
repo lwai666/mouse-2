@@ -2311,8 +2311,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
       </ElButton>
 
       <img style="margin-left: 10px;width: 20px ;height: 20px;" :src="`/v9/wenhao${hover === 'share' ? '_active' : ''}.png`" srcset="" @mouseenter="mouseenter('share')" @mouseleave="mouseenter('share')">
-
-      <p v-if="hover === 'share'" class="absolute top-8 w-[401px]" style="font-size:16px; color:#DAFF00;text-align: left;">
+      <!--  -->
+      <p v-if="hover === 'share'" class="absolute top-12 w-[88%]" style="font-size:15px; color:#DAFF00;text-align: left;">
         <!-- 已复制当前模式所有设置，可以通过粘贴分享给好友应用
         应用时双击横杠上代码点击鼠标右键粘贴替换，应用即可 -->
         {{ t('tips.application.description') }}
