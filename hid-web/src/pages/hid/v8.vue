@@ -1390,8 +1390,11 @@ function onDragOver(event: DragEvent, index: number) {
   recordedKeyHighlightIndex.value = index
 }
 
-function onDrop(event: DragEvent, dropIndex: number) {
+function dragend() {
   isDragging.value = false
+}
+
+function onDrop(event: DragEvent, dropIndex: number) {
   dragIndex.value = undefined
   dropLinePosition.value = 0
 
@@ -2733,6 +2736,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           @dragover="onDragOver($event, index)"
                           @dragenter.prevent
                           @drop="onDrop($event, index)"
+                          @dragend="dragend"
                         >
                           <div class="flex items-center">
                             <ElSpace>
