@@ -180,14 +180,15 @@ defineExpose({ show, open, close })
               <div class="relative flex items-center" style="width: max-content;">
                 <div
                   v-if="item.value > 1999 && item.label"
-                  class="absolute left-[-110px] ml--3 flex items-center justify-center"
+                  class="absolute right-[78px] ml--3 flex items-center justify-center"
                 >
                   <div class="relative flex items-center">
-                    <p v-if="active === 'active'" class="absolute right-[35px] w-[max-content]" style="color: #CF0EFF;max-width: 237px;">
+                    <!-- v-if="active === 'active'"  -->
+                    <p v-if="active === 'active'" class="w-[max-content]" style="color: #CF0EFF;">
                       {{ t('button.macro_execution_description') }}
                     </p>
                     <img
-                      style="margin-right: 5px;z-index: 100; width: 15px;"
+                      style="margin:0 10px;z-index: 100; width: 15px;"
                       :src="active === 'active' ? '/v9/wenhao_active.png' : '/v9/wenhao.png'"
                       alt=""
                       srcset=""

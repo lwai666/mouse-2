@@ -3593,7 +3593,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
   left: 0px !important;
   width: 100%;
   .el-dropdown-menu {
-    background-color: #21212190;
+    background-color: #212121;
     display: flex;
     flex-direction: column;
     align-items: center;
