@@ -2729,7 +2729,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           :key="index"
                           class="hong_active"
                           :class="[recordedKeyHighlightIndex === index ? 'hong' : '']"
-                          style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 10px;"
+                          style="width: 100%;padding: 6px 55px 6px 15px;background-color: #2F2F2F; border-radius: 30px; display: flex; align-items: center; justify-content: space-between;margin-bottom: 5px;"
                           draggable="true"
                           @click="recordedKeyHighlightIndex = index"
                           @dragstart="onDragStart($event, index)"
