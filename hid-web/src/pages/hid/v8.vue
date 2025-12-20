@@ -2721,7 +2721,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div ref="keyboardRecordingListRef" class="hide-scrollbar right-s-b relative overflow-auto" style="width: 100%; height:387px; margin-top: 8px;padding-top: 20px; justify-content: normal;">
                       <ul ref="innerRef">
                         <div
-                          v-if="isDragging" class="absolute z-10 h-[2px] w-full transition-all duration-200" style="border-top:2px dashed #daff00" :style="{ top: `${dropLinePosition}px`,
+                          v-if="isDragging" class="absolute z-10 h-[2px] w-full transition-all duration-200" style="border-top:4px dashed purple" :style="{ top: `${dropLinePosition}px`,
                           }"
                         />
                         <li
