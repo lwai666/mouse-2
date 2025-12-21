@@ -104,10 +104,29 @@ function resetConnection() {
   userStore.mouseButtonStatus = 'normal'
 }
 
+function containsNode(parent: any, child: any) {
+  return child.closest(parent)
+}
+
 function handleClickOutside(event: MouseEvent) {
   const cascaderElement = document.querySelector('.mouse-button-container')
-  if (cascaderElement && !cascaderElement.contains(event.target as Node)) {
-    console.log(mouseButtonItemRef.value, userStore.mouseButtonStatus,111111)
+  const macroElement = document.querySelector('.macro-container')
+
+  if (macroElement) {
+    if (!containsNode('.macro-container', event.target)) {
+      if (mouseButtonItemRef.value) {
+        mouseButtonItemRef.value.forEach((item: any) => {
+          item.mouseButtonCascaderRef?.close()
+        })
+        const showList = mouseButtonList.value.filter(i => i.show)
+        if (showList.length === 1) {
+          onClick(showList[0].id)
+        }
+      }
+    }
+  }
+
+  if ((cascaderElement && !cascaderElement.contains(event.target as Node))) {
     if (mouseButtonItemRef.value) {
       mouseButtonItemRef.value.forEach((item: any) => {
         item.mouseButtonCascaderRef?.close()
@@ -119,8 +138,6 @@ function handleClickOutside(event: MouseEvent) {
     }
   }
 }
-
-
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
@@ -135,6 +152,6 @@ defineExpose({ onConnection, resetConnection })
 
 <template>
   <div class="mouse-button-container">
-    <MouseButtonItem v-for="item in mouseButtonList" :id="item.id" ref="mouseButtonItemRef" :key="item.id" :class="{ hidden: !item.show }" v-bind="item" :status="userStore.mouseButtonStatus" :macro-index="macroIndex" @click="onClick(item.id)" @change="onChange"  />
+    <MouseButtonItem v-for="item in mouseButtonList" :id="item.id" ref="mouseButtonItemRef" :key="item.id" :class="{ hidden: !item.show }" v-bind="item" :status="userStore.mouseButtonStatus" :macro-index="macroIndex" @click="onClick(item.id)" @change="onChange" />
   </div>
 </template>

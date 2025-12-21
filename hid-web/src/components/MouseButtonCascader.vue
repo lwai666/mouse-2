@@ -181,6 +181,7 @@ defineExpose({ show, open, close })
                 <div
                   v-if="item.value > 1999 && item.label"
                   class="absolute right-[78px] ml--3 flex items-center justify-center"
+                  @click.stop
                 >
                   <div class="relative flex items-center">
                     <!-- v-if="active === 'active'"  -->
@@ -194,13 +195,11 @@ defineExpose({ show, open, close })
                       srcset=""
                       @mouseenter="changeActive('active')" @mouseleave="changeActive('active')"
                     >
-                    <!-- <div style="width: 15px;height: 15px;" /> -->
                   </div>
 
                   <div style="z-index: 1; width: max-content; min-width: 76px; padding: 3px 10px; height: 21.68px;border-radius: 14px;background: #6A0A8290;color: #fff; font-size: 14px;" class="backgroundHover ml-3 flex items-center justify-center" @click.stop="executeFn(item)">
                     {{ t('button.macro_execute') }}
                   </div>
-                  <!-- {{ t('button.macro_execute') }} -->
                 </div>
 
                 <span :class="[!disabled ? 'hover_text' : '']">

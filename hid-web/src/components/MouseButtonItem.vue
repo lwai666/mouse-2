@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { MouseButtonStatus, ProfileInfoType } from '~/types'
-import { ElRadio, ElRadioGroup } from 'element-plus'
 import { deepClone } from '~/utils'
 // import { TransportWebHIDInstance } from '~/utils/hidHandle'
 
@@ -21,18 +20,23 @@ const emit = defineEmits(['click', 'change'])
 
 const { t } = useI18n()
 
-const setLeftHintCode = inject<(str: string) => void>('setLeftHintCode')
+// const setLeftHintCode = inject<(str: string) => void>('setLeftHintCode')
 
 const mouseButtonCascaderRef = ref()
 
 // const value = useVModel(props, "value", emit);
 
-const constants = useConstants(t)
+// const constants = useConstants(t)
 
 const profileInfo = inject<ProfileInfoType>('profileInfo')
 const language = inject('language')
 
 // const transport = inject<Ref<TransportWebHIDInstance>>('transport');
+
+const sendData = ref({
+  cycleTimes: 1,
+  cycleMode: 4,
+})
 
 const options = ref()
 watch(() => profileInfo?.macroList, () => {
@@ -42,6 +46,14 @@ watch(() => profileInfo?.macroList, () => {
     item.label = profileInfo?.macroList[index]?.name
   })
   options.value = deepClone(constants.mouseKeyOptions)
+
+  console.log(profileInfo.macroList[props.macroIndex],'propspropspropsprops')
+
+  if(profileInfo.macroList[props.macroIndex] && profileInfo.macroList[props.macroIndex].connections && profileInfo.macroList[props.macroIndex].connections.length){
+    sendData.value = profileInfo.macroList[props.macroIndex].connections[0]
+  }
+
+
 }, { immediate: true, deep: true })
 
 watch(() => language, () => {
@@ -53,10 +65,9 @@ watch(() => language, () => {
   options.value = deepClone(constants.mouseKeyOptions)
 }, { immediate: true, deep: true })
 
-const sendData = ref({
-  cycleTimes: 1,
-  cycleMode: 4,
-})
+
+
+
 
 async function onEnterKey() {
   // props.id, // 按键ID [Left Wheel Right Forward Back dpi]
@@ -90,7 +101,6 @@ const cursorClass = computed(() => {
 
 function onClick() {
   emit('click')
-
   if (mouseButtonCascaderRef.value?.show) {
     mouseButtonCascaderRef.value?.close()
   }
@@ -123,16 +133,6 @@ function changeActive(type: string) {
   }
   active.value = type
 }
-
-// const active1 = ref('')
-
-// function changeActive1(type: string) {
-//   if (active1.value === type) {
-//     active1.value = ''
-//     return
-//   }
-//   active1.value = type
-// }
 
 const cascaderTopMapp: Record<number, string> = {
   2: '204px',
@@ -172,7 +172,7 @@ defineExpose({ mouseButtonCascaderRef })
           {{ hongName }}
         </div>
 
-        <div class="absolute left-[-150px] top--100px">
+        <div class="macro-container absolute left-[-150px] top--100px">
           <div class="flex items-center">
             <div class="relative flex items-center" style="margin-right: 10px;">
               <p v-if="active === 'active'" class="absolute right-[50px] w-[max-content]" style="color: #159FFF;max-width: 450px;">
@@ -192,7 +192,7 @@ defineExpose({ mouseButtonCascaderRef })
               <input v-model="sendData.cycleTimes" type="number" :min="1" :max="40" class="w-10 border-b border-white bg-transparent text-center" @keyup.enter="onEnterKey" @click.stop="() => {}" @input="validateInput">
               <div>{{ t('mouseConnection.times') }}</div>
             </div>
-            <div style="padding: 3px 8px; min-width: 60px; height: 21.68px;border-radius: 14px;background: #0E5383;color: #fff; font-size: 14px;" class="ml-3 flex items-center justify-center" @click="onEnterKey">
+            <div style="padding: 3px 8px; min-width: 60px; height: 21.68px;border-radius: 14px;background: #0E538380;color: #fff; font-size: 14px;" class="hover1 ml-3 flex items-center justify-center" @click="onEnterKey">
               {{ t('macro.confirm') }}
             </div>
           </div>
@@ -244,6 +244,11 @@ defineExpose({ mouseButtonCascaderRef })
     background: #daff00 !important;
     color: #333 !important;
   }
+
+  .hover1:hover {
+    background: #0e5383 !important;
+  }
+
   /* .mouse-button-item-radio-group .el-radio {
     --el-radio-text-color: #fff;
 

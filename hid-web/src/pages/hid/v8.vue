@@ -1052,7 +1052,7 @@ function onClickPecordBtn() {
 }
 
 function recordedKeyMaxCheck() {
-  if (recordedKeys.value.length >= 12) {
+  if (recordedKeys.value.length >= 64) {
     setLoadingStatus(t('index.record_macro_warning'))
     return false
   }
@@ -1318,8 +1318,13 @@ function insertMacro(command: number) {
       )
     }
     else {
-      recordedKeys.value.splice(index + 1, 0, { key: mouseButton[command], type: 1, keyCode: command, keyStatus: 0xB1, intervalTime: 10 }, { key: mouseButton[command], type: 0, keyCode: command, keyStatus: 0xB0, intervalTime: 10 },
-      )
+      recordedKeys.value.splice(index + 1, 0, {
+        key: mouseButton[command],
+        type: 1,
+        keyCode: command,
+        keyStatus: 0xB1,
+        intervalTime: 10,
+      }, { key: mouseButton[command], type: 0, keyCode: command, keyStatus: 0xB0, intervalTime: 10 })
     }
   }
 }
@@ -2169,11 +2174,11 @@ function changeModeHide() {
 }
 
 const selectLanguageList = ref([
-  { title: '简体中文', img: '/flag/CN.png', language: 'zh-CN' },
-  { title: 'Deutsch', img: '/flag/DE.png', language: 'de-DE' },
-  { title: 'English', img: '/flag/US.png', language: 'en-US' },
-  { title: '한국어', img: '/flag/KR.png', language: 'ko-KR' },
-  { title: '日本語', img: '/flag/JP.png', language: 'ja-JP' },
+  { title: '简体中文', img: '/flag/CN1.png', language: 'zh-CN' },
+  { title: 'Deutsch', img: '/flag/DE1.png', language: 'de-DE' },
+  { title: 'English', img: '/flag/US1.png', language: 'en-US' },
+  { title: '한국어', img: '/flag/KR1.png', language: 'ko-KR' },
+  { title: '日本語', img: '/flag/JP1.png', language: 'ja-JP' },
 ])
 
 toggleLocales(locale.value)
@@ -2274,6 +2279,8 @@ function selectMode(mode: number) {
 provide('createHong', createHong)
 
 provide('mouseButtonClickFn', mouseButtonClickFn)
+
+
 </script>
 
 <template>
@@ -2283,7 +2290,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     </a>
 
     <div class="logo-box absolute right-90px top-50px">
-      <img v-for="item in selectLanguageList" :key="item.title" class="h-38px w-38px" :src="item.img" :alt="item.title" style="margin-bottom: 12px;border-radius:50%; object-fit: cover;" @click="toggleLocales(item.language)">
+      <img v-for="item in selectLanguageList" :key="item.title" class="h-38px w-38px" :src="item.img" :alt="item.title" style="margin-bottom: 10px;border-radius:50%;" @click="toggleLocales(item.language)">
     </div>
 
     <div class="profile-item absolute right-190px top-260px w-24% flex items-center" style="height: 50px;">
