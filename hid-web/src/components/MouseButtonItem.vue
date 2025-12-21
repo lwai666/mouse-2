@@ -71,6 +71,7 @@ watch(() => language, () => {
 
 async function onEnterKey() {
   // props.id, // 按键ID [Left Wheel Right Forward Back dpi]
+  sendData.value.cycleMode = 4
   emit('change', props.id, 2000 + props.macroIndex, 1999, {
     cycleTimes: sendData.value.cycleTimes, // 循环次数
     cycleMode: 4, // 循环模式
