@@ -376,7 +376,6 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     // 获取组合按键宏
     else if (res[0] === 8) {
       const connectionlist = chunkArray([...res.slice(3, 3 + res[2] * 4)], 4)
-
       connectionlist.forEach(([cycleMode, cycleTimes, mouseButtonIndex, macroIndex]: number[]) => {
         profileInfo.macroList[macroIndex].connections.push({
           cycleMode,
@@ -478,6 +477,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     // 获取宏录制 [0x1A, 0x1B, 0x1C, 0x1D]
     else if ([26, 27, 28, 29].includes(res[0])) {
       const data = chunkArray([...res.slice(3, 3 + res[2] * 4)], 4)
+      console.log(data,'宏按键返回')
       const recordedKey = data.map(([keyCode, keyStatus, high8Bits, low8Bits]) => {
         const intervalTime = combineLowAndHigh8Bits(low8Bits, high8Bits)
         const key = keyMap[Object.keys(keyMap).find(key => keyMap[key].value === keyCode) || '']?.text
@@ -1253,7 +1253,7 @@ async function addMacroFn() {
 }
 
 // 保存宏
-async function addMacro() {
+async function saveMacro() {
   // 停止录制
   if (isRecording.value) {
     onClickPecordBtn()
@@ -1285,9 +1285,31 @@ async function addMacro() {
     return [item.keyCode, item.keyStatus, _high, _low]
   })
 
+ 
+
   console.log('添加组合键宏球=======', macroIndex + 1)
 
-  await transport.value.send([0x1A + macroIndex, 0x00, recordedKeys.value.length, ...data.flat()])
+  // 分包发送
+  // 52 字节一个包 code + status + high + low 一个按键是 4个字节 52 刚好够除, 加上 id 索引 length   发送状态 Checksum
+
+  const num = Math.ceil(data!.flat()!.length / 56)
+  for (let i = 0; i < num; i++) {
+    const index = num - 1 - i
+    const sendData = data!.flat()!.slice(i * 56, (i + 1) * 56)
+    console.log(sendData, 'sendData')
+    try {
+      await transport.value.send([0x1A + macroIndex, index, sendData.length / 4, ...sendData])
+    }
+    catch (err) {
+      console.error(err)
+      return
+    }
+  }
+
+
+  console.log('添加组合键宏球=======', macroIndex + 1)
+
+  // await transport.value.send([0x1A + macroIndex, 0x00, recordedKeys.value.length, ...data.flat()])
 
   console.log('设置宏按键名字=======', macroName)
 
@@ -2793,7 +2815,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div>{{ isRecording ? t('macro.stopRecording') : t('macro.startRecording') }}</div>
                     <div>{{ t('macro.recordMacro') }}</div>
                   </div>
-                  <div style="height: 63px; line-height: 63px; text-align: center; width: 123px;border: 1px solid #DAFF00; border-radius: 10px;margin-top: 20px;background:#242424 ;" @click="addMacro">
+                  <div style="height: 63px; line-height: 63px; text-align: center; width: 123px;border: 1px solid #DAFF00; border-radius: 10px;margin-top: 20px;background:#242424 ;" @click="saveMacro">
                     <!-- 保 存 -->
                     {{ t('macro.saveMacro') }}
                   </div>
