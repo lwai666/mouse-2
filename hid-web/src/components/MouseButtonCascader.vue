@@ -85,6 +85,10 @@ const currentOptions = computed<Option[]>(() => {
 })
 
 function cascaderListClass(item: Option) {
+
+  if(!item.value && item.value != 0){
+    return 'opacity-100 pointer-events-auto'
+  }
   if (showChildren.value) {
     return item.value === showChildren.value ? 'opacity-100 pointer-events-auto' : 'opacity-0'
   }
@@ -170,7 +174,7 @@ defineExpose({ show, open, close })
       <ul class="mouse-button-cascader__list">
         <li
           v-for="(item) in currentOptions"
-          :key="item.value"
+          :key="item?.value"
           :class="cascaderListClass(item)"
           class="relative transition-all duration-500"
           @click="disabled ? mouseButtonClick() : (value === item.value ? onClick() : onSelect(item))"

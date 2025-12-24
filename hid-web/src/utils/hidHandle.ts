@@ -666,9 +666,10 @@ class TransportWebHID extends Transport {
     const data = new Uint8Array(e.data.buffer)
     console.log('回复=========', data)
 
-    loadingRef && loadingRef.close()
-
-    loadingRef = null
+    setTimeout(()=>{
+      loadingRef && loadingRef.close()
+      loadingRef = null
+    },800)
 
     // 错误应答处理
     if (data[this.packetSize - 3] === 1) {

@@ -488,8 +488,8 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
           keyStatus,
           intervalTime,
         }
-      })
-      profileInfo.macroList[res[0] - 26].value = recordedKey
+      });
+      (profileInfo.macroList[res[0] - 26].value as any).push(...recordedKey)
     }
   })
 
@@ -587,13 +587,20 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
   }
 
   // 获取宏录制 [0x1A, 0x1B, 0x1C, 0x1D]
-  profileInfo.macroList.forEach((macro: Macro, macroIndex: number) => {
+  profileInfo.macroList.forEach( (macro: Macro, macroIndex: number) => {
     if (macro.value.length) {
       const recordedKey = macro.value.reduce((arr: number[], { keyCode, keyStatus, intervalTime }: any) => {
         arr.push(keyCode, keyStatus, ...getLowAndHigh8Bits(intervalTime).reverse())
         return arr
       }, [])
-      uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1A + macroIndex, 0, macro.value.length, ...recordedKey])))
+      // 分包发送
+      // 52 字节一个包 code + status + high + low 一个按键是 4个字节 52 刚好够除, 加上 id 索引 length   发送状态 Checksum
+      const num = Math.ceil(recordedKey!.flat()!.length / 56)
+      for (let i = 0; i < num; i++) {
+        const index = num - 1 - i
+        const sendData = recordedKey!.flat()!.slice(i * 56, (i + 1) * 56)
+        uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1A + macroIndex, index, sendData.length / 4, ...sendData])))
+      } 
     }
   })
 
@@ -1230,13 +1237,29 @@ async function addMacroFn() {
 
   const macroName = `Macro ${macroIndex + 1}`
 
-  const data = recordedKeys.value.map((item) => {
+  const data = recordedKeys.value.map((item:any) => {
     const [_low, _high] = getLowAndHigh8Bits(item.intervalTime)
     return [item.keyCode, item.keyStatus, _high, _low]
   })
 
+ 
   console.log('添加组合键宏球=======', macroIndex + 1)
-  await transport.value.send([0x1A + macroIndex, 0x00, recordedKeys.value.length, ...data.flat()])
+
+  // 分包发送
+  // 52 字节一个包 code + status + high + low 一个按键是 4个字节 52 刚好够除, 加上 id 索引 length   发送状态 Checksum
+  const num = Math.ceil(data!.flat()!.length / 56)
+  for (let i = 0; i < num; i++) {
+    const index = num - 1 - i
+    const sendData = data!.flat()!.slice(i * 56, (i + 1) * 56)
+    console.log(sendData, 'sendData')
+    try {
+      await transport.value.send([0x1A + macroIndex, index, sendData.length / 4, ...sendData])
+    }
+    catch (err) {
+      console.error(err)
+      return
+    }
+  }
 
   console.log('设置宏按键名字=======', macroName)
   const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
@@ -1291,7 +1314,6 @@ async function saveMacro() {
 
   // 分包发送
   // 52 字节一个包 code + status + high + low 一个按键是 4个字节 52 刚好够除, 加上 id 索引 length   发送状态 Checksum
-
   const num = Math.ceil(data!.flat()!.length / 56)
   for (let i = 0; i < num; i++) {
     const index = num - 1 - i
