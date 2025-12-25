@@ -1356,7 +1356,7 @@ async function saveMacro() {
 // 录制宏插入
 function insertMacro(command: number) {
   const index = recordedKeyHighlightIndex.value === undefined ? recordedKeys.value.length : recordedKeyHighlightIndex.value
-  if (recordedKeys.value.length <= 10) {
+  if (recordedKeys.value.length <= 62) {
     if (command === 5) {
       recordedKeys.value.splice(index + 1, 0, { key: 'A', type: 1, keyCode: 4, keyStatus: 1, intervalTime: 10 }, { key: 'A', type: 0, keyCode: 4, keyStatus: 0, intervalTime: 10 },
       )
