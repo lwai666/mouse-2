@@ -477,7 +477,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     // 获取宏录制 [0x1A, 0x1B, 0x1C, 0x1D]
     else if ([26, 27, 28, 29].includes(res[0])) {
       const data = chunkArray([...res.slice(3, 3 + res[2] * 4)], 4)
-      console.log(data,'宏按键返回')
+      console.log(data, '宏按键返回')
       const recordedKey = data.map(([keyCode, keyStatus, high8Bits, low8Bits]) => {
         const intervalTime = combineLowAndHigh8Bits(low8Bits, high8Bits)
         const key = keyMap[Object.keys(keyMap).find(key => keyMap[key].value === keyCode) || '']?.text
@@ -587,7 +587,7 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
   }
 
   // 获取宏录制 [0x1A, 0x1B, 0x1C, 0x1D]
-  profileInfo.macroList.forEach( (macro: Macro, macroIndex: number) => {
+  profileInfo.macroList.forEach((macro: Macro, macroIndex: number) => {
     if (macro.value.length) {
       const recordedKey = macro.value.reduce((arr: number[], { keyCode, keyStatus, intervalTime }: any) => {
         arr.push(keyCode, keyStatus, ...getLowAndHigh8Bits(intervalTime).reverse())
@@ -600,7 +600,7 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
         const index = num - 1 - i
         const sendData = recordedKey!.flat()!.slice(i * 56, (i + 1) * 56)
         uint8Array.push(transport.value.generatePacket(new Uint8Array([0x1A + macroIndex, index, sendData.length / 4, ...sendData])))
-      } 
+      }
     }
   })
 
@@ -1237,12 +1237,11 @@ async function addMacroFn() {
 
   const macroName = `Macro ${macroIndex + 1}`
 
-  const data = recordedKeys.value.map((item:any) => {
+  const data = recordedKeys.value.map((item: any) => {
     const [_low, _high] = getLowAndHigh8Bits(item.intervalTime)
     return [item.keyCode, item.keyStatus, _high, _low]
   })
 
- 
   console.log('添加组合键宏球=======', macroIndex + 1)
 
   // 分包发送
@@ -1308,8 +1307,6 @@ async function saveMacro() {
     return [item.keyCode, item.keyStatus, _high, _low]
   })
 
- 
-
   console.log('添加组合键宏球=======', macroIndex + 1)
 
   // 分包发送
@@ -1327,7 +1324,6 @@ async function saveMacro() {
       return
     }
   }
-
 
   console.log('添加组合键宏球=======', macroIndex + 1)
 
@@ -2323,8 +2319,6 @@ function selectMode(mode: number) {
 provide('createHong', createHong)
 
 provide('mouseButtonClickFn', mouseButtonClickFn)
-
-
 </script>
 
 <template>
@@ -2983,11 +2977,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                 </div>
                 <Transition name="slide-right">
                   <div v-if="showMouseenter === 'showMouseenter'" style="padding: 25px 100px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
-                    <div>
+                    <div style="margin-right: 50px;">
                       <div style="font-size: 20px;text-align: left">
                         {{ t('macro.dynamicSensitivity') }}
                       </div>
-                      <div style="width: 215px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                      <div style="text-align: left; color: #A6A6A6;margin-top: 10px;">
                         {{ t('description.main_ui_subheading') }}
                       </div>
                     </div>
