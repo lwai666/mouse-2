@@ -635,7 +635,7 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
   if (profileInfo.sensitivityLineData.length) {
     // 存起来的折线图数据需要格式化之后才能发给硬件
     const formatData = profileInfo.sensitivityLineData.map((item: any) => {
-      return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1].toFixed(1) * 10))]
+      return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
     })
     uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, profileInfo.xAxisMax, ...formatData.flat()])))
   }
@@ -1160,7 +1160,6 @@ const leftHintCode = ref('')
 const leftTransitionShow = ref(true)
 let leftHintCodeTimer: NodeJS.Timeout = setTimeout(() => {}, 0)
 const setLeftHintCode = useThrottleFn((code: string) => {
-  console.log(code, 'codecode')
   if (leftHintCode.value === code)
     return
   clearTimeout(leftHintCodeTimer)
@@ -1645,7 +1644,7 @@ async function radioChange1() {
 
 async function lineDropChange() {
   const formatData = initData.value.map((item) => {
-    return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1].toFixed(1) * 10))]
+    return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
   })
 
   await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, profileInfo.xAxisMax, ...formatData.flat()])
@@ -1777,15 +1776,17 @@ const chart = ref(null) as any
 
 const handleMouseMoveRefFn = ref(null) as any
 
+function alwaysRoundUp(num: number, decimals: number = 1): string {
+  const factor = 10 ** decimals
+  const rounded = Math.ceil(num * factor) / factor
+  return rounded.toFixed(decimals)
+}
+
 function initEcharts() {
   myChart.value = echarts.init(document.getElementById('myChart'))
-
   const symbolSize = 15
-
   chart.value = new DraggableChart(initData.value)
-
   const option = {
-
     tooltip: {
       triggerOn: 'none',
       position: 'top',
@@ -1793,8 +1794,7 @@ function initEcharts() {
         return (
           `X: ${
             Math.ceil(params.data[0])
-          } Y: ${
-            params.data[1].toFixed(1)}`
+          } Y:${alwaysRoundUp(params.data[1])}`
         )
       },
     },
