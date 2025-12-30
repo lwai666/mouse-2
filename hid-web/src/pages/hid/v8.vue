@@ -972,11 +972,12 @@ async function sendAngle() {
 /** 设置性能模式（电竞模式） */
 async function onSportsMode(type: any) {
   // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
+
+  type === 1 && await sendPolling(6)
+
   await transport.value.send([0x12, 0x00, 0x01, type])
 
   profileInfo.sports_arena = type
-
-  type === 1 && sendPolling(6)
 
   // eslint-disable-next-line ts/no-use-before-define
   bottomItem.value = 0
@@ -2403,7 +2404,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
       <div class="config-box">
         <div class="flex items-center" @click="bottomItemChange(0)">
           <img :src="`/v9/Motion${profileInfo.motion_sync === 1 ? '_active' : ''}.png`" alt="Motion" style="margin-right: 5px;">
-          <span :style="{ color: profileInfo.motion_sync === 1 ? '#DAFF00' : '' }">
+          <span>
             <!-- 运动模式 -->
             {{ t('tabs.MotionMode') }}
           </span>
