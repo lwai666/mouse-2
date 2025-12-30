@@ -289,7 +289,7 @@ async function setColor(mode: any, profileInfo: any) {
           <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="flex items-center justify-center">
             <div class="h-100% w-1500px" style="position: relative;">
               <div v-if="item.type == 'img'" class="flex justify-center">
-                <div class="relative" style="display: flex;justify-content: center;">
+                <div class="relative" style="display: flex;justify-content: center;min-width: 639px;min-height: 385px;">
                   <img :src="item.img" alt="item.title"></img>
                   <div class="absolute top-85% w-100% flex justify-between" style="font-size: 12px;">
                     <div class="w-300px">

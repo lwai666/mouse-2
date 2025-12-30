@@ -635,7 +635,7 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
   if (profileInfo.sensitivityLineData.length) {
     // 存起来的折线图数据需要格式化之后才能发给硬件
     const formatData = profileInfo.sensitivityLineData.map((item: any) => {
-      return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
+      return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1].toFixed(1) * 10))]
     })
     uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, profileInfo.xAxisMax, ...formatData.flat()])))
   }
@@ -917,8 +917,11 @@ async function sendPolling(value: any) {
   await transport.value.send([0x0C, 0x00, 0x01, value])
   profileInfo.polling_slider = value
   if (value < 5) {
+    console.log(profileInfo.FPS, 'profileInfo.FPS')
     // 关闭竞技模式
     profileInfo.sports_arena === 1 && onSportsMode(0)
+    // 关闭 20K FPS
+    profileInfo.FPS && radioChange()
   }
 
   onExecutionSuccess()
@@ -1642,7 +1645,7 @@ async function radioChange1() {
 
 async function lineDropChange() {
   const formatData = initData.value.map((item) => {
-    return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
+    return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1].toFixed(1) * 10))]
   })
 
   await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, profileInfo.xAxisMax, ...formatData.flat()])
