@@ -52,7 +52,7 @@ export function useGlobalInputListener(myChart?: any) {
     lastMouseTime.value = currentTime
 
     // 将数据添加到队列
-    const chartCoords = convertToChartCoordinates(distance , event.clientY)
+    const chartCoords = convertToChartCoordinates(distance, event.clientY)
 
     const dataPoint = {
       x: Math.abs(chartCoords.chartX),

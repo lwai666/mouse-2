@@ -914,7 +914,7 @@ async function sendDpiLength(type) {
 
 /** 设置回报率 */
 async function sendPolling(value: any) {
-  await transport.value.send([0x0C, 0x00, 0x01, profileInfo.polling_slider])
+  await transport.value.send([0x0C, 0x00, 0x01, value])
   profileInfo.polling_slider = value
   if (value < 5) {
     // 关闭竞技模式
@@ -972,9 +972,7 @@ async function sendAngle() {
 /** 设置性能模式（电竞模式） */
 async function onSportsMode(type: any) {
   // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
-  await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
-
-  await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
+  await transport.value.send([0x12, 0x00, 0x01, type])
 
   profileInfo.sports_arena = type
 
@@ -1250,7 +1248,6 @@ async function addMacroFn() {
   for (let i = 0; i < num; i++) {
     const index = num - 1 - i
     const sendData = data!.flat()!.slice(i * 56, (i + 1) * 56)
-    console.log(sendData, 'sendData')
     try {
       await transport.value.send([0x1A + macroIndex, index, sendData.length / 4, ...sendData])
     }
@@ -1315,7 +1312,6 @@ async function saveMacro() {
   for (let i = 0; i < num; i++) {
     const index = num - 1 - i
     const sendData = data!.flat()!.slice(i * 56, (i + 1) * 56)
-    console.log(sendData, 'sendData')
     try {
       await transport.value.send([0x1A + macroIndex, index, sendData.length / 4, ...sendData])
     }
