@@ -1025,8 +1025,8 @@ async function sendMouseColor() {
 // 底部功能区
 
 async function onMotionSync() {
-  profileInfo.motion_sync = Number(!profileInfo.motion_sync)
   await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
+  profileInfo.motion_sync = Number(!profileInfo.motion_sync)
   onExecutionSuccess()
 }
 

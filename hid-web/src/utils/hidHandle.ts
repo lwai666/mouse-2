@@ -17,6 +17,7 @@ interface KeyItem {
 type KeyMap = Record<string, KeyItem>
 
 let loadingRef: any = null
+let loadingFlag: any = null
 
 export const keyMap: KeyMap = {
   Escape: {
@@ -666,10 +667,16 @@ class TransportWebHID extends Transport {
     const data = new Uint8Array(e.data.buffer)
     console.log('回复=========', data)
 
-    setTimeout(()=>{
+    // 每次都重新计时
+    if (loadingFlag) {
+      clearTimeout(loadingFlag)
+    }
+
+    loadingFlag = setTimeout(() => {
       loadingRef && loadingRef.close()
       loadingRef = null
-    },800)
+      loadingFlag = null
+    }, 120)
 
     // 错误应答处理
     if (data[this.packetSize - 3] === 1) {
@@ -751,6 +758,11 @@ class TransportWebHID extends Transport {
       )
       this.replyPromiseMap[type] = { reject, resolve: (data: any) => { clearTimeout(timer); resolve(data) } }
     })
+    // 取消之前的关闭计划
+    if (loadingFlag) {
+      clearTimeout(loadingFlag)
+      loadingFlag = null
+    }
 
     if (!loadingRef) {
       loadingRef = ElLoading.service({
