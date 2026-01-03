@@ -549,8 +549,6 @@ export const keyMap: KeyMap = {
 
 type Listener<T = any> = (...args: T[]) => void
 
-const loading = null as any
-
 class EventEmitter {
   events: Record<string, Listener[]> = {}
 
@@ -666,10 +664,10 @@ class TransportWebHID extends Transport {
     const data = new Uint8Array(e.data.buffer)
     console.log('回复=========', data)
 
-    setTimeout(()=>{
+    setTimeout(() => {
       loadingRef && loadingRef.close()
       loadingRef = null
-    },800)
+    }, 800)
 
     // 错误应答处理
     if (data[this.packetSize - 3] === 1) {
@@ -788,7 +786,7 @@ export function checkDevicesSupportSendReport(devices: HIDDevice[]): { reportId:
 export async function getTransportWebHID(config: { id: string, commandHandler?: CommandHandler }) {
   const devices = typeof window !== 'undefined' ? await window.navigator.hid.getDevices() : []
   console.log('devices==========', devices)
-  if (!devices || devices.length == 0) { return false }
+  if (!devices || devices.length === 0) { return false }
 
   const collection = checkDevicesSupportSendReport(devices)
   if (collection) {
@@ -802,7 +800,7 @@ export async function getTransportWebHID(config: { id: string, commandHandler?: 
 
 export async function createTransportWebHID(config: { id: string, filters: HIDDeviceFilter[], commandHandler: CommandHandler }) {
   const devices = typeof window !== 'undefined' ? await window.navigator.hid.requestDevice({ filters: config.filters }) : []
-  if (devices.length == 0) { return false }
+  if (devices.length === 0) { return false }
 
   const currentTransportWebHID = transportWebHID?._s.get(config.id)
   if (currentTransportWebHID) {

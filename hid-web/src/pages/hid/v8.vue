@@ -275,7 +275,7 @@ const mouseButtonValue = computed(() => {
   }
 })
 
-const profileList = reactive([
+let profileList = reactive([
   { title: 'Profile 1', base64: '', uint8Array: [], value: undefined },
   { title: 'Profile 2', base64: '', uint8Array: [], value: undefined },
   { title: 'Profile 3', base64: '', uint8Array: [], value: undefined },
@@ -285,6 +285,10 @@ const profileList = reactive([
 const active_profile_index = ref(0)
 
 async function setProfileInfo(index: number) {
+  if (profileList[active_profile_index.value].value) {
+    profileList[active_profile_index.value].value = JSON.parse(JSON.stringify(profileInfo))
+  }
+
   active_profile_index.value = index
 
   // 有缓存数据则直接使用

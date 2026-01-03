@@ -47,13 +47,9 @@ watch(() => profileInfo?.macroList, () => {
   })
   options.value = deepClone(constants.mouseKeyOptions)
 
-  console.log(profileInfo.macroList[props.macroIndex],'propspropspropsprops')
-
-  if(profileInfo.macroList[props.macroIndex] && profileInfo.macroList[props.macroIndex].connections && profileInfo.macroList[props.macroIndex].connections.length){
+  if (profileInfo.macroList[props.macroIndex] && profileInfo.macroList[props.macroIndex].connections && profileInfo.macroList[props.macroIndex].connections.length) {
     sendData.value = profileInfo.macroList[props.macroIndex].connections[0]
   }
-
-
 }, { immediate: true, deep: true })
 
 watch(() => language, () => {
@@ -64,10 +60,6 @@ watch(() => language, () => {
   })
   options.value = deepClone(constants.mouseKeyOptions)
 }, { immediate: true, deep: true })
-
-
-
-
 
 async function onEnterKey() {
   // props.id, // 按键ID [Left Wheel Right Forward Back dpi]
