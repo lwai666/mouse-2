@@ -814,6 +814,7 @@ export async function createTransportWebHID(config: { id: string, filters: HIDDe
   }
 
   const collection = checkDevicesSupportSendReport(devices)
+
   if (collection) {
     const transport = new TransportWebHID(collection.reportId, collection.device, config.commandHandler)
     await transport.connect()

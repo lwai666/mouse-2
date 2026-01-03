@@ -1789,7 +1789,7 @@ function alwaysRoundUp(num: number, decimals: number = 1): string {
 function initEcharts() {
   myChart.value = echarts.init(document.getElementById('myChart'))
   const symbolSize = 15
-  chart.value = new DraggableChart(initData.value)
+  chart.value = new DraggableChart(initData.value, profileInfo.xAxisMax, profileInfo.yAxisMax)
   const option = {
     tooltip: {
       triggerOn: 'none',
@@ -1814,6 +1814,7 @@ function initEcharts() {
       max: profileInfo.xAxisMax,
       interval: profileInfo.xAxisMax / 7,
       type: 'value',
+
       splitLine: {
         lineStyle: {
           color: '#262626', // 轴线颜色
@@ -2003,13 +2004,13 @@ function initEcharts() {
 
 async function changeXAxisMax(num: number) {
   profileInfo.xAxisMax = profileInfo.xAxisMax + num
+
   if (profileInfo.xAxisMax > 280) {
     profileInfo.xAxisMax = 280
     return
   }
   if (profileInfo.xAxisMax < 35) {
     profileInfo.xAxisMax = 35
-    // chart.value.setBounds(0, 50, 0, profileInfo.yAxisMax)
     return
   }
 
@@ -2020,6 +2021,7 @@ async function changeXAxisMax(num: number) {
 
 async function changeYAxisMax(num: number) {
   profileInfo.yAxisMax = Number((profileInfo.yAxisMax + num).toFixed(1))
+
   if (profileInfo.yAxisMax > 6) {
     profileInfo.yAxisMax = 6
     return

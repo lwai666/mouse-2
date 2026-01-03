@@ -1,10 +1,10 @@
 class DraggableChart {
-  constructor(points) {
+  constructor(points, xMax = 280, yMax = 6) {
     this.points = points
     this.xMin = 0 // X轴最小值
-    this.xMax = 250 // X轴最大值
+    this.xMax = xMax // X轴最大值
     this.yMin = 0 // Y轴最小值
-    this.yMax = 6 // Y轴最大值
+    this.yMax = yMax // Y轴最大值
   }
 
   // // 拖拽点的方法-
@@ -152,4 +152,5 @@ class DraggableChart {
 
 export {
   DraggableChart,
+
 }
