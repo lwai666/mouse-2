@@ -17,6 +17,7 @@ interface KeyItem {
 type KeyMap = Record<string, KeyItem>
 
 let loadingRef: any = null
+let loadingFlag: any = null
 
 export const keyMap: KeyMap = {
   Escape: {
@@ -749,6 +750,11 @@ class TransportWebHID extends Transport {
       )
       this.replyPromiseMap[type] = { reject, resolve: (data: any) => { clearTimeout(timer); resolve(data) } }
     })
+    // 取消之前的关闭计划
+    if (loadingFlag) {
+      clearTimeout(loadingFlag)
+      loadingFlag = null
+    }
 
     if (!loadingRef) {
       loadingRef = ElLoading.service({

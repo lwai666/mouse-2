@@ -918,11 +918,14 @@ async function sendDpiLength(type) {
 
 /** 设置回报率 */
 async function sendPolling(value: any) {
-  await transport.value.send([0x0C, 0x00, 0x01, profileInfo.polling_slider])
+  await transport.value.send([0x0C, 0x00, 0x01, value])
   profileInfo.polling_slider = value
   if (value < 5) {
+    console.log(profileInfo.FPS, 'profileInfo.FPS')
     // 关闭竞技模式
     profileInfo.sports_arena === 1 && onSportsMode(0)
+    // 关闭 20K FPS
+    profileInfo.FPS && radioChange()
   }
 
   onExecutionSuccess()
@@ -976,13 +979,12 @@ async function sendAngle() {
 /** 设置性能模式（电竞模式） */
 async function onSportsMode(type: any) {
   // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
-  await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
 
-  await transport.value.send([0x12, 0x00, 0x01, profileInfo.sports_arena])
+  type === 1 && await sendPolling(6)
+
+  await transport.value.send([0x12, 0x00, 0x01, type])
 
   profileInfo.sports_arena = type
-
-  type === 1 && sendPolling(6)
 
   // eslint-disable-next-line ts/no-use-before-define
   bottomItem.value = 0
@@ -1027,8 +1029,8 @@ async function sendMouseColor() {
 // 底部功能区
 
 async function onMotionSync() {
-  profileInfo.motion_sync = Number(!profileInfo.motion_sync)
   await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
+  profileInfo.motion_sync = Number(!profileInfo.motion_sync)
   onExecutionSuccess()
 }
 
@@ -1162,7 +1164,6 @@ const leftHintCode = ref('')
 const leftTransitionShow = ref(true)
 let leftHintCodeTimer: NodeJS.Timeout = setTimeout(() => {}, 0)
 const setLeftHintCode = useThrottleFn((code: string) => {
-  console.log(code, 'codecode')
   if (leftHintCode.value === code)
     return
   clearTimeout(leftHintCodeTimer)
@@ -1254,7 +1255,6 @@ async function addMacroFn() {
   for (let i = 0; i < num; i++) {
     const index = num - 1 - i
     const sendData = data!.flat()!.slice(i * 56, (i + 1) * 56)
-    console.log(sendData, 'sendData')
     try {
       await transport.value.send([0x1A + macroIndex, index, sendData.length / 4, ...sendData])
     }
@@ -1319,7 +1319,6 @@ async function saveMacro() {
   for (let i = 0; i < num; i++) {
     const index = num - 1 - i
     const sendData = data!.flat()!.slice(i * 56, (i + 1) * 56)
-    console.log(sendData, 'sendData')
     try {
       await transport.value.send([0x1A + macroIndex, index, sendData.length / 4, ...sendData])
     }
@@ -1781,15 +1780,17 @@ const chart = ref(null) as any
 
 const handleMouseMoveRefFn = ref(null) as any
 
+function alwaysRoundUp(num: number, decimals: number = 1): string {
+  const factor = 10 ** decimals
+  const rounded = Math.ceil(num * factor) / factor
+  return rounded.toFixed(decimals)
+}
+
 function initEcharts() {
   myChart.value = echarts.init(document.getElementById('myChart'))
-
   const symbolSize = 15
-
   chart.value = new DraggableChart(initData.value)
-
   const option = {
-
     tooltip: {
       triggerOn: 'none',
       position: 'top',
@@ -1797,8 +1798,7 @@ function initEcharts() {
         return (
           `X: ${
             Math.ceil(params.data[0])
-          } Y: ${
-            params.data[1].toFixed(1)}`
+          } Y:${alwaysRoundUp(params.data[1])}`
         )
       },
     },
@@ -2411,7 +2411,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
       <div class="config-box">
         <div class="flex items-center" @click="bottomItemChange(0)">
           <img :src="`/v9/Motion${profileInfo.motion_sync === 1 ? '_active' : ''}.png`" alt="Motion" style="margin-right: 5px;">
-          <span :style="{ color: profileInfo.motion_sync === 1 ? '#DAFF00' : '' }">
+          <span>
             <!-- 运动模式 -->
             {{ t('tabs.MotionMode') }}
           </span>
