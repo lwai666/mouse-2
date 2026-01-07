@@ -260,7 +260,7 @@ description:
   mouse_pairing_instructions1: マウスをペアリングモードにしてください
   mouse_pairing_instructions1_sub: 左、中央、右のボタンを同時に3秒間押し、インジケータライトが点滅するまで待ちます
   mouse_pairing_instructions2: レシーバーを接続または挿入してください
-  mouse_pairing_instructions2_sub: PCのUSBポートに接続し、マウスをレシーバーの近くに置いてください
+  mouse_pairing_instructions2_sub: レシーバーのUSBポートに接続し、マウスをレシーバーの近くに置いてください
   mouse_pairing_instructions3: レシーバーを接続してください
   mouse_pairing_instructions3_sub: USBポートを介してPCに接続します
   click_to_add_device: デバイス追加をクリック

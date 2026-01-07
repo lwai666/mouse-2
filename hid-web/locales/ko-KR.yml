@@ -261,7 +261,7 @@ description:
   mouse_pairing_instructions1: 마우스를 페어링 모드로 전환하세요
   mouse_pairing_instructions1_sub: 왼쪽, 가운데, 오른쪽 버튼을 동시에 3초간 눌러 표시등이 깜박일 때까지 기다리세요
   mouse_pairing_instructions2: 수신기를 연결하거나 삽입하세요
-  mouse_pairing_instructions2_sub: PC의 USB 포트에 연결하고 마우스를 수신기 가까이에 두세요
+  mouse_pairing_instructions2_sub: 수신기의 USB 포트에 연결하고 마우스를 수신기 가까이에 두세요
   mouse_pairing_instructions3: 수신기를 연결하세요
   mouse_pairing_instructions3_sub: USB 포트를 통해 PC에 연결합니다
   click_to_add_device: 장치 추가를 클릭하세요

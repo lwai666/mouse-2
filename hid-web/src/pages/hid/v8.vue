@@ -1517,12 +1517,6 @@ onMounted(() => {
   userStore.fetchLatestVersion()
   const tabActive = localStorage.getItem('tabActive') ? localStorage.getItem('tabActive') : 'performance'
   activeBgChange(tabActive)
-
-  console.log(ElDropdownRef.value, 'ElDropdownRef')
-
-  // const dropdownMenu = this.$refs['elDropdown'].$children[0] // 找到dropdown下面的dropdownMenu
-  // dropdownMenu.$data.currentPlacement = 'start'
-
   autofit.init({
     dh: 1080,
     dw: 1920,

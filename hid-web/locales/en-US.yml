@@ -260,7 +260,7 @@ description:
   mouse_pairing_instructions1: Please put the mouse into pairing mode
   mouse_pairing_instructions1_sub: Simultaneously press left, middle, and right buttons for 3 seconds until the indicator light flashes
   mouse_pairing_instructions2: Connect or insert the receiver
-  mouse_pairing_instructions2_sub: to the PC's USB port and bring the mouse close to the receiver
+  mouse_pairing_instructions2_sub: to the receiver's USB port and bring the mouse close to the receiver
   mouse_pairing_instructions3: Please connect the receiver
   mouse_pairing_instructions3_sub: to the PC via USB port
   click_to_add_device: Click to add a device

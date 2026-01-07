@@ -257,7 +257,7 @@ description:
   mouse_pairing_instructions1: 请让鼠标进入配对状态
   mouse_pairing_instructions1_sub: 同时按住左中右键3秒, 直至指示灯闪烁
   mouse_pairing_instructions2: 将接收器连接或插入
-  mouse_pairing_instructions2_sub: PC端的usb接口并将鼠标靠近接收器
+  mouse_pairing_instructions2_sub: 接收器的usb接口并将鼠标靠近接收器
   mouse_pairing_instructions3: 请将接收器
   mouse_pairing_instructions3_sub: 与PC端通过USB接口连接
   click_to_add_device: 点击新增设备

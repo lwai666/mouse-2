@@ -94,7 +94,11 @@ async function onAddNouseClick() {
 
   if (transport.value) {
     const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
-    const flag = transportListCopy.some(item => item.reportId === transport.value.reportId)
+
+    const flag = transportListCopy.some((item) => {
+      return (item.productId === transport.value.device.productId && item.vendorId === transport.value.device.vendorId)
+    })
+
     if (flag) {
       router.push(`/hid/v8`)
       localStorage.setItem('tabActive', 'performance')
@@ -153,6 +157,13 @@ onMounted(() => {
     resize: true,
     allowScroll: true,
   })
+
+  // 初始化滚动按钮状态，确保 DOM 完全渲染
+  nextTick(() => {
+    setTimeout(() => {
+      updateScrollButtons()
+    }, 100)
+  })
 })
 
 const colorItems = [
@@ -191,6 +202,49 @@ async function setColor(mode: any, profileInfo: any) {
   profileInfo.mouseColor = mode.id
   await instanceRef.value.send([0x29, 0x00, 0x00, mode.id])
 }
+
+// 滚动容器相关
+const transportScrollContainer = ref<HTMLElement | null>(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+function scrollTransportList(direction: 'left' | 'right') {
+  if (!transportScrollContainer.value)
+    return
+
+  const scrollAmount = 241 // 231px + 10px margin
+  if (direction === 'left') {
+    transportScrollContainer.value.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
+  }
+  else {
+    transportScrollContainer.value.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+  }
+}
+
+function updateScrollButtons() {
+  if (!transportScrollContainer.value) {
+    canScrollLeft.value = false
+    canScrollRight.value = false
+    return
+  }
+
+  const { scrollLeft, scrollWidth, clientWidth } = transportScrollContainer.value
+
+  // 左按钮：已经滚动了一段距离时显示
+  canScrollLeft.value = scrollLeft > 1
+
+  // 右按钮：内容超出容器宽度，且还没滚动到最右边时显示
+  canScrollRight.value = scrollWidth > clientWidth && Math.ceil(scrollLeft) < scrollWidth - clientWidth
+}
+
+// 监听 transportList 变化，更新按钮状态
+watch(() => transportList.value, () => {
+  nextTick(() => {
+    setTimeout(() => {
+      updateScrollButtons()
+    }, 100)
+  })
+}, { deep: true })
 </script>
 
 <template>
@@ -238,34 +292,74 @@ async function setColor(mode: any, profileInfo: any) {
         <img class="h-60px" src="/logo.png" alt="logo">
       </div> -->
 
-      <div class="mb-5 h-[251px] w-[800px] border-gray-600" style="overflow: hidden;">
-        <div v-for="item in transportList" class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;  float: left; border: 1px solid rgba(255, 255, 255, 0.4);" @click="onNouseClick(item)">
-          <img
-            style="width: 84px; height:142px;object-fit: contain;" :src="`/mouse_${{
-              3: 'black',
-              4: 'white',
-            }[item.mouseColor] || 'black'}.png`" alt="" srcset=""
-          >
-          <p class="absolute bottom-1" style="color: black; font-weight: bold;font-size: 20px;">
-            V8
-          </p>
+      <div class="relative mb-5 h-[251px] w-[800px]">
+        <!-- 左按钮 -->
+        <button
+          v-if="canScrollLeft"
+          class="absolute left-0 top-1/2 z-10 h-10 w-10 flex items-center justify-center rounded-full bg-black/50 text-white transition-all -translate-y-1/2 hover:bg-black/70"
+          @click="scrollTransportList('left')"
+        >
+          <span class="arrow-icon arrow-left-icon" />
+        </button>
 
-          <div class="color-box absolute right-3 top-5">
-            <div v-for="key in sortedColorItems(item.mouseColor)" :key="key.id" class="mb-2" :style="{ background: key.backgroundColor }" style="width: 18px;height: 18px; border-radius: 50%;" @click.stop="setColor(key, item)" />
+        <!-- 滚动容器 -->
+        <div
+          ref="transportScrollContainer"
+          class="hide-scrollbar flex overflow-x-auto overflow-y-hidden"
+          style="scroll-behavior: smooth; scrollbar-width: none; -ms-overflow-style: none;"
+          @scroll="updateScrollButtons"
+        >
+          <div
+            v-for="item in transportList"
+            :key="item.reportId"
+            class="relative mb-5 flex flex-shrink-0 items-center justify-center"
+            style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px; border: 1px solid rgba(255, 255, 255, 0.4);"
+            @click="onNouseClick(item)"
+          >
+            <img
+              style="width: 84px; height:142px;object-fit: contain;"
+              :src="`/mouse_${{
+                3: 'black',
+                4: 'white',
+              }[item.mouseColor] || 'black'}.png`"
+              alt=""
+              srcset=""
+            >
+            <p class="absolute bottom-1" style="color: black; font-weight: bold;font-size: 20px;">
+              {{ item.productName }}
+            </p>
+
+            <div class="color-box absolute right-3 top-5">
+              <div v-for="key in sortedColorItems(item.mouseColor)" :key="key.id" class="mb-2" :style="{ background: key.backgroundColor }" style="width: 18px;height: 18px; border-radius: 50%;" @click.stop="setColor(key, item)" />
+            </div>
+
+            <el-icon size="5" color="#ffff" class="absolute left-2 top-3" @click.stop="deleteTransport(item)">
+              <CircleClose />
+            </el-icon>
           </div>
 
-          <el-icon size="5" color="#ffff" class="absolute left-2 top-3" @click.stop="deleteTransport(item)">
-            <CircleClose />
-          </el-icon>
+          <div
+            class="relative mb-5 flex flex-shrink-0 items-center justify-center"
+            style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;border: 1px solid rgba(255, 255, 255, 0.4);"
+            @click="onAddNouseClick"
+          >
+            <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
+              {{ t('title.new_device') }}
+            </p>
+            <ElIcon size="20" color="#ffff">
+              <Plus />
+            </ElIcon>
+          </div>
         </div>
-        <div class="relative mb-5 flex items-center justify-center" style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;float: left;border: 1px solid rgba(255, 255, 255, 0.4);" @click="onAddNouseClick">
-          <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
-            {{ t('title.new_device') }}
-          </p>
-          <ElIcon size="20" color="#ffff">
-            <Plus />
-          </ElIcon>
-        </div>
+
+        <!-- 右按钮 -->
+        <button
+          v-if="canScrollRight"
+          class="absolute right-0 top-1/2 z-10 h-10 w-10 flex items-center justify-center rounded-full bg-black/50 text-white transition-all -translate-y-1/2 hover:bg-black/70"
+          @click="scrollTransportList('right')"
+        >
+          <span class="arrow-icon arrow-right-icon" />
+        </button>
       </div>
 
       <div class="mb-10">
@@ -363,5 +457,30 @@ async function setColor(mode: any, profileInfo: any) {
 
 .color-box:hover {
   height: 64px;
+}
+
+/* 隐藏滚动条 */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* CSS 箭头 */
+.arrow-icon {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  position: relative;
+}
+
+.arrow-left-icon {
+  border-left: 2.5px solid white;
+  border-bottom: 2.5px solid white;
+  transform: rotate(45deg);
+}
+
+.arrow-right-icon {
+  border-right: 2.5px solid white;
+  border-bottom: 2.5px solid white;
+  transform: rotate(-45deg);
 }
 </style>

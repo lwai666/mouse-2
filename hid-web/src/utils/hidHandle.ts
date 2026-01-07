@@ -803,14 +803,16 @@ export async function getTransportWebHID(config: { id: string, commandHandler?: 
     return transport
   }
 }
-
+// 创建的时候
 export async function createTransportWebHID(config: { id: string, filters: HIDDeviceFilter[], commandHandler: CommandHandler }) {
   const devices = typeof window !== 'undefined' ? await window.navigator.hid.requestDevice({ filters: config.filters }) : []
   if (devices.length === 0) { return false }
 
   const currentTransportWebHID = transportWebHID?._s.get(config.id)
+  // 多设备的话, 创建新的链接需要先断开之前的设备, 重新进行connect
   if (currentTransportWebHID) {
-    return currentTransportWebHID
+    transportWebHID?._s.set(config.id, null)
+    currentTransportWebHID.disconnect()
   }
 
   const collection = checkDevicesSupportSendReport(devices)
@@ -818,14 +820,18 @@ export async function createTransportWebHID(config: { id: string, filters: HIDDe
   if (collection) {
     const transport = new TransportWebHID(collection.reportId, collection.device, config.commandHandler)
     await transport.connect()
+    // 这里存起来. 下面进入设置页面获取当前实例确保是链接的实例
     transportWebHID?._s.set(config.id, transport)
     return transport
   }
 }
 
+// 进入设置页面获取当前实例
+
 export async function useTransportWebHID(id: string, callback?: (instance: TransportWebHIDInstance) => void): Promise<TransportWebHIDInstance> {
   const transportWebHID = inject<TransportWebHIDInstance>(SymbolTransportWebHID)
   let currentTransportWebHID = transportWebHID?._s.get(id)
+
   if (!currentTransportWebHID) {
     currentTransportWebHID = await getTransportWebHID({ id })
   }
