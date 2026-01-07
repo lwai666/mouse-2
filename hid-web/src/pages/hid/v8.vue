@@ -204,25 +204,25 @@ const lineDataMap = {
   // 经典-0
   0: [
     [0, 1.0],
-    [17.5, 1.127],
-    [35, 1.25],
-    [52.5, 1.377],
-    [70, 1.5],
+    [17.5, 1.1],
+    [35, 1.2],
+    [52.5, 1.3],
+    [70, 1.4],
   ],
   // 折线图-自然
   1: [
     [0, 1.0],
-    [20, 1.333],
-    [40, 1.5],
-    [50, 1.5],
+    [10, 1.45],
+    [22, 1.5],
+    [32, 1.5],
     [70, 1.5],
   ],
   // 折线图-跳跃
   2: [
     [0, 1.0],
-    [20, 1.0],
-    [40, 1.5],
-    [50, 1.5],
+    [11, 1.0],
+    [24, 1.5],
+    [28, 1.5],
     [70, 1.5],
   ],
   // 自定义-无
@@ -236,26 +236,26 @@ const lineDataMap = {
   // 自定义-经典-4
   4: [
     [0, 1.0],
-    [17.5, 1.127],
-    [35, 1.25],
-    [52.5, 1.377],
-    [70, 1.5],
+    [15, 1.06],
+    [35, 1.14],
+    [70, 1.28],
+    [100, 1.4],
   ],
   // 自定义-自然-5
   5: [
     [0, 1.0],
-    [20, 1.475],
-    [40, 1.5],
-    [50, 1.5],
-    [70, 1.5],
+    [10, 1.45],
+    [22, 1.5],
+    [32, 1.5],
+    [100, 1.5],
   ],
   // 自定义-跳跃-6
   6: [
     [0, 1.0],
-    [20, 1.0],
-    [40, 1.5],
-    [50, 1.5],
-    [70, 1.5],
+    [11, 1.0],
+    [24, 1.5],
+    [28, 1.5],
+    [100, 1.5],
   ],
 } as Record<number, [number, number][]>
 
@@ -1491,7 +1491,6 @@ function onDragStart(event: DragEvent, index: number) {
 
 function onDisconnect(event: any) {
   if (event.device.productId === transport.value.device.productId && event.device.vendorId === transport.value.device.vendorId) {
-    // transportWebHID.disconnect()
     transportWebHID?._s.set('v8', null)
     router.push('/')
   }
@@ -1709,7 +1708,7 @@ function handleMouseMoveFn(event: MouseEvent) {
         pieces: [
           {
             gt: 0,
-            lt: 0.5,
+            lt: 0.1,
             color: 'rgba(219, 255, 6, .7)',
           },
         ],
@@ -1817,6 +1816,7 @@ function initEcharts() {
       left: '5%',
       right: '3%',
     },
+
     xAxis: {
       min: 0,
       max: profileInfo.xAxisMax,
@@ -1839,7 +1839,7 @@ function initEcharts() {
       },
     },
     yAxis: {
-      min: 0,
+      min: [0, 1, 2].includes(profileInfo.sensitivityModeIndex) ? 0.1 : 0,
       max: profileInfo.yAxisMax,
       interval: profileInfo.yAxisMax / 6,
       type: 'value',
@@ -1875,14 +1875,11 @@ function initEcharts() {
         },
       ],
     },
-
     animation: false,
-
     series: [
       {
         id: 'line',
         type: 'line',
-
         smooth: 0.6,
         symbolSize: [0, 1, 2].includes(profileInfo.sensitivityModeIndex) ? 0 : symbolSize,
         data: initData.value,
@@ -1898,7 +1895,6 @@ function initEcharts() {
       {
         id: 'area',
         type: 'line',
-
         smooth: 0.6,
         symbolSize: 0,
         data: initData.value,
@@ -2323,6 +2319,9 @@ function selectMode(mode: number) {
     return
   }
   profileInfo.sensitivityModeIndex = mode
+
+  profileInfo.xAxisMax = profileInfo.xAxisMax > 105 ? profileInfo.xAxisMax : profileInfo.xAxisMax < 70 ? profileInfo.xAxisMax : [0, 1, 2].includes(profileInfo.sensitivityModeIndex) ? 70 : 105
+
   initData.value = JSON.parse(JSON.stringify(lineDataMap[mode]))
   // 存着用于分享
   profileInfo.sensitivityLineData = initData.value as any
