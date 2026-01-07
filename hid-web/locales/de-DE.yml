@@ -261,6 +261,8 @@ description:
   mouse_pairing_instructions1_sub: Drücken Sie gleichzeitig linke, mittlere und rechte Taste 3 Sekunden lang, bis die Anzeigeleuchte blinkt
   mouse_pairing_instructions2: Verbinden oder stecken Sie den Empfänger
   mouse_pairing_instructions2_sub: an den USB-Anschluss des Empfängers und bringen Sie die Maus in die Nähe des Empfängers
+  please_insert_device: Bitte zuerst das Gerät anschließen
+  please_insert_this_device: Bitte dieses Gerät anschließen
   mouse_pairing_instructions3: Bitte verbinden Sie den Empfänger
   mouse_pairing_instructions3_sub: über den USB-Anschluss mit dem PC
   click_to_add_device: Klicken, um ein Gerät hinzuzufügen

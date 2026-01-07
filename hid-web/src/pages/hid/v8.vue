@@ -203,59 +203,59 @@ const XYObjDataList = ref<{ [key: number]: number[] }>({
 const lineDataMap = {
   // 经典-0
   0: [
-    [0, 0],
-    [17.5, 0.38],
-    [35, 0.75],
-    [52.5, 1.13],
+    [0, 1.0],
+    [17.5, 1.127],
+    [35, 1.25],
+    [52.5, 1.377],
     [70, 1.5],
   ],
   // 折线图-自然
   1: [
-    [0, 0],
-    [20, 0.8],
-    [40, 1.2],
-    [50, 1.2],
-    [70, 1.2],
+    [0, 1.0],
+    [20, 1.333],
+    [40, 1.5],
+    [50, 1.5],
+    [70, 1.5],
   ],
   // 折线图-跳跃
   2: [
-    [0, 0],
-    [20, 0],
-    [40, 1],
-    [50, 1],
-    [70, 1],
+    [0, 1.0],
+    [20, 1.0],
+    [40, 1.5],
+    [50, 1.5],
+    [70, 1.5],
   ],
   // 自定义-无
   3: [
-    [0, 1],
-    [20, 1],
+    [0, 1.0],
+    [20, 1.0],
     [30, 1.1],
     [50, 1.3],
     [70, 1.5],
   ],
   // 自定义-经典-4
   4: [
-    [0, 0.1],
-    [17.5, 0.45],
-    [35, 0.8],
-    [52.5, 1.15],
+    [0, 1.0],
+    [17.5, 1.283],
+    [35, 1.467],
+    [52.5, 1.5],
     [70, 1.5],
   ],
   // 自定义-自然-5
   5: [
-    [0, 0.1],
-    [20, 0.8],
-    [40, 1.2],
-    [50, 1.2],
-    [70, 1.2],
+    [0, 1.0],
+    [20, 1.475],
+    [40, 1.5],
+    [50, 1.5],
+    [70, 1.5],
   ],
   // 自定义-跳跃-6
   6: [
-    [0, 0.1],
-    [20, 0.1],
-    [40, 1],
-    [50, 1],
-    [70, 1],
+    [0, 1.0],
+    [20, 1.0],
+    [40, 1.5],
+    [50, 1.5],
+    [70, 1.5],
   ],
 } as Record<number, [number, number][]>
 
@@ -436,11 +436,12 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     else if (res[0] === 38) {
       profileInfo.sensitivityModeIndex = res[3]
       profileInfo.yAxisMax = res[4] / 10
-      profileInfo.xAxisMax = res[5]
+
+      profileInfo.xAxisMax = combineLowAndHigh8Bits(res[5], res[6])
 
       // 如果模版是自定义，则使用自定义数据
       if (profileInfo.sensitivityModeIndex === 3) {
-        const sensitivityLineDataList = res.slice(6, 6 + res[2])
+        const sensitivityLineDataList = res.slice(7, 7 + res[2])
         initData.value = chunkArray(decodeArrayBufferToArray(sensitivityLineDataList), 2, (a, b) => [a, b / 10]) as any
         // 存着用于分享
         profileInfo.sensitivityLineData = initData.value
@@ -641,7 +642,9 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
     const formatData = profileInfo.sensitivityLineData.map((item: any) => {
       return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
     })
-    uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, profileInfo.xAxisMax, ...formatData.flat()])))
+    const xAxisMax = getLowAndHigh8Bits(profileInfo.xAxisMax)
+
+    uint8Array.push(transport.value.generatePacket(new Uint8Array([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, ...xAxisMax, ...formatData.flat()])))
   }
 
   // 当前第几个配置
@@ -1415,6 +1418,7 @@ const isDragging = ref(false)
 const dragIndex = ref<number>()
 
 const dropLinePosition = ref(0)
+const dropPosition = ref<'before' | 'after'>('before') // 记录插入位置
 
 function onDragOver(event: DragEvent, index: number) {
   event.preventDefault()
@@ -1429,10 +1433,12 @@ function onDragOver(event: DragEvent, index: number) {
   if (mouseY < rect.top + rect.height / 2) {
     // 放在当前项上方
     dropLinePosition.value = listItem.offsetTop
+    dropPosition.value = 'before'
   }
   else {
     // 放在当前项下方
     dropLinePosition.value = listItem.offsetTop + listItem.offsetHeight
+    dropPosition.value = 'after'
   }
 
   recordedKeyHighlightIndex.value = index
@@ -1440,6 +1446,7 @@ function onDragOver(event: DragEvent, index: number) {
 
 function dragend() {
   isDragging.value = false
+  dropPosition.value = 'before' // 清理状态
 }
 
 function onDrop(event: DragEvent, dropIndex: number) {
@@ -1447,30 +1454,34 @@ function onDrop(event: DragEvent, dropIndex: number) {
   dropLinePosition.value = 0
 
   const draggedIndex = Number(event.dataTransfer?.getData('text/plain'))
-  if (draggedIndex === dropIndex)
-    return
 
-  const listItem = (event.target as HTMLElement).closest('li')
-  if (!listItem)
-    return
-
-  const rect = listItem.getBoundingClientRect()
-  const mouseY = event.clientY
-
-  // 如果鼠标在元素下半部分，则插入位置加1
-  if (mouseY > rect.top + rect.height / 2) {
-    dropIndex++
+  // 计算实际的插入位置
+  let actualDropIndex = dropIndex
+  if (dropPosition.value === 'after') {
+    actualDropIndex = dropIndex + 1
   }
+
+  // 如果从前往后拖，删除源元素后索引会变小，需要调整
+  if (draggedIndex < actualDropIndex) {
+    actualDropIndex--
+  }
+
+  // 如果最终位置和原始位置相同，不需要移动
+  if (draggedIndex === actualDropIndex)
+    return
 
   const temp = recordedKeys.value[draggedIndex]
   recordedKeys.value.splice(draggedIndex, 1)
-  recordedKeys.value.splice(dropIndex, 0, temp)
+  recordedKeys.value.splice(actualDropIndex, 0, temp)
+
+  dropPosition.value = 'before' // 重置状态
 }
 
 function onDragStart(event: DragEvent, index: number) {
   isDragging.value = true
   dragIndex.value = index
   dropLinePosition.value = 0
+  dropPosition.value = 'before' // 初始化状态
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.setData('text/plain', index.toString())
@@ -1480,6 +1491,7 @@ function onDragStart(event: DragEvent, index: number) {
 
 function onDisconnect(event: any) {
   if (event.device.productId === transport.value.device.productId && event.device.vendorId === transport.value.device.vendorId) {
+    // transportWebHID.disconnect()
     transportWebHID?._s.set('v8', null)
     router.push('/')
   }
@@ -1644,8 +1656,10 @@ async function lineDropChange() {
   const formatData = initData.value.map((item) => {
     return [Number(Math.ceil(item[0])), Number(Math.ceil(item[1] * 10))]
   })
+  // profileInfo.xAxisMax 需要转成高8 和 低8
+  const xAxisMax = getLowAndHigh8Bits(profileInfo.xAxisMax)
 
-  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, profileInfo.xAxisMax, ...formatData.flat()])
+  await transport?.value.send([0x22, 0, 5, Number(profileInfo.sensitivityModeIndex), profileInfo.yAxisMax * 10, ...xAxisMax, ...formatData.flat()])
   setLoadingStatus()
 }
 

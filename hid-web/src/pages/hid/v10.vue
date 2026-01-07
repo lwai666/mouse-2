@@ -1079,6 +1079,7 @@ const isDragging = ref(false)
 const dragIndex = ref<number>()
 
 const dropLinePosition = ref(0)
+const dropPosition = ref<'before' | 'after'>('before') // 记录插入位置
 
 function onDragOver(event: DragEvent, index: number) {
   event.preventDefault()
@@ -1093,10 +1094,12 @@ function onDragOver(event: DragEvent, index: number) {
   if (mouseY < rect.top + rect.height / 2) {
     // 放在当前项上方
     dropLinePosition.value = listItem.offsetTop
+    dropPosition.value = 'before'
   }
   else {
     // 放在当前项下方
     dropLinePosition.value = listItem.offsetTop + listItem.offsetHeight
+    dropPosition.value = 'after'
   }
 }
 
@@ -1106,30 +1109,34 @@ function onDrop(event: DragEvent, dropIndex: number) {
   dropLinePosition.value = 0
 
   const draggedIndex = Number(event.dataTransfer?.getData('text/plain'))
-  if (draggedIndex === dropIndex)
-    return
 
-  const listItem = (event.target as HTMLElement).closest('li')
-  if (!listItem)
-    return
-
-  const rect = listItem.getBoundingClientRect()
-  const mouseY = event.clientY
-
-  // 如果鼠标在元素下半部分，则插入位置加1
-  if (mouseY > rect.top + rect.height / 2) {
-    dropIndex++
+  // 计算实际的插入位置
+  let actualDropIndex = dropIndex
+  if (dropPosition.value === 'after') {
+    actualDropIndex = dropIndex + 1
   }
+
+  // 如果从前往后拖，删除源元素后索引会变小，需要调整
+  if (draggedIndex < actualDropIndex) {
+    actualDropIndex--
+  }
+
+  // 如果最终位置和原始位置相同，不需要移动
+  if (draggedIndex === actualDropIndex)
+    return
 
   const temp = recordedKeys.value[draggedIndex]
   recordedKeys.value.splice(draggedIndex, 1)
-  recordedKeys.value.splice(dropIndex, 0, temp)
+  recordedKeys.value.splice(actualDropIndex, 0, temp)
+
+  dropPosition.value = 'before' // 重置状态
 }
 
 function onDragStart(event: DragEvent, index: number) {
   isDragging.value = true
   dragIndex.value = index
   dropLinePosition.value = 0
+  dropPosition.value = 'before' // 初始化状态
   if (event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.setData('text/plain', index.toString())

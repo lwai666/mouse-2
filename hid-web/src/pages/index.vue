@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { loadLanguageAsync } from '~/modules/i18n'
 
-import { createTransportWebHID, getTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { createTransportWebHID, getTransportWebHID, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 defineOptions({
   name: 'Scyrox',
@@ -68,12 +68,26 @@ nextTick(() => {
 const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
 
 async function onNouseClick(item: any) {
-  const devices = await getTransportWebHID({ id: 'V8' })
-  if (!devices) {
-    // 没有连接的设备
+  // 获取所有已授权的设备
+  const devices = await navigator.hid.getDevices()
+  if (!devices || devices.length === 0) {
+    showMessage(t('index.please_insert_device'))
     return
   }
-  transport.value = item
+
+  // 从现有连接中查找匹配的设备
+  const matchedDevice = devices.find(device =>
+    device.vendorId === item.vendorId && device.productId === item.productId,
+  )
+
+  if (!matchedDevice) {
+    showMessage(t('index.please_insert_this_device'))
+    return
+  }
+
+  // 使用找到的实例
+  transport.value = matchedDevice
+  instanceRef.value = matchedDevice
   router.push(`/hid/v8`)
 }
 
