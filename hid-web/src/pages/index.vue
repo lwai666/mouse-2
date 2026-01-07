@@ -71,7 +71,7 @@ async function onNouseClick(item: any) {
   // 获取所有已授权的设备
   const devices = await navigator.hid.getDevices()
   if (!devices || devices.length === 0) {
-    showMessage(t('index.please_insert_device'))
+    showMessage(t('description.please_insert_device'))
     return
   }
 
@@ -81,7 +81,7 @@ async function onNouseClick(item: any) {
   )
 
   if (!matchedDevice) {
-    showMessage(t('index.please_insert_this_device'))
+    showMessage(t('description.please_insert_this_device'))
     return
   }
 
