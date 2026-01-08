@@ -294,12 +294,14 @@ async function setProfileInfo(index: number) {
   // 有缓存数据则直接使用
   if (profileList[index].value) {
     Object.assign(profileInfo, JSON.parse(JSON.stringify(profileList[index].value)))
+    XYObjDataList.value = profileInfo.XYObjDataList
   }
   // 没有缓存数据则使用获取到的 uint8Array 数据
   else {
     Object.assign(profileInfo, uint8ArrayToProfileInfo(profileList[active_profile_index.value].uint8Array))
     profileList[active_profile_index.value].base64 = insertAt9th(jsonToBase64(profileInfo), 'd')
     profileList[active_profile_index.value].value = JSON.parse(JSON.stringify(profileInfo))
+    XYObjDataList.value = profileInfo.XYObjDataList
   }
 
   // 创建连线监听
@@ -436,7 +438,6 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
     else if (res[0] === 38) {
       profileInfo.sensitivityModeIndex = res[3]
       profileInfo.yAxisMax = res[4] / 10
-
       profileInfo.xAxisMax = combineLowAndHigh8Bits(res[5], res[6])
 
       // 如果模版是自定义，则使用自定义数据
@@ -921,17 +922,22 @@ async function sendDpiLength(type) {
 
 /** 设置回报率 */
 async function sendPolling(value: any) {
+  if (profileInfo.polling_slider === value) {
+    return
+  }
+
   await transport.value.send([0x0C, 0x00, 0x01, value])
+
+  onExecutionSuccess()
+
   profileInfo.polling_slider = value
+
   if (value < 5) {
-    console.log(profileInfo.FPS, 'profileInfo.FPS')
     // 关闭竞技模式
     profileInfo.sports_arena === 1 && onSportsMode(0)
     // 关闭 20K FPS
     profileInfo.FPS && radioChange()
   }
-
-  onExecutionSuccess()
 }
 
 /** 设置进入休眠时间 */
@@ -1032,8 +1038,8 @@ async function sendMouseColor() {
 // 底部功能区
 
 async function onMotionSync() {
-  await transport.value.send([0x16, 0x00, 0x01, profileInfo.motion_sync ? 1 : 0])
-  profileInfo.motion_sync = Number(!profileInfo.motion_sync)
+  await transport.value.send([0x16, 0x00, 0x01, Number(!profileInfo.motion_sync)])
+  profileInfo.motion_sync = !profileInfo.motion_sync
   onExecutionSuccess()
 }
 
@@ -1839,15 +1845,14 @@ function initEcharts() {
       },
     },
     yAxis: {
-      min: [0, 1, 2].includes(profileInfo.sensitivityModeIndex) ? 0.1 : 0,
+      min: [0, 1, 2].includes(profileInfo.sensitivityModeIndex) ? 1.0 : 0,
       max: profileInfo.yAxisMax,
-      interval: profileInfo.yAxisMax / 6,
       type: 'value',
-      axisLabel: {
-        formatter(value: any, index: any) {
-          return index % 2 === 0 ? (value.toFixed(1)) : ''
-        },
-      },
+      // axisLabel: {
+      //   formatter(value: any, index: any) {
+      //     return index % 2 === 0 ? (value.toFixed(1)) : ''
+      //   },
+      // },
       splitLine: {
         lineStyle: {
           color: '#262626', // 轴线颜色
@@ -2196,7 +2201,7 @@ function setLoadingStatus(text?: any) {
   loadingText.value = text
   setTimeout(() => {
     loadingShow.value = false
-  }, 1500)
+  }, 1000)
 }
 
 const isHovered = ref('')
@@ -2419,7 +2424,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     <div class="bottom-con relative">
       <div class="config-box">
         <div class="flex items-center" @click="bottomItemChange(0)">
-          <img :src="`/v9/Motion${profileInfo.motion_sync === 1 ? '_active' : ''}.png`" alt="Motion" style="margin-right: 5px;">
+          <img :src="`/v9/Motion${profileInfo.motion_sync ? '_active' : ''}.png`" alt="Motion" style="margin-right: 5px;">
           <span>
             <!-- 运动模式 -->
             {{ t('tabs.MotionMode') }}
