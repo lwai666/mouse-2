@@ -97,9 +97,9 @@ const sliderDefaultSelectOptions = {
     { label: '10s', value: 10 },
   ],
   lod_slider: [
-    { label: '2mm', value: 2 },
-    { label: '1mm', value: 1 },
     { label: '0.7mm', value: 0 },
+    { label: '1mm', value: 1 },
+    { label: '2mm', value: 2 },
   ],
   // angle_slider: [{ label: '-30', value: 1 },{ label: '-10', value: 2 },{ label: '0', value: 3 },{ label: '15', value: 4 },{ label: '30', value: 5 }],
   angle_slider: [
@@ -284,8 +284,8 @@ let profileList = reactive([
 
 const active_profile_index = ref(0)
 
-async function setProfileInfo(index: number) {
-  if (profileList[active_profile_index.value].value) {
+async function setProfileInfo(index: number, flag: boolean) {
+  if (profileList[active_profile_index.value].value && !flag) {
     profileList[active_profile_index.value].value = JSON.parse(JSON.stringify(profileInfo))
   }
 
@@ -788,7 +788,7 @@ async function setProfile(index: number, type: string) {
     })
   }
 
-  setProfileInfo(active_profile_index.value)
+  setProfileInfo(active_profile_index.value, true)
   setLoadingStatus(t('message.profile_success'))
 }
 
@@ -934,7 +934,7 @@ async function sendPolling(value: any) {
 
   if (value < 5) {
     // 关闭竞技模式
-    profileInfo.sports_arena === 1 && onSportsMode(0)
+    profileInfo.sports_arena === 1 && onSportsMode(0, true)
     // 关闭 20K FPS
     profileInfo.FPS && radioChange()
   }
@@ -986,7 +986,7 @@ async function sendAngle() {
 }
 
 /** 设置性能模式（电竞模式） */
-async function onSportsMode(type: any) {
+async function onSportsMode(type: any, flag: boolean) {
   // const sports_arena = profileInfo.sports_arena === 0 ? 1 : 0
 
   type === 1 && await sendPolling(6)
@@ -997,7 +997,7 @@ async function onSportsMode(type: any) {
 
   // eslint-disable-next-line ts/no-use-before-define
   bottomItem.value = 0
-  onExecutionSuccess()
+  !flag && onExecutionSuccess()
 }
 
 // 获取充电状态 0:不充电  1：充电
@@ -2623,9 +2623,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                               v-for="(item, index) in sliderDefaultSelectOptions.lod_slider"
                               :key="index"
                               class="block_item"
-                              :class="index === profileInfo.lod_slider ? 'active' : ''"
+                              :class="item.value === profileInfo.lod_slider ? 'active' : ''"
                               style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #3D3D3D;background:#242424"
-                              @click="sendLod(index)"
+                              @click="sendLod(item.value)"
                             >
                               {{ item.label }}
                             </div>
@@ -2773,9 +2773,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <ElDropdownItem :command="4">
                             {{ t('button.back_button') }}
                           </ElDropdownItem>
-                          <ElDropdownItem :command="5">
+                          <!-- <ElDropdownItem :command="5">
                             {{ t('button.keyboard_key') }}
-                          </ElDropdownItem>
+                          </ElDropdownItem> -->
                         </ElDropdownMenu>
                       </template>
                     </ElDropdown>
@@ -2990,7 +2990,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <span style="margin-bottom: 35px;" :class="{ active: profileInfo.sensitivityModeIndex === 1 }" @click="selectMode(1)">{{ t('title.sensitivity_preset_natural') }}</span>
                     <span style="margin-bottom: 35px;" :class="{ active: profileInfo.sensitivityModeIndex === 2 }" @click="selectMode(2)">{{ t('title.sensitivity_preset_jump') }}</span>
                     <!-- 自定义 -->
-                    <span style="margin-bottom: 35px;" :class="{ active: [3, 4, 5, 6].includes(profileInfo.sensitivityModeIndex) }" @click="selectMode(3)">{{ t('title.sensitivity_preset_custom') }}</span>
+                    <span style="margin-bottom: 35px;" :class="{ active: [3, 4, 5, 6].includes(profileInfo.sensitivityModeIndex) }" @click="selectMode(4)">{{ t('title.sensitivity_preset_custom') }}</span>
                   </div>
                 </div>
                 <Transition name="slide-right">

@@ -663,12 +663,18 @@ class TransportWebHID extends Transport {
 
   onInputReport = async (e: HIDInputReportEvent) => {
     const data = new Uint8Array(e.data.buffer)
-    console.log('回复=========', data)
+    console.log('回复=========1', data)
 
-    setTimeout(() => {
+    // 每次都重新计时
+    if (loadingFlag) {
+      clearTimeout(loadingFlag)
+    }
+
+    loadingFlag = setTimeout(() => {
       loadingRef && loadingRef.close()
       loadingRef = null
-    }, 800)
+      loadingFlag = null
+    }, 120)
 
     // 错误应答处理
     if (data[this.packetSize - 3] === 1) {
