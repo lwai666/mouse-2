@@ -2723,7 +2723,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         {{ t('tips.sensitivity_enable_xy.title') }}
                       </p>
 
-                      <span style="font-size: 16px;line-height: 24px;color: #FFFFFF;">{{ t('tips.sensitivity_enable_xy.description') }}</span>
+                      <span style="font-size: 16px;line-height: 24px;color: #FFFFFF; width:85%;">{{ t('tips.sensitivity_enable_xy.description') }}</span>
                       <div style="height:197px;width:593px;margin-top: 50px;">
                         <AnimateCanvas
                           :width="593"
