@@ -948,10 +948,11 @@ async function sendHibernation() {
 }
 
 function XYEliminationChange(index: number) {
-  const xNum = XYObjDataList.value[index][0]
-  const yNum = XYObjDataList.value[index][1]
+  const xNum = profileInfo.XYObjDataList[index][0]
+  const yNum = profileInfo.XYObjDataList[index][1]
 
   profileInfo.XYObjDataList[index] = [xNum + (Math.abs(50 - xNum % 50)), yNum + (Math.abs(50 - yNum % 50))]
+
   XYObjDataList.value = JSON.parse(JSON.stringify(profileInfo.XYObjDataList))
 }
 
@@ -2129,7 +2130,7 @@ function dpiEditValue(editActive, value) {
 }
 
 function inputSendDpi(value: number, index: number) {
-  const formatValue = value + (Math.abs(50 - value % 50)) as any
+  const formatValue = value % 50 === 0 ? value : value + (Math.abs(50 - value % 50)) as any
   dpi_slider_value.value = formatValue
   profileInfo.dpi_slider_list[index] = formatValue
 
@@ -2195,13 +2196,37 @@ async function deleteMacro(macro: Macro, index: number) {
 
 const loadingShow = ref(false)
 const loadingText = ref('')
+let loadingTimer: number | null = null
 
 function setLoadingStatus(text?: any) {
-  loadingShow.value = true
-  loadingText.value = text
-  setTimeout(() => {
+  // 清除上一次的定时器
+  if (loadingTimer !== null) {
+    clearTimeout(loadingTimer)
+    loadingTimer = null
+  }
+
+  // 如果前一次 loading 还在显示，先立即关闭它
+  if (loadingShow.value) {
     loadingShow.value = false
-  }, 1000)
+    // 使用 nextTick 确保 DOM 更新后重新开始新的 loading
+    nextTick(() => {
+      loadingShow.value = true
+      loadingText.value = text
+      startLoadingTimer()
+    })
+  }
+  else {
+    loadingShow.value = true
+    loadingText.value = text
+    startLoadingTimer()
+  }
+}
+
+function startLoadingTimer() {
+  loadingTimer = window.setTimeout(() => {
+    loadingShow.value = false
+    loadingTimer = null
+  }, 1500)
 }
 
 const isHovered = ref('')
@@ -2498,18 +2523,18 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         <div style="font-size: 14px;" :style="{ 'margin-bottom': !!profileInfo.DPIStartList[index] ? '0px' : '30px' }">
                           {{ t('title.sensitivity_level') }} {{ index + 1 }}
                         </div>
-                        <div v-if="!profileInfo.DPIStartList[index]" style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @dblclick="dpiEditValue(index, item)">
+                        <div v-if="!profileInfo.DPIStartList[index]" style="width: 69px;height: 25px; text-align: center;line-height: 25px; border:1px solid #444444; border-radius: 10px;" @click.stop="dpiEditValue(index, item)">
                           <input v-if="dpi_slider_edit === index" ref="dpiInputRef" v-model.number="dpi_slider_value" style="border-radius: 10px;" class="h-[25px] w-[69px] text-center" type="text" @blur="inputSendDpi(dpi_slider_value, index)" @keyup.enter="inputSendDpi(dpi_slider_value, index)">
                           <span v-else>{{ item }}</span>
                         </div>
 
                         <template v-else>
-                          <span style="font-size:10px">X1</span>
-                          <div style="width: 69px; text-align: center; border-radius: 10px;">
+                          <span style="font-size:10px">X</span>
+                          <div style="width: 69px; text-align: center; border-radius: 10px;" @click.stop>
                             <input v-model.number="profileInfo.XYObjDataList[index][0]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @change="XYEliminationChange(index)" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                           <span style="font-size:10px">Y</span>
-                          <div style="width: 69px; text-align: center; border-radius: 10px;">
+                          <div style="width: 69px; text-align: center; border-radius: 10px;" @click.stop>
                             <input v-model.number="profileInfo.XYObjDataList[index][1]" style="border-radius: 10px;color:#fff" class="h-[25px] w-[69px] text-center" type="text" @change="XYEliminationChange(index)" @blur="sendXYElimination" @keyup.enter="sendXYElimination">
                           </div>
                         </template>
