@@ -113,7 +113,7 @@ const sliderOptions = {
   jitter_elimination_slider: { min: 0, max: 6, step: 2 },
   polling_slider: { min: 0, max: 6, step: 1 },
   dpi_slider: { min: 100, max: 30000, step: 50 },
-  hibernation_slider: { min: 1, max: 90, step: 1 },
+  hibernation_slider: { min: 30, max: 500, step: 10 },
   lod_slider: { min: 0, max: 2, step: 1 },
   angle_slider: { min: -30, max: 30, step: 1 },
 }
@@ -2505,11 +2505,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div class="flex items-center justify-between">
                     <span style="font-size: 20px;"> {{ t('title.sensitivity_settings_heading') }} </span>
                     <div class="flex items-center">
-                      <span style="display: inline-block; font-size: 30px;" @click="sendDpiLength('add')">+</span>
+                      <span style="display: inline-block; font-size: 30px;" @click="sendDpiLength('minu')">-</span>
                       <span
                         style="margin: 0 15px; width: 24px; height: 24px; border-radius: 50%;background-color: #DAFF00;color: #333;"
                       >{{ profileInfo.dpi_slider_list.length }}</span>
-                      <span style="display: inline-block; font-size: 30px;" @click="sendDpiLength('minu')">-</span>
+                      <span style="display: inline-block; font-size: 30px;" @click="sendDpiLength('add')">+</span>
                     </div>
                   </div>
 

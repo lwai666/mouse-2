@@ -1,6 +1,15 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { ElButton, ElForm, ElFormItem, ElInput, ElUpload, ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import { ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElUpload } from 'element-plus'
+import { reactive, ref } from 'vue'
+
+import { useI18n } from 'vue-i18n'
+
+import { createTransportWebHID } from '~/utils/hidHandle'
+
+const { t } = useI18n()
+
+const userStore = useUserStore()
 
 // 这是管理员密码 admin123 的 SHA-256 哈希值
 const ADMIN_PASSWORD_HASH = import.meta.env.VITE_ADMIN_PASSWORD_HASH
@@ -10,7 +19,25 @@ const isAuthenticated = ref(false)
 const password = ref('')
 const form = ref()
 
-const sha256 = async (message: string) => {
+const transport = ref(null)
+
+async function onAddNouseClick() {
+  transport.value = await createTransportWebHID({
+    id: 'v8',
+    filters: [
+      ...toRaw(userStore.devices),
+      // 其他设备
+      { vendorId: 0x1532, productId: 0x00BF },
+      // { vendorId: 0x3554, productId: 0xF5F7 },
+      // { vendorId: 0x3554, productId: 0xF5F4 },
+    ],
+    commandHandler: async (data) => {
+      // console.log('接收的数据=======', data)
+    },
+  })
+}
+
+async function sha256(message: string) {
   const msgBuffer = new TextEncoder().encode(message)
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
@@ -18,12 +45,13 @@ const sha256 = async (message: string) => {
   return hashHex
 }
 
-const validatePassword = async () => {
+async function validatePassword() {
   const inputHash = await sha256(password.value)
   if (inputHash === ADMIN_PASSWORD_HASH) {
     isAuthenticated.value = true
     ElMessage.success('验证成功')
-  } else {
+  }
+  else {
     ElMessage.error('密码错误')
   }
 }
@@ -38,25 +66,26 @@ const formData = reactive({
 const spiFileList = ref([])
 const usbFileList = ref([])
 
-const spiHandleFileChange = (file: any, fileList: any) => {
+function spiHandleFileChange(file: any, fileList: any) {
   formData.spiFile = file.raw
   spiFileList.value = fileList.slice(-1)
 }
-const usbHandleFileChange = (file: any, fileList: any) => {
+function usbHandleFileChange(file: any, fileList: any) {
   formData.usbFile = file.raw
   usbFileList.value = fileList.slice(-1)
 }
 
-const validateVersion = (rule: any, value: string, callback: any) => {
+function validateVersion(rule: any, value: string, callback: any) {
   const versionPattern = /^(\d+\.)?(\d+\.)?(\*|\d+)$/
   if (!versionPattern.test(value)) {
     callback(new Error('版本号格式不正确'))
-  } else {
+  }
+  else {
     callback()
   }
 }
 
-const validateSpiFile = (rule: any, value: any, callback: any) => {
+function validateSpiFile(rule: any, value: any, callback: any) {
   if (!value) {
     callback(new Error('请上传适配器更新包'))
     return
@@ -67,7 +96,7 @@ const validateSpiFile = (rule: any, value: any, callback: any) => {
 const rules = {
   version: [
     { required: true, message: '请填写上传的更新包的版本号', trigger: 'blur' },
-    { validator: validateVersion, trigger: 'blur' }
+    { validator: validateVersion, trigger: 'blur' },
   ],
   description: [
     { required: true, message: '请填写更新描述', trigger: 'blur' },
@@ -75,16 +104,17 @@ const rules = {
   ],
   spiFile: [
     { required: true, message: '请上传适配器更新包', trigger: 'change' },
-    { validator: validateSpiFile, trigger: 'blur' }
+    { validator: validateSpiFile, trigger: 'blur' },
   ],
   usbFile: [
     { required: true, message: '请上传鼠标更新包', trigger: 'change' },
-    { validator: validateSpiFile, trigger: 'blur' }
+    { validator: validateSpiFile, trigger: 'blur' },
   ],
 }
 
-const submitForm = async () => {
-  if (!form.value) return
+async function submitForm() {
+  if (!form.value)
+    return
 
   try {
     await form.value.validate()
@@ -95,18 +125,19 @@ const submitForm = async () => {
     _formData.append('file1', formData.spiFile)
     _formData.append('file2', formData.usbFile)
 
-    const response = await fetch(SERVER_API + '/api/upload-update-package', {
+    const response = await fetch(`${SERVER_API}/api/upload-update-package`, {
       method: 'POST',
       body: _formData,
     })
     if (response.ok) {
       ElMessage.success('上传成功')
-    } else {
+    }
+    else {
       ElMessage.error('上传失败')
     }
-  } catch (error) {
+  }
+  catch (error) {
     ElMessage.error('请检查表单填写是否正确')
-    return
   }
 }
 </script>
@@ -114,72 +145,112 @@ const submitForm = async () => {
 <template>
   <div class="upload-update-package-container">
     <!-- 密码验证表单 -->
-    <el-form v-if="!isAuthenticated" class="my-10 mx-auto w-200" @submit.native.prevent>
-      <el-form-item>
-        <div class="w-full text-2xl text-center p-10">管理员验证</div>
-      </el-form-item>
-      <el-form-item>
-        <el-input
+    <ElForm v-if="!isAuthenticated" class="mx-auto my-10 w-200" @submit.native.prevent>
+      <ElFormItem>
+        <div class="w-full p-10 text-center text-2xl">
+          管理员验证
+        </div>
+      </ElFormItem>
+      <ElFormItem>
+        <ElInput
           v-model="password"
           type="password"
           placeholder="请输入管理员密码"
           @keyup.enter.prevent="validatePassword"
-        ></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" class="w-full" @click="validatePassword">验证</el-button>
-      </el-form-item>
-    </el-form>
+        />
+      </ElFormItem>
+      <ElFormItem>
+        <ElButton type="primary" class="w-full" @click="validatePassword">
+          验证
+        </ElButton>
+      </ElFormItem>
+    </ElForm>
 
-    <!-- 上传表单 -->
-    <el-form
-      v-else
-      :model="formData"
-      :rules="rules"
-      ref="form"
-      label-width="120px"
-      class="my-10 mx-auto w-200"
+    <div
+      v-else style="height: 100%; display: flex;justify-content: center;align-items: center;"
     >
-      <el-form-item>
-        <div class="w-full text-2xl text-center p-10">更新包上传</div>
-      </el-form-item>
-      <el-form-item label="版本号" prop="version">
-        <el-input v-model="formData.version" placeholder="1"></el-input>
-      </el-form-item>
-      <el-form-item label="更新描述" prop="description">
-        <el-input type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" v-model="formData.description" placeholder="1. 修复了一些已知的问题"></el-input>
-      </el-form-item>
-      <el-form-item label="适配器更新包" prop="spiFile">
-        <el-upload
-          action=""
-          :file-list="spiFileList"
-          :auto-upload="false"
-          accept=".bin"
-          :on-change="spiHandleFileChange"
+      <div
+        v-if="!transport"
+        class="relative mb-5 flex flex-shrink-0 items-center justify-center"
+        style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;border: 1px solid rgba(255, 255, 255, 0.4);"
+        @click="onAddNouseClick"
+      >
+        <!-- <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
+        点击进入
+      </p> -->
+        <ElIcon size="20" color="#ffff">
+          <Plus />
+        </ElIcon>
+      </div>
+      <div v-else style="height: 100%;">
+        <!-- 上传表单 -->
+        <ElForm
+
+          ref="form"
+          :model="formData"
+          :rules="rules"
+          label-width="120px"
+          class="mx-auto my-10 w-200"
         >
-          <el-button type="primary">选择文件</el-button>
-          <div slot="tip" class="el-upload__tip ml-5">请上传 .bin 文件更新包, 不能大于 10MB！</div>
-        </el-upload>
-      </el-form-item>
-      <el-form-item label="鼠标更新包" prop="usbFile">
-        <el-upload
-          action=""
-          :file-list="usbFileList"
-          :auto-upload="false"
-          accept=".bin"
-          :on-change="usbHandleFileChange"
-        >
-          <el-button type="primary">选择文件</el-button>
-          <div slot="tip" class="el-upload__tip ml-5">请上传 .bin 文件更新包, 不能大于 10MB！</div>
-        </el-upload>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" class="w-full" @click="submitForm">提交</el-button>
-      </el-form-item>
-    </el-form>
+          <ElFormItem>
+            <div class="w-full p-10 text-center text-2xl" style="text-align: center;">
+              更新包上传
+            </div>
+          </ElFormItem>
+          <ElFormItem label="版本号" prop="version">
+            <ElInput v-model="formData.version" placeholder="1" />
+          </ElFormItem>
+          <ElFormItem label="更新描述" prop="description">
+            <ElInput v-model="formData.description" type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="1. 修复了一些已知的问题" />
+          </ElFormItem>
+          <ElFormItem label="适配器更新包" prop="spiFile">
+            <ElUpload
+              action=""
+              :file-list="spiFileList"
+              :auto-upload="false"
+              accept=".bin"
+              :on-change="spiHandleFileChange"
+            >
+              <ElButton type="primary">
+                选择文件
+              </ElButton>
+              <template #tip>
+                <div
+                  class="el-upload__tip" style="position: absolute; left: 125px;top: -7px;"
+                >
+                  请上传 .bin 文件更新包, 不能大于 10MB！
+                </div>
+              </template>
+            </ElUpload>
+          </ElFormItem>
+          <ElFormItem label="鼠标更新包" prop="usbFile">
+            <ElUpload
+              action=""
+              :file-list="usbFileList"
+              :auto-upload="false"
+              accept=".bin"
+              :on-change="usbHandleFileChange"
+            >
+              <ElButton type="primary">
+                选择文件
+              </ElButton>
+              <template #tip>
+                <div class="el-upload__tip" style="position: absolute; left: 125px;top: -7px;">
+                  请上传 .bin 文件更新包, 不能大于 10MB！
+                </div>
+              </template>
+            </ElUpload>
+          </ElFormItem>
+          <ElFormItem>
+            <ElButton type="primary" class="w-full" @click="submitForm">
+              提交
+            </ElButton>
+          </ElFormItem>
+        </ElForm>
+      </div>
+    </div>
   </div>
 </template>
-
 
 <style>
 .upload-update-package-container {
@@ -187,5 +258,10 @@ const submitForm = async () => {
   --el-color-primary: #fff;
   --el-color-primary-light-3: #e0e0e0;
   --el-color-primary-dark-2: #898989;
+  height: 100%;
+}
+
+.upload-update-package-container .el-form-item__content > div {
+  text-align: left;
 }
 </style>
