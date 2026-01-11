@@ -325,6 +325,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const polling_slider = (res[dpi_end_index + 2] << 8) | res[dpi_end_index + 1] // 回报率
 
       const battery_level_index = dpi_end_index + 3
+
       const battery_level = res[battery_level_index] // 电量;
       const version = (res[battery_level_index + 2] << 8) | res[battery_level_index + 1]
       const lod_slider = res[battery_level_index + 3] // 静默高度
@@ -332,7 +333,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const jitter_elimination_slider = (res[battery_level_index + 6] << 8) | res[battery_level_index + 5] // 消抖时间
       const hibernation_slider = (res[battery_level_index + 10] << 24) | (res[battery_level_index + 9] << 16) | (res[battery_level_index + 8] << 8) | res[battery_level_index + 7] // 深度睡眠时间
       const motion_sync = res[battery_level_index + 11] // 运动模式
-      const angle = mapHexToRange(res[battery_level_index + 12]) // 0xE2-0xFF（-30,-1） 和 0x00-0x1E (0, 30)     以前的：[-30, -10, 0, 15, 30] 角度 1-61 表示 -30度 ～ 30度
+      const angle = mapHexToRange(res[31]) // 0xE2-0xFF（-30,-1） 和 0x00-0x1E (0, 30)     以前的：[-30, -10, 0, 15, 30] 角度 1-61 表示 -30度 ～ 30度
 
       console.log(`
         当前运行profile: ${active_profile_index.value}
