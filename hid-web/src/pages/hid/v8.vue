@@ -318,7 +318,7 @@ function uint8ArrayToProfileInfo(uint8Array: Uint8Array[]) {
       const dpi_slider_active_index = res[start_index + 2]
       const dpi_length = res[start_index + 3]
 
-      const dpi_data_length = dpi_length * 2
+      const dpi_data_length = 5 * 2
       const dpi_end_index = start_index + 3 + dpi_data_length
 
       const dpi_slider_list = Array.from({ length: dpi_length }, (_, i) => (res[start_index + 3 + i * 2 + 2] << 8) | res[start_index + 3 + i * 2 + 1])
@@ -507,7 +507,8 @@ function profileInfoToUint8Array(profileInfo: any): Uint8Array[] {
   const uint8Array: Uint8Array[] = []
   // 获取 profile 基础配置信息：0
   let uint8Array0: number[] = []
-  const dpi_data = profileInfo.dpi_slider_list.reduce((arr: number[], item: number) => {
+  const fillArray = arr => arr.concat(Array.from({ length: Math.max(0, 5 - arr.length) }).fill(0))
+  const dpi_data = fillArray(profileInfo.dpi_slider_list).reduce((arr: number[], item: number) => {
     arr.push(item & 0xFF, item >> 8 & 0xFF)
     return arr
   }, [])
@@ -901,7 +902,7 @@ async function sendDpiLength(type) {
   const oldLength = profileInfo.dpi_slider_list.length
   const newLength = type === 'add' ? profileInfo.dpi_slider_list.length + 1 : profileInfo.dpi_slider_list.length - 1
 
-  const default_dpi_slider_list = [3000, 8000, 15000, 24000, 30000]
+  const default_dpi_slider_list = [400, 800, 1600, 3200, 6400]
   // 添加 dpi
   if (newLength > oldLength) {
     profileInfo.dpi_slider_list = [...profileInfo.dpi_slider_list, default_dpi_slider_list[newLength - 1]]
