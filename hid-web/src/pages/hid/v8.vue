@@ -2228,7 +2228,7 @@ function startLoadingTimer() {
   loadingTimer = window.setTimeout(() => {
     loadingShow.value = false
     loadingTimer = null
-  }, 1500)
+  }, 800)
 }
 
 const isHovered = ref('')

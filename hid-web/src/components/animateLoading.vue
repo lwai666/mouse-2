@@ -13,7 +13,7 @@ const checkmarkOpacity = ref(0)
 const progressOffset = computed(() => circumference * (1 - progress.value))
 
 function animateCircle() {
-  const duration = 500
+  const duration = 200
   const startTime = Date.now()
 
   const animate = () => {
