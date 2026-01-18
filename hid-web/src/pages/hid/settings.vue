@@ -115,12 +115,70 @@ function selectFileHandle(event: any) {
     }
     // 读取文件内容返回 ArrayBuffer
     reader.readAsArrayBuffer(file)
+    console.log('选择的文件=====', file.name)
+
     selectFile.value = file
   }
 }
 
 async function sendSpiBoot() {
   await transport.value.send([0x85])
+}
+
+// 解析固件包头部信息（64字节）
+function parseFirmwareHeader(data: Uint8Array) {
+  if (data.length < 64) {
+    throw new Error('固件文件格式错误：头部不足64字节')
+  }
+
+  // 解析头部（0-15字节）
+  const headerBytes = data.slice(0, 16)
+  const header = String.fromCharCode(...headerBytes.filter(b => b !== 0xFF))
+
+  // 解析项目名（16-31字节）
+  const projectBytes = data.slice(16, 32)
+  const projectName = String.fromCharCode(...projectBytes.filter(b => b !== 0xFF))
+
+  // 解析 SPI APP1 固件信息（32-47字节）
+  const spiAddress = bytesToUint32(data.slice(32, 36))
+  const spiSize = bytesToUint32(data.slice(36, 40))
+  const spiChecksum = bytesToUint32(data.slice(40, 44))
+
+  // 解析 USB APP2 固件信息（48-63字节）
+  const usbAddress = bytesToUint32(data.slice(48, 52))
+  const usbSize = bytesToUint32(data.slice(52, 56))
+  const usbChecksum = bytesToUint32(data.slice(56, 60))
+
+  return {
+    header,
+    projectName,
+    spi: { address: spiAddress, size: spiSize, checksum: spiChecksum },
+    usb: { address: usbAddress, size: usbSize, checksum: usbChecksum },
+  }
+}
+
+// 字节数组转32位整数（小端序）
+function bytesToUint32(bytes: Uint8Array): number {
+  return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)
+}
+
+// 验证固件头部
+function validateFirmwareHeader(headerInfo: any, currentDevice: any) {
+  // 检查设备类型匹配
+  const isMouse = currentDevice?.name === '鼠标'
+  const expectedHeader = isMouse ? 'MS-USB-UPGRADE' : 'DO-USB-UPGRADE'
+
+  if (!headerInfo.header.includes(expectedHeader)) {
+    throw new Error(`固件类型不匹配：当前设备是${currentDevice?.name}，但固件头部是 ${headerInfo.header}`)
+  }
+
+  console.log('✓ 固件头部验证通过')
+  console.log('  - 头部:', headerInfo.header)
+  console.log('  - 项目名:', headerInfo.projectName)
+  console.log('  - SPI固件:', `地址:0x${headerInfo.spi.address.toString(16)}, 大小:${headerInfo.spi.size}字节`)
+  console.log('  - USB固件:', `地址:0x${headerInfo.usb.address.toString(16)}, 大小:${headerInfo.usb.size}字节`)
+
+  return headerInfo
 }
 
 async function sendUsbBoot() {
@@ -162,6 +220,94 @@ async function sendFirmwareChecksum() {
 
 async function quitBoot() {
   await transport.value.send([0x8A], 1000)
+}
+
+// 一键升级功能 - 使用新协议的固件包格式
+async function onClickStartUpdate() {
+  if (!bin_Uint8Array.value) {
+    console.error('请先选择固件文件')
+    return
+  }
+
+  try {
+    // 1. 解析固件头部（64字节）
+    const headerInfo = parseFirmwareHeader(bin_Uint8Array.value)
+
+    // 2. 获取当前设备信息
+    const { productId, vendorId } = transport.value.device
+    const currentDevice = userStore.devices.find(item => item.vendorId === vendorId && item.productId === productId)
+
+    // 3. 验证固件头部
+    validateFirmwareHeader(headerInfo, currentDevice)
+
+    // 4. 确定要升级的固件类型
+    const isMouse = currentDevice?.name === '鼠标'
+    const firmwareType = isMouse ? 'usb' : 'spi'
+    currentUpdateKey.value = firmwareType
+    currentUpdate.value.status = 'updating'
+    currentUpdate.value.progress = 0
+
+    // 5. 进入 BOOT 模式
+    if (isMouse) {
+      await sendUsbBoot() // 鼠标使用 0x86
+      console.log('进入 USB BOOT')
+    }
+    else {
+      await sendSpiBoot() // 接收器使用 0x85
+      console.log('进入 SPI BOOT')
+    }
+    setProgress(10)
+
+    // 6. 发送固件信息（64字节头部）
+    // 根据协议，需要发送完整的64字节头部给设备
+    const header64Bytes = bin_Uint8Array.value.slice(0, 64)
+    await transport.value.send([...header64Bytes], 5000)
+    console.log('发送固件头部信息（64字节）')
+    setProgress(20)
+
+    // 7. 发送实际固件数据（跳过64字节头部）
+    const firmwareData = bin_Uint8Array.value.slice(64)
+    const num = Math.ceil(firmwareData.length / 57)
+
+    for (let i = 0; i < num; i++) {
+      const packetIndex = num - 1 - i
+      const data = firmwareData.slice(i * 57, (i + 1) * 57)
+      try {
+        // 使用 0x88 协议发送固件数据包
+        await transport.value.send([0x88, ...[packetIndex & 0xFF, packetIndex >> 8], data.length, ...data])
+      }
+      catch (err) {
+        console.error('发送固件数据失败:', err)
+        throw err
+      }
+
+      setProgress(20 + (i / num) * 70)
+    }
+    console.log('发送固件数据完成')
+    setProgress(90)
+
+    // 8. 验证 checksum（可选）
+    await sleep(1000)
+    setProgress(95)
+
+    // 9. 退出 BOOT 模式
+    await quitBoot()
+    console.log('退出 BOOT')
+    currentUpdate.value.status = 'updateCompleted'
+    setProgress(100)
+
+    // 10. 等待后重新加载
+    await sleep(1000)
+    location.reload()
+  }
+  catch (err) {
+    console.log('更新失败=====', err)
+    currentUpdate.value.status = 'updateFailed'
+    // 可以在这里显示错误信息给用户
+    if (err instanceof Error) {
+      alert(`更新失败：${err.message}`)
+    }
+  }
 }
 
 async function fetchWithProgress(url: string, onProgress: (progress: string) => void) {
@@ -380,7 +526,7 @@ onMounted(async () => {
       </div>
     </div>
     <div v-if="selectFile" class="zhezhao">
-      <ElButton type="primary" round>
+      <ElButton type="primary" round @click="onClickStartUpdate">
         开始更新
       </ElButton>
       <!-- <div style="width: 50%;"> -->
