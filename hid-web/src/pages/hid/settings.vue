@@ -55,10 +55,10 @@ useTransportWebHID('v8', async (instance) => {
 
   await getVersion()
 
-  // 测试代码
-  transport.value.setHandler((data: Uint8Array) => {
-    inputDataList.value.push(data.toString())
-  })
+  // // 测试代码
+  // transport.value.setHandler((data: Uint8Array) => {
+  //   inputDataList.value.push(data.toString())
+  // })
 
   navigator.hid.addEventListener('disconnect', (event) => {
     console.log('设备断开连接:', event.device)
@@ -166,6 +166,13 @@ function selectFileHandle(event: any) {
         selectFile.value = null
         return
       }
+
+      if (!isMSDevice.value && header !== 'DO-USB-UPGRADE') {
+        console.log('头字符串对不上，也提示错误，说明放错了文件')
+        selectFile.value = null
+        return
+      }
+
       if (isMSDevice.value && projectName !== 'SCYROX_V10') {
         console.log('网页判断项目名不对，不给升级')
         selectFile.value = null
@@ -359,12 +366,11 @@ async function onClickStartUpdate() {
         // 4. 发送固件 checksum
         await sendFirmwareChecksum(uint8ArrayObj.SPI.checksum)
         console.log(`发送 SPI 固件 checksum: ${uint8ArrayObj.SPI.checksum}`)
-        setProgress(90)
+        setProgress(100)
 
         // 5. 退出 BOOT 模式
         await quitBoot()
         console.log('SPI 固件更新完成，退出 BOOT')
-        setProgress(100)
       }
       else if (type === 'usb') {
         console.log('开始更新 USB 固件...')
