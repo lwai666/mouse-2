@@ -79,9 +79,11 @@ async function getVersion() {
   }
 
   const currentDevice = userStore.devices.find(item => item.vendorId === vendorId && item.productId === productId)
+
   const res = await transport.value.send([currentDevice?.sendData])
 
   const version = combineLowAndHigh8Bits(res[3], res[4])
+
   switch (currentDevice?.name) {
     case '接收器':
       updateList.spi.version = String(version)
@@ -98,11 +100,40 @@ async function getVersion() {
   updateList.usb.version = `${updateList.usb.version}.${combineLowAndHigh8Bits(PhyRes[3], PhyRes[4])}`
 }
 
-function toSelectFileHandle() {
-  fileInput.value.click()
+const isMSDevice = ref(false)
+const fileInput = ref()
+
+function toSelectFileHandle(name: string, type: string) {
+  const index = {
+    usb: 1,
+    spi: 0,
+  }[type]
+
+  fileInput.value[index].click()
+  isMSDevice.value = name.includes('鼠标')
 }
 
 const selectFile = ref(null)
+// 鼠标对象
+const uint8ArrayObj = reactive({
+  header: '', // 固件头信息
+  projectName: '', // 项目名信息
+  SPI: {
+    address: 0,
+    size: 0,
+    checksum: 0,
+    version: 0,
+    firmware: null,
+  }, // spi 固件信息
+  USB: {
+    address: 0,
+    size: 0,
+    checksum: 0,
+    version: 0,
+    firmware: null,
+  }, // usb 固件信息
+})
+
 function selectFileHandle(event: any) {
   const file = event.target.files[0]
   if (file) {
@@ -112,12 +143,101 @@ function selectFileHandle(event: any) {
       const uint8Array = new Uint8Array(arrayBuffer)
       bin_Uint8Array.value = uint8Array
       console.log('bin_Uint8Array======selectFile==', uint8Array)
+
+      // 解析字节 0-15 的 ASCII 编码
+      const headerBytes = uint8Array.slice(0, 16)
+      const header = String.fromCharCode(...headerBytes.filter(b => b !== 0xFF && b !== 0x00))
+      console.log('字节 0-15 (头部):', header)
+
+      // 解析字节 16-31 的 ASCII 编码
+      const projectBytes = uint8Array.slice(16, 32)
+      const projectName = String.fromCharCode(...projectBytes.filter(b => b !== 0xFF && b !== 0x00))
+      console.log('字节 16-31 (项目名):', projectName)
+
+      // 解析 SPI 固件信息（32-47字节）
+      const spiAddress = bytesToUint32(uint8Array.slice(32, 36))
+      const spiSize = bytesToUint32(uint8Array.slice(36, 40))
+      const spiChecksum = bytesToUint32(uint8Array.slice(40, 44))
+      const spiVersion = bytesToUint32(uint8Array.slice(44, 48))
+
+      // 解析 USB 固件信息（48-63字节）
+      const usbAddress = bytesToUint32(uint8Array.slice(48, 52))
+      const usbSize = bytesToUint32(uint8Array.slice(52, 56))
+      const usbChecksum = bytesToUint32(uint8Array.slice(56, 60))
+      const usbVersion = bytesToUint32(uint8Array.slice(60, 64))
+
+      console.log('SPI 固件信息:', {
+        address: `0x${spiAddress.toString(16).toUpperCase()}`,
+        size: spiSize,
+        checksum: `0x${spiChecksum.toString(16).toUpperCase()}`,
+        version: spiVersion,
+      })
+
+      console.log('USB 固件信息:', {
+        address: `0x${usbAddress.toString(16).toUpperCase()}`,
+        size: usbSize,
+        checksum: `0x${usbChecksum.toString(16).toUpperCase()}`,
+        version: usbVersion,
+      })
+
+      // 根据地址和大小截取固件数据
+      let spiFirmware: Uint8Array | null = null
+      let usbFirmware: Uint8Array | null = null
+      let spiCalculatedChecksum = 0
+      let usbCalculatedChecksum = 0
+
+      if (spiSize > 0) {
+        const spiEnd = spiAddress + spiSize
+        spiFirmware = uint8Array.slice(spiAddress, spiEnd)
+        // 计算 SPI 固件的 checksum（所有字节累加）
+        spiCalculatedChecksum = spiFirmware.reduce((acc, val) => acc + val, 0)
+        console.log(`SPI 固件已截取: 地址 0x${spiAddress.toString(16)} - 0x${spiEnd.toString(16)}, 大小 ${spiFirmware.length} 字节`)
+        console.log(`SPI checksum (计算值): 0x${spiCalculatedChecksum.toString(16).toUpperCase()}`)
+      }
+
+      if (usbSize > 0) {
+        const usbEnd = usbAddress + usbSize
+        usbFirmware = uint8Array.slice(usbAddress, usbEnd)
+        // 计算 USB 固件的 checksum（所有字节累加）
+        usbCalculatedChecksum = usbFirmware.reduce((acc, val) => acc + val, 0)
+        console.log(`USB 固件已截取: 地址 0x${usbAddress.toString(16)} - 0x${usbEnd.toString(16)}, 大小 ${usbFirmware.length} 字节`)
+        console.log(`USB checksum (计算值): 0x${usbCalculatedChecksum.toString(16).toUpperCase()}`)
+      }
+
+      if (isMSDevice.value && header !== 'MS-USB-UPGRADE') {
+        console.log('头字符串对不上，也提示错误，说明放错了文件')
+        return
+      }
+      if (isMSDevice.value && projectName !== 'SCYROX_V10') {
+        console.log('网页判断项目名不对，不给升级')
+        return
+      }
+
+      Object.assign(uint8ArrayObj, {
+        header,
+        projectName,
+        SPI: {
+          address: spiAddress,
+          size: spiSize,
+          checksum: spiCalculatedChecksum,
+          version: spiVersion,
+          firmware: spiFirmware,
+        },
+        USB: {
+          address: usbAddress,
+          size: usbSize,
+          checksum: usbCalculatedChecksum,
+          version: usbVersion,
+          firmware: usbFirmware,
+        },
+      })
+
+      console.log('解析后的固件对象:', uint8ArrayObj)
+
+      selectFile.value = file
     }
     // 读取文件内容返回 ArrayBuffer
     reader.readAsArrayBuffer(file)
-    console.log('选择的文件=====', file.name)
-
-    selectFile.value = file
   }
 }
 
@@ -157,9 +277,9 @@ function parseFirmwareHeader(data: Uint8Array) {
   }
 }
 
-// 字节数组转32位整数（小端序）
+// 字节数组转32位整数（大端序）
 function bytesToUint32(bytes: Uint8Array): number {
-  return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24)
+  return bytes[3] | (bytes[2] << 8) | (bytes[1] << 16) | (bytes[0] << 24)
 }
 
 // 验证固件头部
@@ -232,6 +352,8 @@ async function onClickStartUpdate() {
   try {
     // 1. 解析固件头部（64字节）
     const headerInfo = parseFirmwareHeader(bin_Uint8Array.value)
+
+    console.log(headerInfo, 'headerInfo')
 
     // 2. 获取当前设备信息
     const { productId, vendorId } = transport.value.device
@@ -360,8 +482,6 @@ async function fetchWithProgress(url: string, onProgress: (progress: string) => 
   }
 }
 
-const fileInput = ref()
-
 async function onClickUpdate(type: 'spi' | 'usb') {
   currentUpdate.value.status = 'updating'
   let url = `${import.meta.env.VITE_SERVER_API}/`
@@ -461,8 +581,8 @@ onMounted(async () => {
             <ElBadge :value="userStore.latestVersion.version > (`${item.version}`) ? 'new' : ''">
               <!-- <el-button :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">{{ t(`settings.${item.status}`) }}</el-button> -->
               <!-- :disabled="item.status !== 'updateNow'" -->
-              <ElButton type="primary" round @click="toSelectFileHandle">
-                选择文件 <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
+              <ElButton type="primary" round @click="toSelectFileHandle(item.title, index)">
+                选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
               </ElButton>
             </ElBadge>
           </div>
@@ -482,7 +602,7 @@ onMounted(async () => {
       <div class="mt-200">
         <div class="flex flex-wrap gap-2 py-4">
           <ElButton type="primary" class="w-30" @click="toSelectFileHandle">
-            选择文件<input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
+            <!-- 选择文件<input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle"> -->
           </ElButton>
           <ElButton type="primary" @click="sendSpiBoot">
             进入 SPI BOOT
