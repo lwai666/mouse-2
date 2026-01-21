@@ -369,7 +369,7 @@ async function onClickStartUpdate() {
         setProgress(100)
 
         // 5. 退出 BOOT 模式
-        await quitBoot()
+        quitBoot()
         console.log('SPI 固件更新完成，退出 BOOT')
       }
       else if (type === 'usb') {
@@ -400,12 +400,10 @@ async function onClickStartUpdate() {
         // 4. 发送固件 checksum
         await sendFirmwareChecksum(uint8ArrayObj.USB.checksum)
         console.log(`发送 USB 固件 checksum: ${uint8ArrayObj.USB.checksum}`)
-        setProgress(90)
+        setProgress(100)
 
         // 5. 退出 BOOT 模式
-        await quitBoot()
-        console.log('USB 固件更新完成，退出 BOOT')
-        setProgress(100)
+        quitBoot()
       }
     }
 
