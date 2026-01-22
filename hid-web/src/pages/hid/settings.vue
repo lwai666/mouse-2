@@ -490,7 +490,10 @@ async function fetchWithProgress(url: string, onProgress: (progress: string) => 
 async function onClickUpdate(type: 'spi' | 'usb') {
   currentUpdate.value.status = 'updating'
 
+  console.log('开始更type新固件...', type,userStore)
+
   let url = `${import.meta.env.VITE_SERVER_API}/`
+
   if (type === 'spi') {
     url += userStore.latestVersion.spiFilePath
   }
