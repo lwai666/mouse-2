@@ -574,7 +574,7 @@ onMounted(async () => {
                 选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
               </ElButton>
 
-              <ElButton :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate">
+              <ElButton :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
                 一键升级
               </ElButton>
             </ElBadge>
