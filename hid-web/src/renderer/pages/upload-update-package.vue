@@ -6,7 +6,7 @@ import { reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { getApiUrl } from '~/composables/useApiConfig'
-import { createTransportWebHID } from '~/utils/hidHandle'
+import { createTransportWebHID } from '~/renderer/utils/hidHandle'
 
 const { t } = useI18n()
 

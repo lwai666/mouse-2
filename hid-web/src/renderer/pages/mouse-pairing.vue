@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { createTransportWebHID } from '~/utils/hidHandle';
+import { createTransportWebHID } from '~/renderer/utils/hidHandle';
 
 const active = ref(0)
 const loading = ref(false)

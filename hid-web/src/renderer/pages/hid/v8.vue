@@ -3,7 +3,7 @@ import type { DraggableChart } from '~/composables/useDraggableChart'
 
 import type { Macro, ProfileInfoType } from '~/types'
 
-import type { TransportWebHIDInstance } from '~/utils/hidHandle'
+import type { TransportWebHIDInstance } from '~/renderer/utils/hidHandle'
 import { ArrowDownBold, ArrowRightBold, Close, Delete, Download, Minus, Plus, Share, Upload } from '@element-plus/icons-vue'
 
 import { useClipboard } from '@vueuse/core'
@@ -27,8 +27,8 @@ import { ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInput, 
 import { useGlobalInputListener } from '~/composables/useGlobalInputListener.ts'
 
 import { loadLanguageAsync } from '~/modules/i18n'
-import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/utils'
-import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/renderer/utils'
+import { keyMap, transportWebHID, useTransportWebHID } from '~/renderer/utils/hidHandle'
 
 const { t, locale } = useI18n()
 

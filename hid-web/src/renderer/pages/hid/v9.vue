@@ -2,12 +2,12 @@
 import type { DotConnection } from '~/composables/useDotsConnection'
 import type { ConnectionType, Macro, ProfileInfoType, ProfileType } from '~/types'
 
-import type { TransportWebHIDInstance } from '~/utils/hidHandle'
+import type { TransportWebHIDInstance } from '~/renderer/utils/hidHandle'
 import { ArrowDown, ArrowRight, ArrowRightBold, Close, Download, Plus, Upload, VideoPause, VideoPlay } from '@element-plus/icons-vue'
 import { ElAlert, ElBadge, ElButton, ElDropdown, ElDropdownItem, ElDropdownMenu, ElIcon, ElInputNumber, ElLoading, ElMessage, ElMessageBox, ElProgress, ElSlider } from 'element-plus'
 import { messageBox } from '~/components/CustomMessageBox'
-import { chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, removeItem, sleep } from '~/utils'
-import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, removeItem, sleep } from '~/renderer/utils'
+import { keyMap, transportWebHID, useTransportWebHID } from '~/renderer/utils/hidHandle'
 
 export type MouseButtonType = 'Left' | 'Right' | 'Wheel' | 'Forward' | 'Back' | 'dpi'
 const mouseButton: MouseButtonType[] = ['Left', 'Right', 'Wheel', 'Forward', 'Back', 'dpi']

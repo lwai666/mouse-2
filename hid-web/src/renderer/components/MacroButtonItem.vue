@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Macro } from './MacroButton.vue'
-import type { TransportWebHIDInstance } from '~/utils/hidHandle'
+import type { TransportWebHIDInstance } from '~/renderer/utils/hidHandle'
 import { Close } from '@element-plus/icons-vue'
 
 import { ElButton, ElInput } from 'element-plus'
 import { ref } from 'vue'
-import { encodeStringToArrayBuffer } from '~/utils'
+import { encodeStringToArrayBuffer } from '~/renderer/utils'
 
 const props = withDefaults(defineProps<Props>(), {})
 

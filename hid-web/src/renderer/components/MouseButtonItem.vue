@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MouseButtonStatus, ProfileInfoType } from '~/types'
-import { deepClone } from '~/utils'
+import { deepClone } from '~/renderer/utils'
 // import { TransportWebHIDInstance } from '~/utils/hidHandle'
 
 interface Props {

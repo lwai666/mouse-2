@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { ProfileInfoType } from '~/types'
-import type { TransportWebHIDInstance } from '~/utils/hidHandle'
+import type { TransportWebHIDInstance } from '~/renderer/utils/hidHandle'
 import { Check, Share } from '@element-plus/icons-vue'
 import { useClipboard } from '@vueuse/core'
 import { ElButton, ElInput } from 'element-plus'
-import { checkProfile, encodeStringToArrayBuffer, insertAt9th, jsonToBase64, removeAt9th } from '~/utils'
+import { checkProfile, encodeStringToArrayBuffer, insertAt9th, jsonToBase64, removeAt9th } from '~/renderer/utils'
 
 const props = withDefaults(defineProps<Props>(), { active: false })
 
@@ -55,7 +55,7 @@ function setProfile() {
     buttonType.value = 'share'
   }
   else {
-    showMessage(t('message.format_error')) 
+    showMessage(t('message.format_error'))
     buttonType.value = 'share'
   }
 }

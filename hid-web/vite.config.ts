@@ -5,13 +5,15 @@ import Layouts from 'vite-plugin-vue-layouts'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
-import VueMacros from 'unplugin-vue-macros/vite'
+// Temporarily disabled - dependency ESM issues
+// import VueMacros from 'unplugin-vue-macros/vite'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import LinkAttributes from 'markdown-it-link-attributes'
-import Unocss from 'unocss/vite'
-import Shiki from '@shikijs/markdown-it'
+// Temporarily disabled - ESM import issues
+// import Unocss from 'unocss/vite'
+// import Shiki from '@shikijs/markdown-it'
 import WebfontDownload from 'vite-plugin-webfont-dl'
 import VueRouter from 'unplugin-vue-router/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
@@ -22,10 +24,13 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 export default defineConfig({
   build: {
     outDir: 'backend/dist',
+    rollupOptions: {
+      input: path.resolve(__dirname, 'src/renderer/index.html')
+    }
   },
   resolve: {
     alias: {
-      '~/': `${path.resolve(__dirname, 'src')}/`,
+      '~/': `${path.resolve(__dirname, 'src/renderer')}/`,
     },
   },
   define: {
@@ -39,17 +44,20 @@ export default defineConfig({
     },
   },
   plugins: [
-    VueMacros({
-      plugins: {
-        vue: Vue({
-          include: [/\.vue$/, /\.md$/],
-        }),
-      },
-    }),
+    // VueMacros temporarily disabled - dependency ESM issues
+    // VueMacros({
+    //   plugins: {
+    //     vue: Vue({
+    //       include: [/\.vue$/, /\.md$/],
+    //     }),
+    //   },
+    // }),
+
+    Vue({ include: [/\.vue$/, /\.md$/] }),
 
     VueRouter({
       extensions: ['.vue', '.md'],
-      dts: 'src/typed-router.d.ts',
+      dts: 'src/renderer/typed-router.d.ts',
     }),
 
     Layouts(),
@@ -65,10 +73,10 @@ export default defineConfig({
           'vue-router/auto': ['useLink'],
         },
       ],
-      dts: 'src/auto-imports.d.ts',
+      dts: 'src/renderer/auto-imports.d.ts',
       dirs: [
-        'src/composables',
-        'src/stores',
+        'src/renderer/composables',
+        'src/renderer/stores',
       ],
       vueTemplate: true,
     }),
@@ -76,10 +84,10 @@ export default defineConfig({
     Components({
       extensions: ['vue', 'md'],
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
-      dts: 'src/components.d.ts',
+      dts: 'src/renderer/components.d.ts',
     }),
 
-    Unocss(),
+    // Unocss(),  // Temporarily disabled - ESM import issues
 
     Markdown({
       wrapperClasses: 'prose prose-sm m-auto text-left',
@@ -92,13 +100,14 @@ export default defineConfig({
             rel: 'noopener',
           },
         })
-        md.use(await Shiki({
-          defaultColor: false,
-          themes: {
-            light: 'vitesse-light',
-            dark: 'vitesse-dark',
-          },
-        }))
+        // Shiki temporarily disabled - ESM import issues
+        // md.use(await Shiki({
+        //   defaultColor: false,
+        //   themes: {
+        //     light: 'vitesse-light',
+        //     dark: 'vitesse-dark',
+        //   },
+        // }))
       },
     }),
 

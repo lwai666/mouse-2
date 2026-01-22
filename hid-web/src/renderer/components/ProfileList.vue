@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { base64ToJson, jsonToBase64, removeAt9th } from '~/utils';
+import { base64ToJson, jsonToBase64, removeAt9th } from '~/renderer/utils';
 
 
 interface Props {

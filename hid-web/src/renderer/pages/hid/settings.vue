@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ArrowLeftBold } from '@element-plus/icons-vue'
 import { ElBadge, ElButton, ElInput, ElProgress } from 'element-plus'
-import { combineLowAndHigh8Bits, sleep } from '~/utils'
-import { useTransportWebHID } from '~/utils/hidHandle'
+import { combineLowAndHigh8Bits, sleep } from '~/renderer/utils'
+import { useTransportWebHID } from '~/renderer/utils/hidHandle'
 // import { stringSplit } from '~/utils';
 
 const { t } = useI18n()

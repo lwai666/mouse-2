@@ -2,7 +2,7 @@ import type { UserModule } from '~/types'
 
 import { initApiConfig } from '~/composables/useApiConfig'
 
-export const install: UserModule = async () => {
+export const install: UserModule = async (_ctx) => {
   // 初始化 API 配置
   await initApiConfig()
 }
