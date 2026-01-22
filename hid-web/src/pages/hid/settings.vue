@@ -500,6 +500,7 @@ async function onClickUpdate(type: 'spi' | 'usb') {
     return
   }
 
+  isMSDevice.value = type === 'usb'
   currentUpdateKey.value = type
   currentUpdate.value.status = 'updating'
   currentUpdate.value.progress = 0
