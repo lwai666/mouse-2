@@ -9,7 +9,7 @@ on:
 permissions:
   contents: write  # 用于上传 release 资源
 
-jobs:mouse-2
+jobs:
   build:
     runs-on: windows-latest
 
