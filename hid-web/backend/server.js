@@ -1,7 +1,7 @@
-const express = require('express')
-const multer = require('multer')
 const path = require('node:path')
 const cors = require('cors')
+const express = require('express')
+const multer = require('multer')
 const db = require('./database')
 
 const app = express()
@@ -16,15 +16,16 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/')
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
-  }
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`)
+  },
 })
 
 const upload = multer({ storage })
 
 // Create uploads directory if it doesn't exist
 const fs = require('node:fs')
+
 if (!fs.existsSync('uploads')) {
   fs.mkdirSync('uploads')
 }
@@ -54,58 +55,63 @@ app.get('/api/latest-version', (req, res) => {
       description: row.description,
       spiFilePath: row.spi_file_path,
       usbFilePath: row.usb_file_path,
-      uploadDate: row.upload_date
+      uploadDate: row.upload_date,
     })
   })
 })
 
 // Upload endpoint
-app.post('/api/upload-update-package',
-  upload.fields([
-    { name: 'file1', maxCount: 1 },
-    { name: 'file2', maxCount: 1 }
-  ]),
-  async (req, res) => {
-    try {
-      const { version, description } = req.body
-      const files = req.files
+app.post('/api/upload-update-package', upload.fields([
+  { name: 'file1', maxCount: 1 },
+  { name: 'file2', maxCount: 1 },
+]), async (req, res) => {
+  try {
+    const { version, description, productId, vendorId, productName } = req.body
+    const files = req.files
 
-      if (!files['file1'] || !files['file2']) {
-        return res.status(400).json({ error: 'Both SPI and USB files are required' })
-      }
+    if (!files.file1 || !files.file2) {
+      return res.status(400).json({ error: 'Both SPI and USB files are required' })
+    }
 
-      const spiFile = files['file1'][0]
-      const usbFile = files['file2'][0]
+    const spiFile = files.file1[0]
+    const usbFile = files.file2[0]
 
-      // Insert record into database
-      const sql = `INSERT INTO firmware_updates
+    // Insert record into database
+    const sql = `INSERT INTO firmware_updates
         (version, description, spi_file_path, usb_file_path)
         VALUES (?, ?, ?, ?)`
 
-      db.run(sql, [
+    db.run(sql, [
+      version,
+      description,
+      productId,
+      vendorId,
+      productName,
+      spiFile.path,
+      usbFile.path,
+    ], function (err) {
+      if (err) {
+        console.error('Database error:', err)
+        return res.status(500).json({ error: 'Failed to save update package info' })
+      }
+
+      res.json({
+        message: 'Update package uploaded successfully',
+        id: this.lastID,
         version,
         description,
-        spiFile.path,
-        usbFile.path
-      ], function(err) {
-        if (err) {
-          console.error('Database error:', err)
-          return res.status(500).json({ error: 'Failed to save update package info' })
-        }
-
-        res.json({
-          message: 'Update package uploaded successfully',
-          id: this.lastID,
-          version,
-          description,
-          spiFilePath: spiFile.path,
-          usbFilePath: usbFile.path
-        })
+        productId,
+        vendorId,
+        productName,
+        spiFilePath: spiFile.path,
+        usbFilePath: usbFile.path,
       })
-    } catch (error) {
-      console.error('Upload error:', error)
-      res.status(500).json({ error: 'Failed to process upload' })
-    }
+    })
+  }
+  catch (error) {
+    console.error('Upload error:', error)
+    res.status(500).json({ error: 'Failed to process upload' })
+  }
 })
 
 // Serve static files from uploads directory
@@ -118,11 +124,11 @@ app.use(
     setHeaders: (res, filePath) => {
       // 不缓存 HTML（确保 index.html 总是请求最新）
       if (filePath.endsWith('.html')) {
-        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Cache-Control', 'no-cache')
       }
-    }
-  })
-);
+    },
+  }),
+)
 
 // Start server
 app.listen(port, () => {

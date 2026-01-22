@@ -437,6 +437,108 @@ async function getLatestVersion() {
   updateList.usb.latestVersion = userStore.latestVersion.version
 }
 
+async function fetchWithProgress(url: string, onProgress: (progress: string) => void) {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const contentLength = response.headers.get('content-length')
+    if (!contentLength) {
+      throw new Error('Content-Length not provided by server.')
+    }
+
+    const totalLength = Number.parseInt(contentLength, 10)
+    let receivedLength = 0
+    const reader = response.body!.getReader()
+    const chunks = []
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+
+      receivedLength += value.length
+      chunks.push(value)
+
+      const progress = (receivedLength / totalLength) * 100
+      if (onProgress) {
+        onProgress(progress.toFixed(2))
+      }
+    }
+
+    const uint8Array = new Uint8Array(receivedLength)
+    let position = 0
+    for (const chunk of chunks) {
+      uint8Array.set(chunk, position)
+      position += chunk.length
+    }
+
+    bin_Uint8Array.value = uint8Array
+    console.log('bin_Uint8Array=====download===', uint8Array)
+
+    // 返回结果（或者可以继续使用 arrayBuffer 进行其他操作）
+    return uint8Array
+  }
+  catch (error) {
+    console.error('Error fetching file:', error)
+    throw error
+  }
+}
+
+async function onClickUpdate(type: 'spi' | 'usb') {
+  currentUpdate.value.status = 'updating'
+
+  let url = `${import.meta.env.VITE_SERVER_API}/`
+  if (type === 'spi') {
+    url += userStore.latestVersion.spiFilePath
+  }
+  else if (type === 'usb') {
+    url += userStore.latestVersion.usbFilePath
+  }
+
+  try {
+    let binData = await fetchWithProgress(url, (progress) => {
+      setProgress(Number(progress) * 0.2)
+    })
+
+    console.log('下载完成，binData====', binData)
+
+    // await sendSpiBoot()
+    // console.log('进入 SPI BOOT')
+    // // if (type === 'spi') {
+    // //   await sendSpiBoot()
+    // //   console.log("进入 SPI BOOT")
+    // // } else if (type === 'usb') {
+    // //   await sendUsbBoot()
+    // //   console.log("进入 USB BOOT")
+    // // }
+
+    // await sendFirmwareSize()
+    // console.log('发送固件大小')
+
+    // await sendFirmware()
+    // console.log('发送固件')
+
+    // await sleep(1000)
+
+    // await sendFirmwareChecksum()
+    // console.log('发送固件 checksum')
+
+    // quitBoot() // 这个命令鼠标不会回复
+    // console.log('退出 boot')
+    // currentUpdate.value.status = 'updateCompleted'
+    // setProgress(100)
+    // await sleep(1000)
+    // location.reload()
+  }
+  catch (err) {
+    console.log('更新失败=====', err)
+    currentUpdate.value.status = 'updateFailed'
+  }
+}
+
 onMounted(async () => {
   getLatestVersion()
 })
@@ -470,6 +572,10 @@ onMounted(async () => {
             <ElBadge :value="userStore.latestVersion.version > (`${item.version}`) ? 'new' : ''">
               <ElButton :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
                 选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
+              </ElButton>
+
+              <ElButton :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate">
+                一键升级
               </ElButton>
             </ElBadge>
           </div>

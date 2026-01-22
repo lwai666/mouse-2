@@ -9,6 +9,9 @@ interface LatestVersionType {
   spiFilePath: string
   usbFilePath: string
   uploadDate: string
+  productId: number
+  vendorId: number
+  productName: string
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -25,12 +28,9 @@ export const useUserStore = defineStore('user', () => {
   const otherNames = computed(() => usedNames.value.filter(name => name !== savedName.value))
 
   const devices = ref([
-    { vendorId: 0x2FE3, productId: 0x0007, name: "鼠标", sendData: 0x0F },
-    { vendorId: 0x2FE5, productId: 0x0005, name: "接收器", sendData: 0x18 },
+    { vendorId: 0x2FE3, productId: 0x0007, name: '鼠标', sendData: 0x0F },
+    { vendorId: 0x2FE5, productId: 0x0005, name: '接收器', sendData: 0x18 },
   ])
-
-
-
 
   /**
    * Changes the current name of the user and saves the one that was used
@@ -54,7 +54,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function fetchLatestVersion() {
-    const res = await fetch(`${getApiUrl('api/latest-version')}?_${new Date().getTime()}`, { method: 'GET' })
+    const res = await fetch(`${getApiUrl('/api/latest-version')}?_${new Date().getTime()}`, { method: 'GET' })
     if (res.status === 200) {
       const data = await res.json()
       setLatestVersion(data)

@@ -117,6 +117,7 @@ async function submitForm() {
     return
 
   try {
+    console.log(transport.value, 'transport.value=====')
     await form.value.validate()
 
     const _formData = new FormData()
@@ -124,6 +125,9 @@ async function submitForm() {
     _formData.append('description', formData.description)
     _formData.append('file1', formData.spiFile)
     _formData.append('file2', formData.usbFile)
+    _formData.append('productId', transport.value.device.productId)
+    _formData.append('vendorId', transport.value.device.vendorId)
+    _formData.append('productName', transport.value.device.productName)
 
     const response = await fetch(getApiUrl('api/upload-update-package'), {
       method: 'POST',
