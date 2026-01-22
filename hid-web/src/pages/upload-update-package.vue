@@ -135,6 +135,9 @@ async function submitForm() {
     })
     if (response.ok) {
       ElMessage.success('上传成功')
+
+      isAuthenticated.value = false
+      transport.value = null
     }
     else {
       ElMessage.error('上传失败')

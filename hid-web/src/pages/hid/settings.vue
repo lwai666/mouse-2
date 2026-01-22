@@ -145,6 +145,111 @@ const uint8ArrayObj = reactive({
   }, // usb 固件信息
 })
 
+// 解析固件数据
+function parseFirmwareData(uint8Array: Uint8Array): boolean {
+  bin_Uint8Array.value = uint8Array
+  // 解析字节 0-15 的 ASCII 编码 (头部)
+  const headerBytes = uint8Array.slice(0, 16)
+  const header = String.fromCharCode(...headerBytes.filter(b => b !== 0xFF && b !== 0x00))
+
+  // 解析字节 16-31 的 ASCII 编码 (项目名)
+  const projectBytes = uint8Array.slice(16, 32)
+  const projectName = String.fromCharCode(...projectBytes.filter(b => b !== 0xFF && b !== 0x00))
+
+  if (isMSDevice.value && header !== 'MS-USB-UPGRADE') {
+    console.log('头字符串对不上，也提示错误，说明放错了文件')
+    return false
+  }
+
+  if (!isMSDevice.value && header !== 'DO-USB-UPGRADE') {
+    console.log('头字符串对不上，也提示错误，说明放错了文件')
+    return false
+  }
+
+  if (isMSDevice.value && projectName !== 'SCYROX_V10') {
+    console.log('网页判断项目名不对，不给升级')
+    return false
+  }
+
+  // 解析 SPI 固件信息（32-47字节）
+  const spiInfoBytes = uint8Array.slice(32, 48)
+  const spiAddress = bytesToUint32(uint8Array.slice(32, 36))
+  const spiSize = bytesToUint32(uint8Array.slice(36, 40))
+  const spiChecksum = bytesToUint32(uint8Array.slice(40, 44))
+  const spiVersion = bytesToUint32(uint8Array.slice(44, 48))
+
+  // 解析 USB 固件信息（48-63字节）
+  const usbInfoBytes = uint8Array.slice(48, 64)
+  const usbAddress = bytesToUint32(uint8Array.slice(48, 52))
+  const usbSize = bytesToUint32(uint8Array.slice(52, 56))
+  const usbChecksum = bytesToUint32(uint8Array.slice(56, 60))
+  const usbVersion = bytesToUint32(uint8Array.slice(60, 64))
+
+  // 根据地址和大小截取固件数据
+  let spiFirmware: Uint8Array | null = null
+  let usbFirmware: Uint8Array | null = null
+  let spiCalculatedChecksum = 0
+  let usbCalculatedChecksum = 0
+
+  if (spiSize > 0) {
+    const spiEnd = spiAddress + spiSize
+    spiFirmware = uint8Array.slice(spiAddress, spiEnd)
+    // 计算 SPI 固件的 checksum（所有字节累加）
+    spiCalculatedChecksum = spiFirmware.reduce((acc, val) => acc + val, 0)
+  }
+
+  if (usbSize > 0) {
+    const usbEnd = usbAddress + usbSize
+    usbFirmware = uint8Array.slice(usbAddress, usbEnd)
+    // 计算 USB 固件的 checksum（所有字节累加）
+    usbCalculatedChecksum = usbFirmware.reduce((acc, val) => acc + val, 0)
+  }
+
+  // 校验 SPI checksum
+  if (spiSize > 0 && spiChecksum !== spiCalculatedChecksum) {
+    console.error(`SPI 固件校验失败: 固件包中=${spiChecksum}, 计算值=${spiCalculatedChecksum}`)
+    return false
+  }
+  if (spiSize > 0) {
+    console.log(`✓ SPI 固件校验通过: ${spiCalculatedChecksum}`)
+  }
+
+  // 校验 USB checksum
+  if (usbSize > 0 && usbChecksum !== usbCalculatedChecksum) {
+    console.error(`USB 固件校验失败: 固件包中=${usbChecksum}, 计算值=${usbCalculatedChecksum}`)
+    return false
+  }
+  if (usbSize > 0) {
+    console.log(`✓ USB 固件校验通过: ${usbCalculatedChecksum}`)
+  }
+
+  Object.assign(uint8ArrayObj, {
+    headerBytes,
+    projectBytes,
+    spiInfoBytes,
+    usbInfoBytes,
+    header,
+    projectName,
+    SPI: {
+      address: spiAddress,
+      size: spiSize,
+      checksum: spiCalculatedChecksum,
+      version: spiVersion,
+      firmware: spiFirmware,
+    },
+    USB: {
+      address: usbAddress,
+      size: usbSize,
+      checksum: usbCalculatedChecksum,
+      version: usbVersion,
+      firmware: usbFirmware,
+    },
+  })
+
+  console.log('解析后的固件对象:', uint8ArrayObj)
+  return true
+}
+
 function selectFileHandle(event: any) {
   const file = event.target.files[0]
   if (file) {
@@ -152,111 +257,13 @@ function selectFileHandle(event: any) {
     reader.onload = function (e: any) {
       const arrayBuffer = e.target.result
       const uint8Array = new Uint8Array(arrayBuffer)
-      bin_Uint8Array.value = uint8Array
-      // 解析字节 0-15 的 ASCII 编码 (头部)
-      const headerBytes = uint8Array.slice(0, 16)
-      const header = String.fromCharCode(...headerBytes.filter(b => b !== 0xFF && b !== 0x00))
-
-      // 解析字节 16-31 的 ASCII 编码 (项目名)
-      const projectBytes = uint8Array.slice(16, 32)
-      const projectName = String.fromCharCode(...projectBytes.filter(b => b !== 0xFF && b !== 0x00))
-
-      if (isMSDevice.value && header !== 'MS-USB-UPGRADE') {
-        console.log('头字符串对不上，也提示错误，说明放错了文件')
+      const success = parseFirmwareData(uint8Array)
+      if (success) {
+        selectFile.value = file
+      }
+      else {
         selectFile.value = null
-        return
       }
-
-      if (!isMSDevice.value && header !== 'DO-USB-UPGRADE') {
-        console.log('头字符串对不上，也提示错误，说明放错了文件')
-        selectFile.value = null
-        return
-      }
-
-      if (isMSDevice.value && projectName !== 'SCYROX_V10') {
-        console.log('网页判断项目名不对，不给升级')
-        selectFile.value = null
-        return
-      }
-
-      // 解析 SPI 固件信息（32-47字节）
-      const spiInfoBytes = uint8Array.slice(32, 48)
-      const spiAddress = bytesToUint32(uint8Array.slice(32, 36))
-      const spiSize = bytesToUint32(uint8Array.slice(36, 40))
-      const spiChecksum = bytesToUint32(uint8Array.slice(40, 44))
-      const spiVersion = bytesToUint32(uint8Array.slice(44, 48))
-
-      // 解析 USB 固件信息（48-63字节）
-      const usbInfoBytes = uint8Array.slice(48, 64)
-      const usbAddress = bytesToUint32(uint8Array.slice(48, 52))
-      const usbSize = bytesToUint32(uint8Array.slice(52, 56))
-      const usbChecksum = bytesToUint32(uint8Array.slice(56, 60))
-      const usbVersion = bytesToUint32(uint8Array.slice(60, 64))
-
-      // 根据地址和大小截取固件数据
-      let spiFirmware: Uint8Array | null = null
-      let usbFirmware: Uint8Array | null = null
-      let spiCalculatedChecksum = 0
-      let usbCalculatedChecksum = 0
-
-      if (spiSize > 0) {
-        const spiEnd = spiAddress + spiSize
-        spiFirmware = uint8Array.slice(spiAddress, spiEnd)
-        // 计算 SPI 固件的 checksum（所有字节累加）
-        spiCalculatedChecksum = spiFirmware.reduce((acc, val) => acc + val, 0)
-      }
-
-      if (usbSize > 0) {
-        const usbEnd = usbAddress + usbSize
-        usbFirmware = uint8Array.slice(usbAddress, usbEnd)
-        // 计算 USB 固件的 checksum（所有字节累加）
-        usbCalculatedChecksum = usbFirmware.reduce((acc, val) => acc + val, 0)
-      }
-
-      // 校验 SPI checksum
-      if (spiSize > 0 && spiChecksum !== spiCalculatedChecksum) {
-        console.error(`SPI 固件校验失败: 固件包中=${spiChecksum}, 计算值=${spiCalculatedChecksum}`)
-        return
-      }
-      if (spiSize > 0) {
-        console.log(`✓ SPI 固件校验通过: ${spiCalculatedChecksum}`)
-      }
-
-      // 校验 USB checksum
-      if (usbSize > 0 && usbChecksum !== usbCalculatedChecksum) {
-        console.error(`USB 固件校验失败: 固件包中=${usbChecksum}, 计算值=${usbCalculatedChecksum}`)
-        return
-      }
-      if (usbSize > 0) {
-        console.log(`✓ USB 固件校验通过: ${usbCalculatedChecksum}`)
-      }
-
-      Object.assign(uint8ArrayObj, {
-        headerBytes,
-        projectBytes,
-        spiInfoBytes,
-        usbInfoBytes,
-        header,
-        projectName,
-        SPI: {
-          address: spiAddress,
-          size: spiSize,
-          checksum: spiCalculatedChecksum,
-          version: spiVersion,
-          firmware: spiFirmware,
-        },
-        USB: {
-          address: usbAddress,
-          size: usbSize,
-          checksum: usbCalculatedChecksum,
-          version: usbVersion,
-          firmware: usbFirmware,
-        },
-      })
-
-      console.log('解析后的固件对象:', uint8ArrayObj)
-
-      selectFile.value = file
     }
     // 读取文件内容返回 ArrayBuffer
     reader.readAsArrayBuffer(file)
@@ -488,9 +495,16 @@ async function fetchWithProgress(url: string, onProgress: (progress: string) => 
 }
 
 async function onClickUpdate(type: 'spi' | 'usb') {
-  currentUpdate.value.status = 'updating'
+  // 如果有固件正在更新中，不允许触发新的更新
+  if (updateList.spi.status === 'updating' || updateList.usb.status === 'updating') {
+    return
+  }
 
-  console.log('开始更type新固件...', type,userStore)
+  currentUpdateKey.value = type
+  currentUpdate.value.status = 'updating'
+  currentUpdate.value.progress = 0
+
+  console.log('开始下载固件...', type, userStore)
 
   let url = `${import.meta.env.VITE_SERVER_API}/`
 
@@ -502,43 +516,30 @@ async function onClickUpdate(type: 'spi' | 'usb') {
   }
 
   try {
-    let binData = await fetchWithProgress(url, (progress) => {
+    const binData = await fetchWithProgress(url, (progress) => {
       setProgress(Number(progress) * 0.2)
     })
 
     console.log('下载完成，binData====', binData)
 
-    // await sendSpiBoot()
-    // console.log('进入 SPI BOOT')
-    // // if (type === 'spi') {
-    // //   await sendSpiBoot()
-    // //   console.log("进入 SPI BOOT")
-    // // } else if (type === 'usb') {
-    // //   await sendUsbBoot()
-    // //   console.log("进入 USB BOOT")
-    // // }
+    // 解析固件数据
+    const success = parseFirmwareData(binData)
 
-    // await sendFirmwareSize()
-    // console.log('发送固件大小')
-
-    // await sendFirmware()
-    // console.log('发送固件')
-
-    // await sleep(1000)
-
-    // await sendFirmwareChecksum()
-    // console.log('发送固件 checksum')
-
-    // quitBoot() // 这个命令鼠标不会回复
-    // console.log('退出 boot')
-    // currentUpdate.value.status = 'updateCompleted'
-    // setProgress(100)
-    // await sleep(1000)
-    // location.reload()
+    if (success) {
+      // 直接调用更新函数
+      await onClickStartUpdate()
+    }
+    else {
+      currentUpdate.value.status = 'updateFailed'
+      alert('固件文件解析失败，请检查文件格式')
+    }
   }
   catch (err) {
-    console.log('更新失败=====', err)
+    console.log('下载失败=====', err)
     currentUpdate.value.status = 'updateFailed'
+    if (err instanceof Error) {
+      alert(`下载失败：${err.message}`)
+    }
   }
 }
 
