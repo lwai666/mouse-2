@@ -1,8 +1,12 @@
 import { join } from 'path'
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { fileURLToPath } from 'node:url'
 
 import icon from '../../resources/icon.png?asset'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = join(__filename, '..')
 
 let mainWindow: BrowserWindow | null = null
 
@@ -37,12 +41,15 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
+  // 开发环境：加载 Vite 开发服务器
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    // 生产环境：加载前端构建产物 (backend/dist/index.html)
+    // __dirname 在打包后是 app.asar/out/main，需要回退到 backend/dist
+    const htmlPath = join(__dirname, '../../backend/dist/index.html')
+    console.log('加载前端文件:', htmlPath)
+    mainWindow.loadFile(htmlPath)
   }
 }
 
@@ -60,9 +67,15 @@ app.whenReady().then(() => {
 
   // IPC handlers for API configuration
   ipcMain.handle('get-api-config', () => {
-    // 可以从配置文件或环境变量读取默认 API 地址
+    // 从环境变量读取后端服务地址，如果没有则使用默认值
+    const apiBaseUrl = process.env.VITE_SERVER_API || 'http://localhost:3010'
+
+    console.log('获取 API 配置:', { isDev: is.dev, apiBaseUrl })
+
     return {
-      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3010'
+      apiBaseUrl,
+      isDev: is.dev,
+      isElectron: true
     }
   })
 

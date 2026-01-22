@@ -4,107 +4,123 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **HID (Human Interface Device) firmware management web application** for mouse devices. It's a pnpm monorepo with a Vue 3 frontend (root) and Express.js backend (`backend/` directory). The app uses the Web HID API to communicate directly with mouse devices for firmware updates and configuration.
+This is a HID (Human Interface Device) mouse configuration web application with dual deployment modes:
+- **Web app**: Uses WebHID API for browser-based device communication
+- **Electron desktop app**: Packaged desktop version
 
-## Commands
+The application allows users to configure custom mouse buttons, macros, and settings for various mouse versions (v8, v9, v10, v11).
 
+## Common Commands
+
+### Development
 ```bash
-# Install dependencies (must run from root)
-pnpm install
-
-# Development (both frontend and backend)
-pnpm dev          # Frontend dev server on http://localhost:3010
-pnpm start        # Backend on http://localhost:3010
-
-# Build and production
-pnpm build        # Build frontend to backend/dist directory
-pnpm start        # Serve built frontend + backend API
-
-# Code quality
-pnpm lint         # ESLint
-pnpm typecheck    # TypeScript checking
+pnpm dev          # Start dev server on port 3010
+pnpm build        # Build for production
+pnpm preview      # Preview built app
+pnpm start        # Start Node.js backend server
 ```
+
+### Code Quality
+```bash
+pnpm lint         # Run ESLint
+pnpm typecheck    # TypeScript type checking
+```
+
+### Testing
+```bash
+pnpm test         # Run Vitest tests
+pnpm test:unit    # Unit tests only
+pnpm test:e2e     # Cypress E2E tests
+```
+
+### Electron Desktop App
+```bash
+pnpm electron:dev    # Electron dev mode
+pnpm electron:build  # Build Electron app
+pnpm build:win       # Build for Windows
+pnpm build:mac       # Build for macOS
+pnpm build:linux     # Build for Linux
+```
+
+## Tech Stack
+
+- **Vue 3** with Composition API and `<script setup>` syntax
+- **Vite** for builds and dev server
+- **TypeScript** with strict mode
+- **Element Plus** for UI components
+- **Pinia** for state management
+- **Vue Router** with file-based routing in `src/pages/`
+- **UnoCSS** for atomic CSS
+- **Express** backend with SQLite3
 
 ## Architecture
 
-### Monorepo Structure
+### Frontend Structure
+```
+src/
+├── components/      # Reusable Vue components
+├── composables/     # Reusable composition functions
+│   ├── hid.js              # WebHID API communication
+│   └── hidDataConverter.js # Data protocol conversion
+├── pages/           # File-based routing (v8.vue, v9.vue, v10.vue, v11.vue)
+├── layouts/         # Vue layouts
+├── stores/          # Pinia stores
+├── utils/           # Utilities
+│   ├── hidHandle.ts       # HID device handling
+│   ├── hidKey.ts          # Key mapping
+│   └── batteryHandle.js   # Battery management
+└── backend/         # Node.js Express server
+```
 
-- **Root directory**: Vue 3 frontend application
-- **`backend/`**: Express.js API server (workspace package)
-- **`pnpm-workspace.yaml`**: Defines backend as workspace package
+### HID Communication Architecture
 
-### Build Flow
+The core HID functionality is split across several key files:
 
-The frontend builds directly into the backend's static directory:
-- `vite.config.ts` sets `outDir: 'backend/dist'`
-- Backend serves static files from `backend/dist`
-- After `pnpm build`, run `pnpm start` to serve the full stack
+1. **`src/composables/hid.js`**: Main WebHID API interface
+   - Device connection/disconnection
+   - Feature report communication
+   - Device enumeration and filtering
 
-### Frontend Architecture
+2. **`src/utils/hidHandle.ts`**: High-level device operations
+   - Packet construction and parsing
+   - Command execution with retry logic
+   - Device state management
 
-- **Framework**: Vue 3 with Composition API and `<script setup>`
-- **Routing**: File-based routing via `unplugin-vue-router` (routes auto-generated from `src/pages/`)
-- **State**: Pinia stores in `src/stores/` (auto-imported)
-- **Components**: Auto-registered via `unplugin-vue-components` (no manual imports needed)
-- **Composables**: Auto-imported from `src/composables/`
-- **Styling**: UnoCSS + SCSS with `@use` for Element Plus
-- **i18n**: Vue I18n with locales in `locales/` (en, zh, ko, ja, de)
+3. **`src/utils/hidDataConverter.js`**: Data protocol layer
+   - Binary data encoding/decoding
+   - Protocol-specific transformations
 
-**Auto-imports** (configured in `vite.config.ts`):
-- Vue, VueRouter, VueUse, Vue I18n APIs
-- All exports from `src/composables/` and `src/stores/`
-- Components from `src/components/` are auto-registered
+4. **`src/pages/hid/*.vue`**: Version-specific implementations
+   - Each mouse version (v8-v11) has its own page
+   - May have different protocols or features
 
-### HID Device Communication
+### Backend Server
 
-The core feature uses the **Web HID API** for direct device communication:
+The Node.js backend (`backend/server.js`) handles:
+- Firmware file uploads via `multer`
+- CORS-enabled API endpoints
+- SQLite3 database for persistence
 
-- Device IDs: Mouse (`0x2FE3:0x0007`), Receiver (`0x2FE5:0x0005`)
-- HID utilities in `src/utils/hidHandle.ts`, `src/utils/hidKey.ts`
-- Supports multiple mouse versions (v8, v9, v10, v11) with version-specific handling
-- Custom protocol for firmware updates and key mapping configuration
+## Key Patterns
 
-**Important**: Web HID API requires:
-- Secure context (HTTPS in production, localhost in dev)
-- User gesture/permission for device access
-- Chromium-based browsers (Chrome, Edge, Opera)
+### Auto-imports
+Vue, Vue Router, VueUse, and Composition API functions are auto-imported. No need to manually import:
+- `ref`, `reactive`, `computed`, `watch`, etc.
+- `router`, `route`
+- VueUse functions
 
-### Backend API
+### Path Aliases
+- `~/` resolves to `src/`
 
-Express server on port 3010 with:
+### Internationalization
+The app uses Vue I18n with multiple languages. Always use `$t('key')` for user-facing strings.
 
-- **`GET /api/latest-version`**: Fetch latest firmware version from SQLite
-- **`POST /api/upload-update-package`**: Upload firmware packages (SPI + USB files via multer)
-- **`/uploads`**: Static file serving for firmware packages
-- **`/`**: Serves built Vue app with caching (1 year for assets, no-cache for HTML)
+### Device Version Handling
+Different mouse versions may have different protocols. When adding features, check if version-specific handling is needed in the respective `v*.vue` pages.
 
-Firmware uploads stored in `backend/uploads/` with metadata in SQLite (`firmware.db`).
+## Important Notes
 
-## Configuration Details
-
-### Environment Variables
-
-- `VITE_SERVER_API`: Backend API base URL
-- `VITE_ADMIN_PASSWORD_HASH`: Admin authentication hash
-
-### Key Files
-
-- `vite.config.ts`: Build output, plugins, auto-imports, aliases
-- `pnpm-workspace.yaml`: Monorepo workspace definition (backend package)
-- `backend/server.js`: Express server with SQLite, multer, CORS
-- `backend/database.js`: SQLite setup for firmware version tracking
-
-### Port Configuration
-
-- Frontend dev: `3010` (configured in `pnpm dev`)
-- Backend: `3010` (or `PORT` env var)
-
-## Special Considerations
-
-1. **Workspace dependency**: Backend depends on `pnpm-workspace.yaml` existing. If you see "Cannot find module" errors in backend, ensure this file exists and run `pnpm install` from root.
-
-2. **Build order**: Always build frontend (`pnpm build`) before starting production server, as backend serves the static files.
-
-3. **HID API limitations**: Device communication only works in secure contexts. For local development, `localhost:` works; for production, HTTPS is required.
-
-4. **Firmware dual-package**: The system handles two separate firmware files (SPI and USB) that must be uploaded together as a versioned package.
+- **pnpm is required**: The project has a preinstall hook that enforces pnpm usage
+- **WebHID API**: Only works in Chrome-based browsers and requires HTTPS (or localhost)
+- **Firmware updates**: Handled via backend upload endpoint
+- **Battery monitoring**: `src/utils/batteryHandle.js` manages battery status polling

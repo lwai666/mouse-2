@@ -1,11 +1,14 @@
 import { join } from "path";
 import { app, ipcMain, BrowserWindow, shell } from "electron";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
+import { fileURLToPath } from "node:url";
 import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
 const require2 = __cjs_mod__.createRequire(import.meta.url);
 const icon = join(__dirname, "../../resources/icon.png");
+const __filename$1 = fileURLToPath(import.meta.url);
+const __dirname$1 = join(__filename$1, "..");
 let mainWindow = null;
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -15,7 +18,7 @@ function createWindow() {
     autoHideMenuBar: true,
     ...process.platform === "linux" ? { icon } : {},
     webPreferences: {
-      preload: join(__dirname, "../preload/index.js"),
+      preload: join(__dirname$1, "../preload/index.js"),
       sandbox: false,
       webSecurity: false
       // 允许跨域请求，用于开发环境
@@ -36,7 +39,9 @@ function createWindow() {
   if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
     mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
   } else {
-    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+    const htmlPath = join(__dirname$1, "../../backend/dist/index.html");
+    console.log("加载前端文件:", htmlPath);
+    mainWindow.loadFile(htmlPath);
   }
 }
 app.whenReady().then(() => {
@@ -45,8 +50,12 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
   ipcMain.handle("get-api-config", () => {
+    const apiBaseUrl = "http://localhost:3010";
+    console.log("获取 API 配置:", { isDev: is.dev, apiBaseUrl });
     return {
-      apiBaseUrl: process.env.API_BASE_URL || "http://localhost:3010"
+      apiBaseUrl,
+      isDev: is.dev,
+      isElectron: true
     };
   });
   ipcMain.handle("set-api-config", (_event, apiBaseUrl) => {

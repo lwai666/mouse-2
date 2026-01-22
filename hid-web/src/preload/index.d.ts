@@ -4,7 +4,11 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
-      getApiConfig: () => Promise<{ apiBaseUrl: string }>
+      getApiConfig: () => Promise<{
+        apiBaseUrl: string
+        isDev: boolean
+        isElectron: boolean
+      }>
       setApiConfig: (apiBaseUrl: string) => Promise<{ success: boolean }>
     }
   }

@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 // 默认 API 地址
 const DEFAULT_API_URL = 'http://localhost:3010'
@@ -6,6 +6,7 @@ const DEFAULT_API_URL = 'http://localhost:3010'
 // API 配置状态
 const apiBaseUrl = ref(DEFAULT_API_URL)
 const isElectron = ref(false)
+const isElectronDev = ref(false)
 
 // 检测是否在 Electron 环境中
 function checkElectronEnvironment() {
@@ -20,7 +21,12 @@ export async function initApiConfig() {
     try {
       const config = await window.api.getApiConfig()
       apiBaseUrl.value = config.apiBaseUrl
-      console.log('Electron API 配置已加载:', apiBaseUrl.value)
+      isElectronDev.value = config.isDev || false
+      console.log('Electron API 配置已加载:', {
+        apiBaseUrl: apiBaseUrl.value,
+        isDev: isElectronDev.value,
+        isElectron: true
+      })
     }
     catch (error) {
       console.error('加载 Electron API 配置失败:', error)
@@ -30,6 +36,7 @@ export async function initApiConfig() {
   else {
     // Web 环境使用环境变量
     apiBaseUrl.value = import.meta.env.VITE_SERVER_API || DEFAULT_API_URL
+    console.log('Web 环境 API 配置:', apiBaseUrl.value)
   }
 
   return apiBaseUrl.value
@@ -73,6 +80,7 @@ export function useApiConfig() {
   return {
     apiBaseUrl,
     isElectron,
+    isElectronDev,
     initApiConfig,
     getApiBaseUrl,
     setApiBaseUrl,

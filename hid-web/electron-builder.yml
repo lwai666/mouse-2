@@ -3,12 +3,9 @@ productName: Mouse HID
 directories:
   buildResources: build
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json,tsconfig.electron.json}'
+  - out/**/*            # electron-vite 编译后的 main/preload
+  - backend/dist/**/*   # vite 构建的前端产物
+  - resources/**        # 资源文件
 asarUnpack:
   - resources/**
 win:
