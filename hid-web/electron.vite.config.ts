@@ -10,7 +10,6 @@ import Unocss from 'unocss/vite'
 import VueRouter from 'unplugin-vue-router/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
 import { VitePWA } from 'vite-plugin-pwa'
-import UnoCssConfig from './uno.config.ts'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
@@ -36,17 +35,23 @@ export default defineConfig({
       },
     },
     plugins: [
-      vue(),
+      vue({ include: [/\.vue$/, /\.md$/] }),
       VueRouter({
         extensions: ['.vue', '.md'],
         dts: 'typed-router.d.ts',
+        routesFolder: 'pages',
       }),
-      Layouts(),
+      Layouts({
+        pagesDir: 'pages',
+      }),
       AutoImport({
         imports: [
           'vue',
           'vue-i18n',
           '@vueuse/core',
+          {
+            '@unhead/vue': ['useHead'],
+          },
           VueRouterAutoImports,
           {
             'vue-router/auto': ['useLink'],
@@ -64,7 +69,7 @@ export default defineConfig({
         include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
         dts: 'components.d.ts',
       }),
-      Unocss(UnoCssConfig),
+      Unocss(),
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.svg', 'safari-pinned-tab.svg'],
