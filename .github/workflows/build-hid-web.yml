@@ -1,0 +1,58 @@
+name: Build HID-WEB Electron
+
+on:
+  push:
+    tags:
+      - 'hv*'   # 打 tag 时触发（如 hv1.0.0）
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write  # 用于上传 release 资源
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ----- 设置 Node.js 环境 -----
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.19.0
+
+      # ----- 安装 pnpm -----
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      # ----- 安装依赖 -----
+      - name: Install dependencies
+        working-directory: hid-web
+        run: pnpm install
+
+      # ----- 构建 Electron 应用 -----
+      - name: Build Electron App
+        working-directory: hid-web
+        run: pnpm build:win
+
+      # ----- 发布 Release -----
+      - name: Upload EXE to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            hid-web/dist/*.exe
+          body: |
+            ## Mouse HID Web Electron 桌面应用
+
+            ### 使用说明
+            1. 下载并安装 exe 文件
+            2. 首次运行需要配置后端 API 地址
+            3. 在应用内访问 `/api-settings` 页面配置 API 地址
+
+            ### 默认配置
+            - API 地址: http://localhost:3010
+            - 可在应用设置中修改
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

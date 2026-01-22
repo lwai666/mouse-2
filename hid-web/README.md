@@ -7,6 +7,7 @@
 ```bash
 pnpm i
 pnpm dev
+pnpm run electron:dev  # 启动 PC 端应用
 ```
 打开 http://localhost:3333
 
@@ -20,3 +21,5 @@ pnpm run start # 本地运行后端服务
 ```
 
 您将在`dist`中看到已生成的文件，该文件已准备就绪。
+
+
