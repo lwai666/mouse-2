@@ -5,6 +5,7 @@ import { reactive, ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'
 
+import { getApiUrl } from '~/composables/useApiConfig'
 import { createTransportWebHID } from '~/utils/hidHandle'
 
 const { t } = useI18n()
@@ -13,7 +14,6 @@ const userStore = useUserStore()
 
 // 这是管理员密码 admin123 的 SHA-256 哈希值
 const ADMIN_PASSWORD_HASH = import.meta.env.VITE_ADMIN_PASSWORD_HASH
-const SERVER_API = import.meta.env.VITE_SERVER_API
 
 const isAuthenticated = ref(false)
 const password = ref('')
@@ -125,7 +125,7 @@ async function submitForm() {
     _formData.append('file1', formData.spiFile)
     _formData.append('file2', formData.usbFile)
 
-    const response = await fetch(`${SERVER_API}/api/upload-update-package`, {
+    const response = await fetch(getApiUrl('api/upload-update-package'), {
       method: 'POST',
       body: _formData,
     })

@@ -1,4 +1,5 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
+import { getApiUrl } from '~/composables/useApiConfig'
 
 interface LatestVersionType {
   id: number
@@ -53,7 +54,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function fetchLatestVersion() {
-    const res = await fetch(`${import.meta.env.VITE_SERVER_API}/api/latest-version?_${new Date().getTime()}`, { method: 'GET' })
+    const res = await fetch(`${getApiUrl('api/latest-version')}?_${new Date().getTime()}`, { method: 'GET' })
     if (res.status === 200) {
       const data = await res.json()
       setLatestVersion(data)

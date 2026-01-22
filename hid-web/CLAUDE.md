@@ -13,7 +13,7 @@ This is a **HID (Human Interface Device) firmware management web application** f
 pnpm install
 
 # Development (both frontend and backend)
-pnpm dev          # Frontend dev server on http://localhost:3333
+pnpm dev          # Frontend dev server on http://localhost:3010
 pnpm start        # Backend on http://localhost:3010
 
 # Build and production
@@ -96,7 +96,7 @@ Firmware uploads stored in `backend/uploads/` with metadata in SQLite (`firmware
 
 ### Port Configuration
 
-- Frontend dev: `3333` (configured in `pnpm dev`)
+- Frontend dev: `3010` (configured in `pnpm dev`)
 - Backend: `3010` (or `PORT` env var)
 
 ## Special Considerations
