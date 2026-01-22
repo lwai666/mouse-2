@@ -4,12 +4,12 @@ import { CircleClose, Plus } from '@element-plus/icons-vue'
 import autofit from 'autofit.js'
 
 import { ElCarousel, ElCarouselItem } from 'element-plus'
-import { ref } from 'vue'
+import { computed, nextTick, onMounted, ref, toRaw, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { loadLanguageAsync } from '~/modules/i18n'
 
-import { createTransportWebHID, getTransportWebHID, transportWebHID, useTransportWebHID } from '~/renderer/utils/hidHandle'
+import { createTransportWebHID, getTransportWebHID, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 defineOptions({
   name: 'Scyrox',

@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createHead } from '@unhead/vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { setupLayouts } from 'virtual:generated-layouts'
 
@@ -24,11 +25,15 @@ const router = createRouter({
   routes: setupLayouts(routes),
 })
 
+// Create head
+const head = createHead()
+
 // Create app
 const app = createApp(App)
 
-// Install router
+// Install router and head
 app.use(router)
+app.use(head)
 
 // Install modules
 installPinia({ app, isClient: true, initialState: {} })

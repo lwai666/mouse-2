@@ -1,6 +1,10 @@
-import type { ViteSSGContext } from 'vite-ssg'
+export interface UserModuleContext {
+  app: import('vue').App
+  isClient: boolean
+  initialState?: Record<string, any>
+}
 
-export type UserModule = (ctx: ViteSSGContext) => void
+export type UserModule = (ctx: UserModuleContext) => void
 
 
 export interface IResult {

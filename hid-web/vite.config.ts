@@ -5,15 +5,12 @@ import Layouts from 'vite-plugin-vue-layouts'
 import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
-// Temporarily disabled - dependency ESM issues
-// import VueMacros from 'unplugin-vue-macros/vite'
 import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import LinkAttributes from 'markdown-it-link-attributes'
-// Temporarily disabled - ESM import issues
-// import Unocss from 'unocss/vite'
-// import Shiki from '@shikijs/markdown-it'
+import Unocss from 'unocss/vite'
+import Shiki from '@shikijs/markdown-it'
 import WebfontDownload from 'vite-plugin-webfont-dl'
 import VueRouter from 'unplugin-vue-router/vite'
 import { VueRouterAutoImports } from 'unplugin-vue-router'
@@ -24,8 +21,9 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 export default defineConfig({
   build: {
     outDir: 'backend/dist',
+    emptyOutDir: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'src/renderer/index.html')
+      input: path.resolve(__dirname, 'index.html')
     }
   },
   resolve: {
@@ -44,30 +42,26 @@ export default defineConfig({
     },
   },
   plugins: [
-    // VueMacros temporarily disabled - dependency ESM issues
-    // VueMacros({
-    //   plugins: {
-    //     vue: Vue({
-    //       include: [/\.vue$/, /\.md$/],
-    //     }),
-    //   },
-    // }),
-
     Vue({ include: [/\.vue$/, /\.md$/] }),
 
     VueRouter({
       extensions: ['.vue', '.md'],
       dts: 'src/renderer/typed-router.d.ts',
+      routesFolder: 'src/renderer/pages',
     }),
 
-    Layouts(),
+    Layouts({
+      pagesDir: 'src/renderer/pages',
+    }),
 
     AutoImport({
       imports: [
         'vue',
         'vue-i18n',
-        '@vueuse/head',
         '@vueuse/core',
+        {
+          '@unhead/vue': ['useHead'],
+        },
         VueRouterAutoImports,
         {
           'vue-router/auto': ['useLink'],
@@ -87,7 +81,7 @@ export default defineConfig({
       dts: 'src/renderer/components.d.ts',
     }),
 
-    // Unocss(),  // Temporarily disabled - ESM import issues
+    Unocss(),
 
     Markdown({
       wrapperClasses: 'prose prose-sm m-auto text-left',
@@ -100,14 +94,13 @@ export default defineConfig({
             rel: 'noopener',
           },
         })
-        // Shiki temporarily disabled - ESM import issues
-        // md.use(await Shiki({
-        //   defaultColor: false,
-        //   themes: {
-        //     light: 'vitesse-light',
-        //     dark: 'vitesse-dark',
-        //   },
-        // }))
+        md.use(await Shiki({
+          defaultColor: false,
+          themes: {
+            light: 'vitesse-light',
+            dark: 'vitesse-dark',
+          },
+        }))
       },
     }),
 
@@ -140,9 +133,5 @@ export default defineConfig({
   test: {
     include: ['test/**/*.test.ts'],
     environment: 'jsdom',
-  },
-
-  ssr: {
-    noExternal: ['workbox-window', /vue-i18n/],
   },
 })
