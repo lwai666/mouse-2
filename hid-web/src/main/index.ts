@@ -53,6 +53,10 @@ function createWindow(): void {
   }
 }
 
+// 启用 WebHID API - 必须在 app.whenReady() 之前调用
+app.commandLine.appendSwitch('enable-experimental-web-platform-features')
+app.commandLine.appendSwitch('enable-features', 'WebHID')
+
 // This method will be called when Electron has finished
 // initialization and ready to create browser windows.
 app.whenReady().then(() => {
