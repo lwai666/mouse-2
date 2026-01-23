@@ -30,10 +30,10 @@ const DEVICE_TYPE = {
 
 const deviceType = ref(DEVICE_TYPE.UNKNOWN)
 
-// 设备映射表（通过 vendorId_productId 快速查找）
+// 设备映射表（嵌套对象结构）
 const DEVICE_MAP = {
-  '0x2FE3_0x0007': { type: DEVICE_TYPE.MOUSE, name: '鼠标' },
-  '0x2FE5_0x0005': { type: DEVICE_TYPE.RECEIVER, name: '接收器' },
+  0x2FE3: { 0x0007: { type: DEVICE_TYPE.MOUSE, name: '鼠标' } },
+  0x2FE5: { 0x0005: { type: DEVICE_TYPE.RECEIVER, name: '接收器' } },
 }
 
 async function onAddNouseClick() {
@@ -53,8 +53,9 @@ async function onAddNouseClick() {
 
   // 识别设备类型（通过映射表查找）
   const { productId, vendorId } = transport.value.device
-  const key = `0x${vendorId.toString(16).toUpperCase()}_0x${productId.toString(16).toUpperCase()}`
-  const deviceInfo = DEVICE_MAP[key as any]
+  console.log(vendorId, productId, '设备ID')
+
+  const deviceInfo = DEVICE_MAP[vendorId]?.[productId]
 
   deviceType.value = deviceInfo?.type || DEVICE_TYPE.UNKNOWN
 
