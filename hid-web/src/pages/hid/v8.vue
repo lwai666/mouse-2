@@ -2501,7 +2501,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
           </div>
           <div style="position: relative;height: 100%; display: flex; align-items: center;">
             <Transition name="slide-up">
-              <div v-if="activeBg === 'performance'" class="absolute flex">
+              <div v-show="activeBg === 'performance'" class="absolute flex">
                 <div class="right-f-b h-100" style="padding: 40px 25px 25px 25px;position: relative;">
                   <div class="flex items-center justify-between">
                     <span style="font-size: 20px;"> {{ t('title.sensitivity_settings_heading') }} </span>
@@ -2611,7 +2611,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
                 <div style="flex:1;" class="relative">
                   <Transition name="slide-right">
-                    <div v-if="!startXYFlag" class="absolute flex" style="flex:1;">
+                    <div v-show="!startXYFlag" class="absolute flex" style="flex:1;">
                       <div class="right-s-b" style="margin-left: 10px;padding: 50px 25px 25px 25px;position: relative;">
                         <div class="flex items-center justify-between">
                           <p style="font-size: 20px; min-width: 100px;text-align: left;">
@@ -2720,7 +2720,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         />
                       </div>
                     </div>
-                    <div v-else style="width: 890px; margin-left: 10px; justify-content: center;align-items: center;  height:100%; flex-direction: column;background-image: linear-gradient(to right, #0E0E0D, #31350F, #A5AA5290);border-radius: 15px;" class="absolute flex">
+                  </Transition>
+                  <Transition name="slide-right">
+                    <div v-show="startXYFlag" style="width: 890px; margin-left: 10px; justify-content: center;align-items: center;  height:100%; flex-direction: column;background-image: linear-gradient(to right, #0E0E0D, #31350F, #A5AA5290);border-radius: 15px;" class="absolute flex">
                       <p style="font-size: 30px;margin-bottom: 10px;">
                         {{ t('tips.sensitivity_enable_xy.title') }}
                       </p>
@@ -2743,7 +2745,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </Transition>
                 </div>
               </div>
-              <div v-else-if="activeBg === 'hong'" class="absolute flex">
+            </Transition>
+            <Transition name="slide-up">
+              <div v-show="activeBg === 'hong'" class="absolute flex">
                 <div style="width: 564px;">
                   <div class="config-child-box" @click="addMacroFn">
                     <span class="active">{{ t('macro.newMacro') }}</span>
@@ -2882,7 +2886,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </div>
                 </div>
               </div>
-              <div v-else-if="activeBg === 'advanced'" class="absolute flex justify-between" style="width: 1543px ;height: 433px; border-radius: 10px; border: 1px solid #333333;background: #0D0D0D; ">
+            </Transition>
+            <Transition name="slide-up">
+              <div v-show="activeBg === 'advanced'" class="absolute flex justify-between" style="width: 1543px ;height: 433px; border-radius: 10px; border: 1px solid #333333;background: #0D0D0D; ">
                 <div style="padding: 25px 25px 0 25px;">
                   <div>
                     <div style="font-size: 20px; display: flex; align-items: center;">
@@ -3021,7 +3027,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </div>
                 </div>
                 <Transition name="slide-right">
-                  <div v-if="showMouseenter === 'showMouseenter'" style="padding: 25px 100px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
+                  <div v-show="showMouseenter === 'showMouseenter'" style="padding: 25px 100px 0 25px;justify-content: flex-end; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
                     <div style="margin-right: 50px;">
                       <div style="font-size: 20px;text-align: left">
                         {{ t('macro.dynamicSensitivity') }}
@@ -3050,7 +3056,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <Close />
                     </ElIcon> -->
                   </div>
-                  <div v-else-if="showMouseenter === 'FPS'" style="width: 75%; padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
+                </Transition>
+                <Transition name="slide-right">
+                  <div v-show="showMouseenter === 'FPS'" style="width: 75%; padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
                     <div>
                       <div style="font-size: 20px;text-align: left">
                         20K FPS
@@ -3073,7 +3081,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                       <Close />
                     </ElIcon>
                   </div>
-                  <div v-else-if="showMouseenter === 'FPS1'" style="padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1; border-radius: 10px;" class="flex">
+                </Transition>
+                <Transition name="slide-right">
+                  <div v-show="showMouseenter === 'FPS1'" style="padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1; border-radius: 10px;" class="flex">
                     <div>
                       <div style="font-size: 20px;text-align: left">
                         20K FPS
@@ -3097,7 +3107,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     </div>
                     <img src="/public/v9/huibao.png" alt="" srcset="">
                   </div>
-                  <div v-else-if="showMouseenter === 'line'" style="padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1; border-radius: 10px;" class="flex">
+                </Transition>
+                <Transition name="slide-right">
+                  <div v-show="showMouseenter === 'line'" style="padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1; border-radius: 10px;" class="flex">
                     <div>
                       <div style="font-size: 20px;text-align: left">
                         {{ t('title.straight_line_correction') }}
