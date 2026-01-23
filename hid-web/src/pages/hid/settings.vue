@@ -157,17 +157,19 @@ function parseFirmwareData(uint8Array: Uint8Array): boolean {
   const projectName = String.fromCharCode(...projectBytes.filter(b => b !== 0xFF && b !== 0x00))
 
   if (isMSDevice.value && header !== 'MS-USB-UPGRADE') {
-    console.log('头字符串对不上，也提示错误，说明放错了文件')
+    showMessage(`头字符串对不上，请检查文件`)
     return false
   }
 
   if (!isMSDevice.value && header !== 'DO-USB-UPGRADE') {
-    console.log('头字符串对不上，也提示错误，说明放错了文件')
+    showMessage(`头字符串对不上，请检查文件`)
+
     return false
   }
 
   if (isMSDevice.value && projectName !== 'SCYROX_V10') {
-    console.log('网页判断项目名不对，不给升级')
+    showMessage(`网页判断项目名不对，请检查文件`)
+
     return false
   }
 
@@ -207,20 +209,16 @@ function parseFirmwareData(uint8Array: Uint8Array): boolean {
 
   // 校验 SPI checksum
   if (spiSize > 0 && spiChecksum !== spiCalculatedChecksum) {
-    console.error(`SPI 固件校验失败: 固件包中=${spiChecksum}, 计算值=${spiCalculatedChecksum}`)
+    showMessage(`固件校验失败: 固件包中=${spiChecksum}, 计算值=${spiCalculatedChecksum}`)
+
     return false
-  }
-  if (spiSize > 0) {
-    console.log(`✓ SPI 固件校验通过: ${spiCalculatedChecksum}`)
   }
 
   // 校验 USB checksum
   if (usbSize > 0 && usbChecksum !== usbCalculatedChecksum) {
-    console.error(`USB 固件校验失败: 固件包中=${usbChecksum}, 计算值=${usbCalculatedChecksum}`)
+    showMessage(`固件校验失败: 固件包中=${usbChecksum}, 计算值=${usbCalculatedChecksum}`)
+
     return false
-  }
-  if (usbSize > 0) {
-    console.log(`✓ USB 固件校验通过: ${usbCalculatedChecksum}`)
   }
 
   Object.assign(uint8ArrayObj, {
@@ -426,7 +424,7 @@ async function onClickStartUpdate() {
     currentUpdate.value.status = 'updateFailed'
     onClose()
     if (err instanceof Error) {
-      alert(`更新失败：${err.message}`)
+      showMessage(`更新失败`)
     }
   }
 }
@@ -505,8 +503,6 @@ async function onClickUpdate(type: 'spi' | 'usb') {
   currentUpdate.value.status = 'updating'
   currentUpdate.value.progress = 0
 
-  console.log('开始下载固件...', type, userStore)
-
   let url = `${import.meta.env.VITE_SERVER_API}/`
 
   if (type === 'spi') {
@@ -521,8 +517,6 @@ async function onClickUpdate(type: 'spi' | 'usb') {
       setProgress(Number(progress) * 0.2)
     })
 
-    console.log('下载完成，binData====', binData)
-
     // 解析固件数据
     const success = parseFirmwareData(binData)
 
@@ -532,14 +526,13 @@ async function onClickUpdate(type: 'spi' | 'usb') {
     }
     else {
       currentUpdate.value.status = 'updateFailed'
-      alert('固件文件解析失败，请检查文件格式')
+      showMessage(`固件文件解析失败，请检查文件格式`)
     }
   }
   catch (err) {
-    console.log('下载失败=====', err)
     currentUpdate.value.status = 'updateFailed'
     if (err instanceof Error) {
-      alert(`下载失败：${err.message}`)
+      showMessage(`固件文件下载失败`)
     }
   }
 }
@@ -679,11 +672,11 @@ onMounted(async () => {
 
 .contain-content .zhezhao {
   position: absolute;
-  width: 65%;
+  width: 1100px;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  top: 36%;
+  top: 42%;
   height: 350px;
   border-radius: 50px;
   transform: translate(0, -100%);

@@ -3457,20 +3457,22 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     border-right: 6px solid transparent;
     border-bottom: 12px solid red;
   }
-
   .triangle1 {
+    border-bottom: 12px solid red;
+  }
+  .triangle2 {
     border-bottom: 12px solid #34b4d7;
   }
 
-  .triangle2 {
+  .triangle3 {
     border-bottom: 12px solid #6cb461;
   }
 
-  .triangle3 {
+  .triangle4 {
     border-bottom: 12px solid #ffffff;
   }
 
-  .triangle4 {
+  .triangle5 {
     border-bottom: 12px solid #dfdc54;
   }
 

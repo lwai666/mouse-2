@@ -21,6 +21,21 @@ const form = ref()
 
 const transport = ref(null)
 
+// 设备类型
+const DEVICE_TYPE = {
+  MOUSE: 'mouse',
+  RECEIVER: 'receiver',
+  UNKNOWN: 'unknown',
+}
+
+const deviceType = ref(DEVICE_TYPE.UNKNOWN)
+
+// 设备映射表（通过 vendorId_productId 快速查找）
+const DEVICE_MAP = {
+  '0x2FE3_0x0007': { type: DEVICE_TYPE.MOUSE, name: '鼠标' },
+  '0x2FE5_0x0005': { type: DEVICE_TYPE.RECEIVER, name: '接收器' },
+}
+
 async function onAddNouseClick() {
   transport.value = await createTransportWebHID({
     id: 'v8',
@@ -35,6 +50,15 @@ async function onAddNouseClick() {
       // console.log('接收的数据=======', data)
     },
   })
+
+  // 识别设备类型（通过映射表查找）
+  const { productId, vendorId } = transport.value.device
+  const key = `0x${vendorId.toString(16).toUpperCase()}_0x${productId.toString(16).toUpperCase()}`
+  const deviceInfo = DEVICE_MAP[key as any]
+
+  deviceType.value = deviceInfo?.type || DEVICE_TYPE.UNKNOWN
+
+  console.log('当前设备类型:', deviceType.value, deviceInfo?.name || '未知设备')
 }
 
 async function sha256(message: string) {
@@ -112,14 +136,14 @@ const rules = {
   ],
 }
 
+const eLoading = ref(false)
+
 async function submitForm() {
   if (!form.value)
     return
 
   try {
-    console.log(transport.value, 'transport.value=====')
     await form.value.validate()
-
     const _formData = new FormData()
     _formData.append('version', formData.version)
     _formData.append('description', formData.description)
@@ -128,19 +152,20 @@ async function submitForm() {
     _formData.append('productId', transport.value.device.productId)
     _formData.append('vendorId', transport.value.device.vendorId)
     _formData.append('productName', transport.value.device.productName)
-
+    eLoading.value = true
     const response = await fetch(getApiUrl('api/upload-update-package'), {
       method: 'POST',
       body: _formData,
     })
     if (response.ok) {
       ElMessage.success('上传成功')
-
       isAuthenticated.value = false
       transport.value = null
+      eLoading.value = false
     }
     else {
       ElMessage.error('上传失败')
+      eLoading.value = false
     }
   }
   catch (error) {
@@ -210,7 +235,7 @@ async function submitForm() {
           <ElFormItem label="更新描述" prop="description">
             <ElInput v-model="formData.description" type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="1. 修复了一些已知的问题" />
           </ElFormItem>
-          <ElFormItem label="适配器更新包" prop="spiFile">
+          <ElFormItem v-if="deviceType === DEVICE_TYPE.RECEIVER" label="适配器更新包" prop="spiFile">
             <ElUpload
               action=""
               :file-list="spiFileList"
@@ -230,7 +255,7 @@ async function submitForm() {
               </template>
             </ElUpload>
           </ElFormItem>
-          <ElFormItem label="鼠标更新包" prop="usbFile">
+          <ElFormItem v-if="deviceType === DEVICE_TYPE.MOUSE" label="鼠标更新包" prop="usbFile">
             <ElUpload
               action=""
               :file-list="usbFileList"
@@ -249,7 +274,7 @@ async function submitForm() {
             </ElUpload>
           </ElFormItem>
           <ElFormItem>
-            <ElButton type="primary" class="w-full" @click="submitForm">
+            <ElButton type="primary" class="w-full" :loading="eLoading" @click="submitForm">
               提交
             </ElButton>
           </ElFormItem>
