@@ -236,7 +236,8 @@ async function submitForm() {
           <ElFormItem label="更新描述" prop="description">
             <ElInput v-model="formData.description" type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="1. 修复了一些已知的问题" />
           </ElFormItem>
-          <ElFormItem v-if="deviceType === DEVICE_TYPE.RECEIVER" label="适配器更新包" prop="spiFile">
+          <!-- v-if="deviceType === DEVICE_TYPE.RECEIVER" -->
+          <ElFormItem label="适配器更新包" prop="spiFile">
             <ElUpload
               action=""
               :file-list="spiFileList"
@@ -256,7 +257,8 @@ async function submitForm() {
               </template>
             </ElUpload>
           </ElFormItem>
-          <ElFormItem v-if="deviceType === DEVICE_TYPE.MOUSE" label="鼠标更新包" prop="usbFile">
+          <!-- v-if="deviceType === DEVICE_TYPE.MOUSE" -->
+          <ElFormItem label="鼠标更新包" prop="usbFile">
             <ElUpload
               action=""
               :file-list="usbFileList"
