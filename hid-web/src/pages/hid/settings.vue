@@ -273,7 +273,7 @@ async function sendSpiBoot(data: any) {
 }
 
 async function sendUsbBoot(data: any) {
-  await transport.value.send([0x860, 0, 0, ...data])
+  await transport.value.send([0x86, 0, 0, ...data])
 }
 
 // 字节数组转32位整数（大端序）
