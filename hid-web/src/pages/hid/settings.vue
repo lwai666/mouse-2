@@ -575,7 +575,7 @@ onMounted(async () => {
         <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="!item.disabled ? '' : 'opacity-50 pointer-events-none'">
           <div class="w-100% flex items-center justify-between">
             <div>{{ item.title }}： {{ item.version }}</div>
-            <ElBadge :value="userStore.latestVersion.version > (`${item.version}`) ? 'new' : ''">
+            <ElBadge :value="userStore.latestVersion.version !== (`${item.version}`) ? 'new' : ''">
               <ElButton :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
                 选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
               </ElButton>
@@ -672,7 +672,7 @@ onMounted(async () => {
 .contain-content {
   height: 100%;
   width: 100%;
-  background-image: url('/public/v9/bg-s.png');
+  background-image: url('/public/v9/bg-s.webp');
   background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;
