@@ -77,24 +77,32 @@ app.post('/api/upload-update-package', upload.fields([
     const spiFile = files.file1 ? files.file1[0] : null
     const usbFile = files.file2 ? files.file2[0] : null
 
-    // 先查询是否存在该 version + productId 的记录
-    const checkSql = `SELECT id, spi_file_path, usb_file_path FROM firmware_updates WHERE version = ? AND productId = ?`
+    // 查询最新的一条记录
+    const checkSql = `SELECT * FROM firmware_updates ORDER BY id DESC LIMIT 1`
 
-    db.get(checkSql, [version, productId], (err, row) => {
+    db.get(checkSql, [], (err, row) => {
       if (err) {
         console.error('Database error:', err)
         return res.status(500).json({ error: 'Failed to check existing record' })
       }
 
       if (row) {
-        // 记录已存在，执行 UPDATE
+        // 记录已存在，执行 UPDATE（只更新传了的字段）
         const updateFields = []
         const updateValues = []
 
-        // 更新基本信息（如果提供）
+        // 只更新传了的字段
+        if (version !== undefined) {
+          updateFields.push('version = ?')
+          updateValues.push(version)
+        }
         if (description !== undefined) {
           updateFields.push('description = ?')
           updateValues.push(description)
+        }
+        if (productId !== undefined) {
+          updateFields.push('productId = ?')
+          updateValues.push(productId)
         }
         if (vendorId !== undefined) {
           updateFields.push('vendorId = ?')
@@ -128,25 +136,36 @@ app.post('/api/upload-update-package', upload.fields([
           res.json({
             message: 'Update package updated successfully',
             id: row.id,
-            version,
-            description: description || row.description,
-            productId,
-            vendorId: vendorId || row.vendorId,
-            productName: productName || row.productName,
+            version: version !== undefined ? version : row.version,
+            description: description !== undefined ? description : row.description,
+            productId: productId !== undefined ? productId : row.productId,
+            vendorId: vendorId !== undefined ? vendorId : row.vendorId,
+            productName: productName !== undefined ? productName : row.productName,
             spiFilePath: spiFile ? spiFile.path : row.spi_file_path,
             usbFilePath: usbFile ? usbFile.path : row.usb_file_path,
           })
         })
       }
       else {
-        // 记录不存在，执行 INSERT
-        const fields = ['version', 'productId']
-        const values = [version, productId]
-        const placeholders = ['?', '?']
+        // 没有记录，执行 INSERT
+        const fields = []
+        const values = []
+        const placeholders = []
 
+        // 只插入传了的字段
+        if (version) {
+          fields.push('version')
+          values.push(version)
+          placeholders.push('?')
+        }
         if (description) {
           fields.push('description')
           values.push(description)
+          placeholders.push('?')
+        }
+        if (productId) {
+          fields.push('productId')
+          values.push(productId)
           placeholders.push('?')
         }
         if (vendorId) {
