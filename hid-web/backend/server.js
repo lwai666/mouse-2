@@ -152,30 +152,30 @@ app.post('/api/upload-update-package', upload.fields([
         const values = []
         const placeholders = []
 
-        // 只插入传了的字段（使用 !== undefined 来检查，允许空字符串）
-        if (version !== undefined) {
+        // 只插入传了的字段
+        if (version) {
           fields.push('version')
-          values.push(version || '')
+          values.push(version)
           placeholders.push('?')
         }
-        if (description !== undefined) {
+        if (description) {
           fields.push('description')
-          values.push(description || '')
+          values.push(description)
           placeholders.push('?')
         }
-        if (productId !== undefined) {
+        if (productId) {
           fields.push('productId')
-          values.push(productId || '')
+          values.push(productId)
           placeholders.push('?')
         }
-        if (vendorId !== undefined) {
+        if (vendorId) {
           fields.push('vendorId')
-          values.push(vendorId || '')
+          values.push(vendorId)
           placeholders.push('?')
         }
-        if (productName !== undefined) {
+        if (productName) {
           fields.push('productName')
-          values.push(productName || '')
+          values.push(productName)
           placeholders.push('?')
         }
 
@@ -191,23 +191,12 @@ app.post('/api/upload-update-package', upload.fields([
           placeholders.push('?')
         }
 
-        // 检查是否至少有一个字段
-        if (fields.length === 0) {
-          console.error('No fields to insert, received data:', { version, description, productId, vendorId, productName, spiFile, usbFile })
-          return res.status(400).json({ error: 'No data provided to insert' })
-        }
-
         const insertSql = `INSERT INTO firmware_updates (${fields.join(', ')}) VALUES (${placeholders.join(', ')})`
-
-        console.log('Executing INSERT:', insertSql)
-        console.log('Values:', values)
 
         db.run(insertSql, values, function (err) {
           if (err) {
             console.error('Database error:', err)
-            console.error('SQL:', insertSql)
-            console.error('Values:', values)
-            return res.status(500).json({ error: `Failed to save update package info: ${err.message}` })
+            return res.status(500).json({ error: 'Failed to save update package info' })
           }
 
           res.json({
