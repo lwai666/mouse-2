@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, session, shell } from 'electron'
 
 import icon from '../../resources/icon.png?asset'
 
@@ -19,7 +19,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false,
       webSecurity: false, // 允许跨域请求，用于开发环境
     },
@@ -91,6 +91,27 @@ app.whenReady().then(() => {
   })
 
   createWindow()
+
+  // 设置设备权限处理器
+  session.defaultSession.setDevicePermissionHandler((details) => {
+    // 检查设备类型
+    if (details.deviceType === 'hid') {
+      // 允许HID设备访问
+      return true
+    }
+    // 对于其他设备类型，根据需要设置权限
+    return false
+  })
+
+  // 设置权限检查处理器（可选，用于禁用特定源的访问）
+  session.defaultSession.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
+    // 例如，禁用特定源的HID访问
+    if (permission === 'hid') {
+      // 可以根据请求源或其他条件决定是否允许
+      return false // 禁用
+    }
+    return true // 允许
+  })
 
   app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
