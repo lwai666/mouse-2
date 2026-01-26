@@ -69,43 +69,130 @@ app.post('/api/upload-update-package', upload.fields([
     const { version, description, productId, vendorId, productName } = req.body
     const files = req.files
 
-    if (!files.file1 || !files.file2) {
-      return res.status(400).json({ error: 'Both SPI and USB files are required' })
+    // 检查是否至少上传了一个文件
+    if (!files.file1 && !files.file2) {
+      return res.status(400).json({ error: 'At least one file (SPI or USB) is required' })
     }
 
-    const spiFile = files.file1[0]
-    const usbFile = files.file2[0]
+    const spiFile = files.file1 ? files.file1[0] : null
+    const usbFile = files.file2 ? files.file2[0] : null
 
-    // Insert record into database
-    const sql = `INSERT INTO firmware_updates
-        (version, description, spi_file_path, usb_file_path)
-        VALUES (?, ?, ?, ?)`
+    // 先查询是否存在该 version + productId 的记录
+    const checkSql = `SELECT id, spi_file_path, usb_file_path FROM firmware_updates WHERE version = ? AND productId = ?`
 
-    db.run(sql, [
-      version,
-      description,
-      productId,
-      vendorId,
-      productName,
-      spiFile.path,
-      usbFile.path,
-    ], function (err) {
+    db.get(checkSql, [version, productId], (err, row) => {
       if (err) {
         console.error('Database error:', err)
-        return res.status(500).json({ error: 'Failed to save update package info' })
+        return res.status(500).json({ error: 'Failed to check existing record' })
       }
 
-      res.json({
-        message: 'Update package uploaded successfully',
-        id: this.lastID,
-        version,
-        description,
-        productId,
-        vendorId,
-        productName,
-        spiFilePath: spiFile.path,
-        usbFilePath: usbFile.path,
-      })
+      if (row) {
+        // 记录已存在，执行 UPDATE
+        const updateFields = []
+        const updateValues = []
+
+        // 更新基本信息（如果提供）
+        if (description !== undefined) {
+          updateFields.push('description = ?')
+          updateValues.push(description)
+        }
+        if (vendorId !== undefined) {
+          updateFields.push('vendorId = ?')
+          updateValues.push(vendorId)
+        }
+        if (productName !== undefined) {
+          updateFields.push('productName = ?')
+          updateValues.push(productName)
+        }
+
+        // 只更新传了的文件字段
+        if (spiFile) {
+          updateFields.push('spi_file_path = ?')
+          updateValues.push(spiFile.path)
+        }
+        if (usbFile) {
+          updateFields.push('usb_file_path = ?')
+          updateValues.push(usbFile.path)
+        }
+
+        updateValues.push(row.id) // WHERE id = ?
+
+        const updateSql = `UPDATE firmware_updates SET ${updateFields.join(', ')} WHERE id = ?`
+
+        db.run(updateSql, updateValues, (err) => {
+          if (err) {
+            console.error('Database error:', err)
+            return res.status(500).json({ error: 'Failed to update record' })
+          }
+
+          res.json({
+            message: 'Update package updated successfully',
+            id: row.id,
+            version,
+            description: description || row.description,
+            productId,
+            vendorId: vendorId || row.vendorId,
+            productName: productName || row.productName,
+            spiFilePath: spiFile ? spiFile.path : row.spi_file_path,
+            usbFilePath: usbFile ? usbFile.path : row.usb_file_path,
+          })
+        })
+      }
+      else {
+        // 记录不存在，执行 INSERT
+        const fields = ['version', 'productId']
+        const values = [version, productId]
+        const placeholders = ['?', '?']
+
+        if (description) {
+          fields.push('description')
+          values.push(description)
+          placeholders.push('?')
+        }
+        if (vendorId) {
+          fields.push('vendorId')
+          values.push(vendorId)
+          placeholders.push('?')
+        }
+        if (productName) {
+          fields.push('productName')
+          values.push(productName)
+          placeholders.push('?')
+        }
+
+        if (spiFile) {
+          fields.push('spi_file_path')
+          values.push(spiFile.path)
+          placeholders.push('?')
+        }
+
+        if (usbFile) {
+          fields.push('usb_file_path')
+          values.push(usbFile.path)
+          placeholders.push('?')
+        }
+
+        const insertSql = `INSERT INTO firmware_updates (${fields.join(', ')}) VALUES (${placeholders.join(', ')})`
+
+        db.run(insertSql, values, function (err) {
+          if (err) {
+            console.error('Database error:', err)
+            return res.status(500).json({ error: 'Failed to save update package info' })
+          }
+
+          res.json({
+            message: 'Update package uploaded successfully',
+            id: this.lastID,
+            version,
+            description,
+            productId,
+            vendorId,
+            productName,
+            spiFilePath: spiFile ? spiFile.path : null,
+            usbFilePath: usbFile ? usbFile.path : null,
+          })
+        })
+      }
     })
   }
   catch (error) {

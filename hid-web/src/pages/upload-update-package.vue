@@ -128,11 +128,11 @@ const rules = {
     { min: 5, max: 500, message: '长度在 5 到 200 个字符之间', trigger: 'blur' },
   ],
   spiFile: [
-    { required: true, message: '请上传适配器更新包', trigger: 'change' },
+    { required: false, message: '请上传适配器更新包', trigger: 'change' },
     { validator: validateSpiFile, trigger: 'blur' },
   ],
   usbFile: [
-    { required: true, message: '请上传鼠标更新包', trigger: 'change' },
+    { required: false, message: '请上传鼠标更新包', trigger: 'change' },
     { validator: validateSpiFile, trigger: 'blur' },
   ],
 }
@@ -145,6 +145,13 @@ async function submitForm() {
 
   try {
     await form.value.validate()
+
+    // 检查是否至少上传了一个文件
+    if (!formData.spiFile && !formData.usbFile) {
+      ElMessage.error('SPI 或者 USB固件,至少上传一个文件!')
+      return
+    }
+
     const _formData = new FormData()
     _formData.append('version', formData.version)
     _formData.append('description', formData.description)
@@ -153,6 +160,7 @@ async function submitForm() {
     _formData.append('productId', transport.value.device.productId)
     _formData.append('vendorId', transport.value.device.vendorId)
     _formData.append('productName', transport.value.device.productName)
+
     eLoading.value = true
     const response = await fetch(getApiUrl('api/upload-update-package'), {
       method: 'POST',

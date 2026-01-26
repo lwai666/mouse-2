@@ -21,7 +21,6 @@ export function getImagePaths(): string[] {
       '/mouse3.png',
       '/mouse_black.png',
       '/mouse_white.png',
-      '/蓝色.png',
       '/pairing_connection.png',
       '/pwa-192x192.png',
       '/pwa-512x512.png',
@@ -39,7 +38,6 @@ export function getImagePaths(): string[] {
       '/mouseCarouseItem/icon2.png',
       '/mouseCarouseItem/icon3.png',
       '/mouseCarouseItem/line.png',
-      '/mouseCarouseItem/形状 5 拷贝.png',
 
       // Flag images
       '/flag/CN.png',
@@ -97,7 +95,7 @@ export function getImagePaths(): string[] {
     }
 
     // Generate xy sequence frames - 125 frames
-    for (let i = 0; i <= 124; i++) {
+    for (let i = 0; i <= 93; i++) {
       const suffix = i.toString().padStart(5, '0')
       knownPaths.push(`/xy/1_${suffix}.png`)
     }
@@ -167,7 +165,7 @@ export function isImageLoaded(url: string): boolean {
 }
 
 // Get image dimensions without loading (for validation)
-export function getImageDimensions(url: string): Promise<{ width: number; height: number }> {
+export function getImageDimensions(url: string): Promise<{ width: number, height: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
