@@ -44,13 +44,15 @@ function createWindow() {
     mainWindow.loadFile(htmlPath);
   }
 }
+app.commandLine.appendSwitch("enable-experimental-web-platform-features");
+app.commandLine.appendSwitch("enable-features", "WebHID");
 app.whenReady().then(() => {
   electronApp.setAppUserModelId("com.mouse-hid");
   app.on("browser-window-created", (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
   ipcMain.handle("get-api-config", () => {
-    const apiBaseUrl = "http://localhost:3010";
+    const apiBaseUrl = "https://scyrox2.shunyue.top";
     console.log("获取 API 配置:", { isDev: is.dev, apiBaseUrl });
     return {
       apiBaseUrl,

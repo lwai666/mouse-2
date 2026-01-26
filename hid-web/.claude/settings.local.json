@@ -8,7 +8,12 @@
       "Bash(timeout:*)",
       "Bash(dir:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(powershell:*)",
+      "Bash(ls:*)",
+      "Bash(gh release create:*)",
+      "Bash(where:*)"
     ]
   }
 }
