@@ -32,8 +32,8 @@ jobs:
           pnpm run build
 
 
-      # 4️⃣ 删除远程 dist
-      - name: Remove remote dist
+      # 4️⃣ 删除远程 dist 并同步代码
+      - name: Cleanup and git pull on Server
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -41,9 +41,11 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             rm -rf ~/mouse-2/hid-web/backend/dist
+            cd ~/mouse-2
+            git pull origin main
 
 
-      # 4️⃣ 上传 dist 到服务器
+      # 5️⃣ 上传 dist 到服务器
       - name: Upload dist to Server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -54,7 +56,7 @@ jobs:
           target: "~/mouse-2/hid-web/backend/dist"
           strip_components: 3
 
-      # 5️⃣ 重启后端服务
+      # 6️⃣ 重启后端服务
       - name: Restart Backend with PM2
         uses: appleboy/ssh-action@v0.1.10
         with:
