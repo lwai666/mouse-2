@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Plus } from '@element-plus/icons-vue'
-import { ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElUpload } from 'element-plus'
+import { InfoFilled, Plus } from '@element-plus/icons-vue'
+import { ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElTooltip, ElUpload } from 'element-plus'
 import { reactive, ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'
@@ -226,7 +226,6 @@ async function submitForm() {
       <div v-else style="height: 100%;">
         <!-- 上传表单 -->
         <ElForm
-
           ref="form"
           :model="formData"
           :rules="rules"
@@ -246,42 +245,69 @@ async function submitForm() {
           </ElFormItem>
           <!-- v-if="deviceType === DEVICE_TYPE.RECEIVER" -->
           <ElFormItem label="适配器更新包" prop="spiFile">
+            <template #label>
+              <div style="display: flex; align-items: center;">
+                适配器更新包
+                <ElTooltip
+                  effect="dark"
+                  placement="top"
+                >
+                  <template #content>
+                    <span style="font-size: 15px;">请上传 .bin 文件更新包, 不能大于 10MB！</span>
+                  </template>
+                  <ElIcon size="4" style="margin-left: 5px;">
+                    <InfoFilled />
+                  </ElIcon>
+                </ElTooltip>
+              </div>
+            </template>
             <ElUpload
               action=""
               :file-list="spiFileList"
               :auto-upload="false"
               accept=".bin"
               :on-change="spiHandleFileChange"
+              class="update_upload"
             >
               <ElButton type="primary">
                 选择文件
               </ElButton>
-              <template #tip>
-                <div
-                  class="el-upload__tip" style="position: absolute; left: 125px;top: -7px;"
-                >
-                  请上传 .bin 文件更新包, 不能大于 10MB！
-                </div>
-              </template>
             </ElUpload>
           </ElFormItem>
           <!-- v-if="deviceType === DEVICE_TYPE.MOUSE" -->
-          <ElFormItem label="鼠标更新包" prop="usbFile">
+          <ElFormItem prop="usbFile">
+            <template #label>
+              <div style="display: flex; align-items: center;">
+                鼠标更新包
+                <ElTooltip
+                  effect="dark"
+                  placement="top"
+                >
+                  <template #content>
+                    <span style="font-size: 15px;">请上传 .bin 文件更新包, 不能大于 10MB！</span>
+                  </template>
+                  <ElIcon size="4" style="margin-left: 5px;">
+                    <InfoFilled />
+                  </ElIcon>
+                </ElTooltip>
+              </div>
+            </template>
             <ElUpload
               action=""
               :file-list="usbFileList"
               :auto-upload="false"
               accept=".bin"
               :on-change="usbHandleFileChange"
+              class="update_upload"
             >
               <ElButton type="primary">
                 选择文件
               </ElButton>
-              <template #tip>
+              <!-- <template #tip>
                 <div class="el-upload__tip" style="position: absolute; left: 125px;top: -7px;">
                   请上传 .bin 文件更新包, 不能大于 10MB！
                 </div>
-              </template>
+              </template> -->
             </ElUpload>
           </ElFormItem>
           <ElFormItem>
@@ -306,5 +332,29 @@ async function submitForm() {
 
 .upload-update-package-container .el-form-item__content > div {
   text-align: left;
+}
+
+.upload-update-package-container .update_upload {
+  display: flex;
+}
+.update_upload .el-upload-list {
+  margin-top: 0;
+  margin-left: 5px;
+}
+/* .update_upload .el-upload-list:hover {
+  color: red;
+} */
+
+.update_upload .el-upload-list__item {
+  margin-bottom: 0;
+  width: calc(100% + 30px);
+}
+
+.update_upload .el-upload-list__item-file-name {
+  overflow: visible;
+  font-size: 16px;
+}
+.update_upload .el-upload-list__item-file-name:hover {
+  color: #409eff;
 }
 </style>
