@@ -168,6 +168,19 @@ async function submitForm() {
     })
     if (response.ok) {
       ElMessage.success('上传成功')
+
+      // 清空表单
+      formData.version = ''
+      formData.description = ''
+      formData.spiFile = null
+      formData.usbFile = null
+      spiFileList.value = []
+      usbFileList.value = []
+
+      // 重置表单验证状态
+      form.value?.clearValidate()
+      form.value?.resetFields()
+
       isAuthenticated.value = false
       transport.value = null
       eLoading.value = false
