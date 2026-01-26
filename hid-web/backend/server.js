@@ -71,7 +71,7 @@ app.post('/api/upload-update-package', upload.fields([
 
     // 检查是否至少上传了一个文件
     if (!files.file1 && !files.file2) {
-      return res.status(400).json({ error: 'At least one file (SPI or USB) is required' })
+      return res.status(400).json({ error: 'At least one file (SPI or USB) is required ' })
     }
 
     const spiFile = files.file1 ? files.file1[0] : null
