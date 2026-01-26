@@ -434,9 +434,8 @@ watch(() => transportList.value, () => {
 <style scoped>
 .contain-content {
   height: 1080px;
-  /* width: 100%; */
-  background-image: url('/public/v9/bg-s.png');
-  background-size: 100% 100%;
+  background-image: url('/v9/bg-s.webp');
+  background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
   position: absolute;
