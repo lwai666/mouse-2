@@ -1,7 +1,7 @@
-import { join } from 'path'
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { electronApp, is, optimizer } from '@electron-toolkit/utils'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 
 import icon from '../../resources/icon.png?asset'
 
@@ -21,8 +21,8 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      webSecurity: false // 允许跨域请求，用于开发环境
-    }
+      webSecurity: false, // 允许跨域请求，用于开发环境
+    },
   })
 
   mainWindow.on('ready-to-show', () => {
@@ -42,9 +42,10 @@ function createWindow(): void {
   })
 
   // 开发环境：加载 Vite 开发服务器
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
+  if (is.dev && process.env.ELECTRON_RENDERER_URL) {
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+  }
+  else {
     // 生产环境：加载前端构建产物 (backend/dist/index.html)
     // __dirname 在打包后是 app.asar/out/main，需要回退到 backend/dist
     const htmlPath = join(__dirname, '../../backend/dist/index.html')
@@ -79,7 +80,7 @@ app.whenReady().then(() => {
     return {
       apiBaseUrl,
       isDev: is.dev,
-      isElectron: true
+      isElectron: true,
     }
   })
 
@@ -91,10 +92,11 @@ app.whenReady().then(() => {
 
   createWindow()
 
-  app.on('activate', function () {
+  app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0)
+      createWindow()
   })
 })
 
