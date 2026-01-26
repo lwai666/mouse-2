@@ -3,11 +3,13 @@ import { ArrowLeftBold } from '@element-plus/icons-vue'
 import { ElBadge, ElButton, ElInput, ElProgress } from 'element-plus'
 import { combineLowAndHigh8Bits, sleep } from '~/utils'
 import { useTransportWebHID } from '~/utils/hidHandle'
+import { useApiConfig } from '~/composables/useApiConfig'
 // import { stringSplit } from '~/utils';
 
 const { t } = useI18n()
 const router = useRouter()
 const userStore = useUserStore()
+const { isElectron } = useApiConfig()
 
 const transport = ref()
 const inputDataList = ref<string[]>([])
@@ -576,11 +578,13 @@ onMounted(async () => {
           <div class="w-100% flex items-center justify-between">
             <div>{{ item.title }}： {{ item.version }}</div>
             <ElBadge :value="userStore.latestVersion.version !== (`${item.version}`) ? 'new' : ''">
-              <ElButton :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
+              <!-- exe 环境：显示"选择文件"按钮 -->
+              <ElButton v-if="isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
                 选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
               </ElButton>
 
-              <ElButton :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
+              <!-- 网页环境：显示"一键升级"按钮 -->
+              <ElButton v-if="!isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
                 一键升级
               </ElButton>
             </ElBadge>
