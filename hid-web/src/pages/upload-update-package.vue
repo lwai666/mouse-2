@@ -129,11 +129,11 @@ const rules = {
   ],
   spiFile: [
     { required: false, message: '请上传适配器更新包', trigger: 'change' },
-    { validator: validateSpiFile, trigger: 'blur' },
+    // { validator: validateSpiFile, trigger: 'blur' },
   ],
   usbFile: [
     { required: false, message: '请上传鼠标更新包', trigger: 'change' },
-    { validator: validateSpiFile, trigger: 'blur' },
+    // { validator: validateSpiFile, trigger: 'blur' },
   ],
 }
 

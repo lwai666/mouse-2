@@ -10,6 +10,24 @@ export function getImagePaths(): string[] {
 
     // Common paths in the public directory based on the project structure
     const knownPaths = [
+      // V9 images
+      '/v9/Motion.png',
+      '/v9/active-bg.png',
+      '/v9/bg-b.png',
+      '/v9/bg-s.png',
+      '/v9/bg-w.png',
+      '/v9/bg.png',
+      '/v9/china.png',
+      '/v9/icon.png',
+      '/v9/icon1.png',
+      '/v9/icon2.png',
+      '/v9/icon2_active.png',
+      '/v9/mouse.png',
+      '/v9/mouse1.png',
+      '/v9/wenhao.png',
+      '/v9/wenhao_active.png',
+      '/v9/setting.png',
+      '/v9/setting_active.png',
       // Root level images
       '/background.png',
       '/logo.png',
@@ -45,25 +63,6 @@ export function getImagePaths(): string[] {
       '/flag/JP.png',
       '/flag/KR.png',
       '/flag/US.png',
-
-      // V9 images
-      '/v9/Motion.png',
-      '/v9/active-bg.png',
-      '/v9/bg-b.png',
-      '/v9/bg-s.png',
-      '/v9/bg-w.png',
-      '/v9/bg.png',
-      '/v9/china.png',
-      '/v9/icon.png',
-      '/v9/icon1.png',
-      '/v9/icon2.png',
-      '/v9/icon2_active.png',
-      '/v9/mouse.png',
-      '/v9/mouse1.png',
-      '/v9/wenhao.png',
-      '/v9/wenhao_active.png',
-      '/v9/setting.png',
-      '/v9/setting_active.png',
 
       // Sports arena images
       '/sports_arena_0.png',
