@@ -12,19 +12,31 @@ const db = new sqlite3.Database(path.join(__dirname, 'firmware.db'), (err) => {
 
 // Initialize the database table
 db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS firmware_updates (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        version TEXT NOT NULL,
-        description TEXT,
-        spi_file_path TEXT NOT NULL,
-        usb_file_path TEXT NOT NULL,
-        upload_date DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`, (err) => {
+    // 先检查表是否存在，如果存在则更新结构
+    db.run(`PRAGMA table_info(firmware_updates)`, (err, rows) => {
         if (err) {
-            console.error('Error creating table:', err);
-        } else {
-            console.log('Firmware updates table created or already exists');
+            console.error('Error checking table:', err);
+            return;
         }
+
+        // 如果表不存在，创建新表
+        db.run(`CREATE TABLE IF NOT EXISTS firmware_updates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            version TEXT,
+            description TEXT,
+            productId TEXT,
+            vendorId TEXT,
+            productName TEXT,
+            spi_file_path TEXT,
+            usb_file_path TEXT,
+            upload_date DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`, (err) => {
+            if (err) {
+                console.error('Error creating table:', err);
+            } else {
+                console.log('Firmware updates table ready');
+            }
+        });
     });
 });
 

@@ -506,9 +506,17 @@ async function onClickUpdate(type: 'spi' | 'usb') {
   let url = `${import.meta.env.VITE_SERVER_API}/`
 
   if (type === 'spi') {
+    if (!userStore.latestVersion.usbFilePath) {
+      showMessage(`未找到接收器固件信息!`)
+      return
+    }
     url += userStore.latestVersion.spiFilePath
   }
   else if (type === 'usb') {
+    if (!userStore.latestVersion.usbFilePath) {
+      showMessage(`未找到鼠标固件信息!`)
+      return
+    }
     url += userStore.latestVersion.usbFilePath
   }
 
