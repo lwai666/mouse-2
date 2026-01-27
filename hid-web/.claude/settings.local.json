@@ -13,7 +13,9 @@
       "Bash(powershell:*)",
       "Bash(ls:*)",
       "Bash(gh release create:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(pnpm build:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

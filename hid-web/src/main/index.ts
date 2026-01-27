@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = join(__filename, '..')
 
 let mainWindow: BrowserWindow | null = null
+let hidDeviceCallback: ((deviceId: string) => void) | null = null
 
 function createWindow(): void {
   // Create the browser window.
@@ -27,6 +28,17 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
+  })
+
+  // 监听 HID 设备选择事件
+  mainWindow.webContents.session.on('select-hid-device', (event, details, callback) => {
+    event.preventDefault()
+
+    // 保存 callback
+    hidDeviceCallback = callback
+
+    // 发送设备列表到渲染进程，显示自定义选择界面
+    mainWindow?.webContents.send('show-hid-device-selector', details.deviceList)
   })
 
   // 监听 F12 快捷键打开 DevTools
@@ -90,6 +102,22 @@ app.whenReady().then(() => {
     return { success: true }
   })
 
+  // HID 设备选择相关的 IPC handlers
+  ipcMain.on('select-hid-device', (_event, deviceId: string) => {
+    if (hidDeviceCallback) {
+      hidDeviceCallback(deviceId)
+      hidDeviceCallback = null
+    }
+  })
+
+  ipcMain.on('cancel-hid-device-selection', () => {
+    if (hidDeviceCallback) {
+      // 传递空字符串表示取消
+      hidDeviceCallback('')
+      hidDeviceCallback = null
+    }
+  })
+
   createWindow()
 
   // 设置设备权限处理器
@@ -104,14 +132,14 @@ app.whenReady().then(() => {
   })
 
   // 设置权限检查处理器（可选，用于禁用特定源的访问）
-  session.defaultSession.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
-    // 例如，禁用特定源的HID访问
-    if (permission === 'hid') {
-      // 可以根据请求源或其他条件决定是否允许
-      return false // 禁用
-    }
-    return true // 允许
-  })
+  // session.defaultSession.setPermissionCheckHandler((webContents, permission, requestingOrigin, details) => {
+  //   // 例如，禁用特定源的HID访问
+  //   if (permission === 'hid') {
+  //     // 可以根据请求源或其他条件决定是否允许
+  //     return false // 禁用
+  //   }
+  //   return true // 允许
+  // })
 
   app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the

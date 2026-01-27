@@ -4,7 +4,20 @@ import { electronAPI } from '@electron-toolkit/preload'
 // Custom APIs for renderer
 const api = {
   getApiConfig: () => ipcRenderer.invoke('get-api-config'),
-  setApiConfig: (apiBaseUrl: string) => ipcRenderer.invoke('set-api-config', apiBaseUrl)
+  setApiConfig: (apiBaseUrl: string) => ipcRenderer.invoke('set-api-config', apiBaseUrl),
+
+  // HID 设备选择
+  onHIDDeviceList: (callback: (deviceList: any[]) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, deviceList: any[]) => callback(deviceList)
+    ipcRenderer.on('show-hid-device-selector', listener)
+    return () => ipcRenderer.removeListener('show-hid-device-selector', listener)
+  },
+  selectHIDDevice: (deviceId: string) => {
+    ipcRenderer.send('select-hid-device', deviceId)
+  },
+  cancelHIDDeviceSelection: () => {
+    ipcRenderer.send('cancel-hid-device-selection')
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
