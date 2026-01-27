@@ -85,7 +85,8 @@ app.whenReady().then(() => {
   });
   createWindow();
   session.defaultSession.setDevicePermissionHandler((details) => {
-    if (details.deviceType === "hid") {
+    console.log("请求设备权限:", details);
+    if (details.deviceType === "hid" && details.device.vendorId == 12259) {
       return true;
     }
     return false;

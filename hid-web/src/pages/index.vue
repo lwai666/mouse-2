@@ -215,6 +215,14 @@ async function setColor(mode: any, profileInfo: any) {
   }
   profileInfo.mouseColor = mode.id
   await instanceRef.value.send([0x29, 0x00, 0x00, mode.id])
+
+  transportList.value = transportList.value.map((item: any) => {
+    if (item.reportId === transport.value.reportId) {
+      item.mouseColor = mode.id
+    }
+    return item
+  })
+  localStorage.setItem('transportList', JSON.stringify(transportList.value))
 }
 
 // 滚动容器相关

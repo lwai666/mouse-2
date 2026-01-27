@@ -123,7 +123,8 @@ app.whenReady().then(() => {
   // 设置设备权限处理器
   session.defaultSession.setDevicePermissionHandler((details) => {
     // 检查设备类型
-    if (details.deviceType === 'hid') {
+    console.log('请求设备权限:', details)
+    if (details.deviceType === 'hid' && details.device.vendorId == 0x2FE3) {
       // 允许HID设备访问
       return true
     }
