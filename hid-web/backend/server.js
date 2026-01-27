@@ -113,14 +113,18 @@ app.post('/api/upload-update-package', upload.fields([
           updateValues.push(productName)
         }
 
-        // 只更新传了的文件字段
+        // 更新文件字段：如果没有上传，设置为 null
         if (spiFile) {
           updateFields.push('spi_file_path = ?')
           updateValues.push(spiFile.path)
+        } else {
+          updateFields.push('spi_file_path = NULL')
         }
         if (usbFile) {
           updateFields.push('usb_file_path = ?')
           updateValues.push(usbFile.path)
+        } else {
+          updateFields.push('usb_file_path = NULL')
         }
 
         updateValues.push(row.id) // WHERE id = ?
@@ -141,8 +145,8 @@ app.post('/api/upload-update-package', upload.fields([
             productId: productId !== undefined ? productId : row.productId,
             vendorId: vendorId !== undefined ? vendorId : row.vendorId,
             productName: productName !== undefined ? productName : row.productName,
-            spiFilePath: spiFile ? spiFile.path : row.spi_file_path,
-            usbFilePath: usbFile ? usbFile.path : row.usb_file_path,
+            spiFilePath: spiFile ? spiFile.path : null,
+            usbFilePath: usbFile ? usbFile.path : null,
           })
         })
       }
