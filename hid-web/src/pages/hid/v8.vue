@@ -2368,7 +2368,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
 <template>
   <div class="hid-container">
-    <a class="absolute left-30px top-30px" href="https://baidu.com" target="_blank">
+    <a class="absolute left-30px top-30px" href="https://scyrox2.shunyue.top" target="_blank">
       <img class="h-45px" src="/logo.png" alt="logo">
     </a>
 
@@ -2701,7 +2701,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           <!-- profileInfo.angle_slider -->
                           <img
                             style="width: 84px;height:152px;z-index:1"
-                            src="/public/v9/mouse.png"
+                            src="/v9/mouse.png"
                             :style="{ transform: `rotate(${profileInfo.angle_slider}deg)` }"
                             alt="" srcset=""
                           >
@@ -3105,7 +3105,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </div>
                       </div>
                     </div>
-                    <img src="/public/v9/huibao.png" alt="" srcset="">
+                    <img src="/v9/huibao.png" alt="" srcset="">
                   </div>
                 </Transition>
                 <Transition name="slide-right">
@@ -3244,7 +3244,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 <style>
   .hid-container {
   height: 1080px;
-  background-image: url('/public/v9/bg-w.png');
+  background-image: url('/v9/bg-w.png');
   background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;
@@ -3313,7 +3313,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
   }
 
   .bottom-box1 {
-    background-image: url('/public/v9/bg-b.png');
+    background-image: url('/v9/bg-b.png');
     background-size: 100% 90%;
     /* background-position: center center; */
     background-repeat: no-repeat;
@@ -3409,7 +3409,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     width: 219px;
     height: 107px;
     line-height: 107px;
-    background-image: url('/public/v9/bg.png');
+    background-image: url('/v9/bg.png');
     background-size: 84% 54%;
     background-repeat: no-repeat;
     background-position: -15px center;
@@ -3420,7 +3420,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
     height: 107px;
     line-height: 100px;
     background-size: 100% 100%;
-    background-image: url('/public/v9/active-bg.png');
+    background-image: url('/v9/active-bg.png');
     background-position: -15px center;
   }
 
