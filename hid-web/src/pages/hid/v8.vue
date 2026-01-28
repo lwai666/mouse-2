@@ -1506,17 +1506,36 @@ function onDisconnect(event: any) {
 }
 
 function onInputReport(uint8ArrayRes: Uint8Array) {
+  const reportId = uint8ArrayRes[0]
+
+  // 🐛 调试模式：记录所有输入报告
+  console.log(
+    `[HID Input] 报告ID: 0x${reportId.toString(16).toUpperCase().padStart(2, '0')}`,
+  )
+
   // 按下鼠标 DPI 物理按钮
-  if (uint8ArrayRes[0] === 0x0B) {
+  if (reportId === 0x0B) {
     const dpiIndex = uint8ArrayRes[3]
     if (dpiIndex >= 0 && dpiIndex < profileInfo.dpi_slider_list.length) {
+      console.log('  ✅ [DPI切换] 索引:', dpiIndex, 'DPI:', profileInfo.dpi_slider_list[dpiIndex])
       profileInfo.dpi_slider_active_index = dpiIndex
     }
   }
+
   // 返回充电状态
-  else if (uint8ArrayRes[0] === 0x20) {
-    chargingStatus.value = uint8ArrayRes[3]
+  else if (reportId === 0x20) {
+    const newStatus = uint8ArrayRes[3]
+    chargingStatus.value = newStatus
   }
+
+  // 🆕 电量变化主动上报（需要确认报告 ID，暂时先监听所有未知报告）
+  else if (reportId === 0x21) {
+    const oldLevel = profileInfo.battery_level
+    const newLevel = uint8ArrayRes[3]
+    console.log('  ✅ [电量更新]', oldLevel, '% →', newLevel, '%')
+    profileInfo.battery_level = newLevel
+  }
+
 }
 
 useTransportWebHID('v8', async (instance) => {
@@ -1530,6 +1549,8 @@ useTransportWebHID('v8', async (instance) => {
 
   initProfile()
 })
+
+
 
 const ElDropdownRef = ref(null)
 

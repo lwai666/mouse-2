@@ -495,6 +495,9 @@ async function fetchWithProgress(url: string, onProgress: (progress: string) => 
 }
 
 async function onClickUpdate(type: 'spi' | 'usb') {
+
+  
+
   // 如果有固件正在更新中，不允许触发新的更新
   if (updateList.spi.status === 'updating' || updateList.usb.status === 'updating') {
     return
