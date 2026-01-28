@@ -33,7 +33,7 @@ if (!fs.existsSync('uploads')) {
 // Get latest firmware version
 app.get('/api/latest-version', (req, res) => {
   const sql = `
-    SELECT id, version, description, spi_file_path, usb_file_path, upload_date
+    SELECT id, adapter_version, mouse_version, description, spi_file_path, usb_file_path, upload_date
     FROM firmware_updates
     ORDER BY upload_date DESC
     LIMIT 1
@@ -51,7 +51,8 @@ app.get('/api/latest-version', (req, res) => {
 
     res.json({
       id: row.id,
-      version: row.version,
+      adapterVersion: row.adapter_version,
+      mouseVersion: row.mouse_version,
       description: row.description,
       spiFilePath: row.spi_file_path,
       usbFilePath: row.usb_file_path,
@@ -66,7 +67,7 @@ app.post('/api/upload-update-package', upload.fields([
   { name: 'file2', maxCount: 1 },
 ]), async (req, res) => {
   try {
-    const { version, description, productId, vendorId, productName } = req.body
+    const { adapterVersion, mouseVersion, description, productId, vendorId, productName } = req.body
     const files = req.files
 
     // 检查是否至少上传了一个文件
@@ -92,9 +93,13 @@ app.post('/api/upload-update-package', upload.fields([
         const updateValues = []
 
         // 只更新传了的字段
-        if (version !== undefined) {
-          updateFields.push('version = ?')
-          updateValues.push(version)
+        if (adapterVersion !== undefined) {
+          updateFields.push('adapter_version = ?')
+          updateValues.push(adapterVersion)
+        }
+        if (mouseVersion !== undefined) {
+          updateFields.push('mouse_version = ?')
+          updateValues.push(mouseVersion)
         }
         if (description !== undefined) {
           updateFields.push('description = ?')
@@ -140,7 +145,8 @@ app.post('/api/upload-update-package', upload.fields([
           res.json({
             message: 'Update package updated successfully',
             id: row.id,
-            version: version !== undefined ? version : row.version,
+            adapterVersion: adapterVersion !== undefined ? adapterVersion : row.adapter_version,
+            mouseVersion: mouseVersion !== undefined ? mouseVersion : row.mouse_version,
             description: description !== undefined ? description : row.description,
             productId: productId !== undefined ? productId : row.productId,
             vendorId: vendorId !== undefined ? vendorId : row.vendorId,
@@ -157,9 +163,14 @@ app.post('/api/upload-update-package', upload.fields([
         const placeholders = []
 
         // 只插入传了的字段
-        if (version) {
-          fields.push('version')
-          values.push(version)
+        if (adapterVersion) {
+          fields.push('adapter_version')
+          values.push(adapterVersion)
+          placeholders.push('?')
+        }
+        if (mouseVersion) {
+          fields.push('mouse_version')
+          values.push(mouseVersion)
           placeholders.push('?')
         }
         if (description) {
@@ -206,7 +217,8 @@ app.post('/api/upload-update-package', upload.fields([
           res.json({
             message: 'Update package uploaded successfully',
             id: this.lastID,
-            version,
+            adapterVersion,
+            mouseVersion,
             description,
             productId,
             vendorId,

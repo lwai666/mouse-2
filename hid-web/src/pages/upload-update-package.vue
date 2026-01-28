@@ -82,7 +82,8 @@ async function validatePassword() {
 }
 
 const formData = reactive({
-  version: '',
+  adapterVersion: '',
+  mouseVersion: '',
   description: '',
   spiFile: null,
   usbFile: null,
@@ -94,20 +95,47 @@ const usbFileList = ref([])
 function spiHandleFileChange(file: any, fileList: any) {
   formData.spiFile = file.raw
   spiFileList.value = fileList.slice(-1)
+  // 触发适配器版本号的验证
+  form.value?.validateField('adapterVersion')
 }
 function usbHandleFileChange(file: any, fileList: any) {
   formData.usbFile = file.raw
   usbFileList.value = fileList.slice(-1)
+  // 触发鼠标版本号的验证
+  form.value?.validateField('mouseVersion')
 }
 
 function validateVersion(rule: any, value: string, callback: any) {
   const versionPattern = /^(\d+\.)?(\d+\.)?(\*|\d+)$/
-  if (!versionPattern.test(value)) {
-    callback(new Error('版本号格式不正确'))
+
+  // 检查字段类型
+  const fieldType = rule.field
+
+  // 如果是适配器版本号
+  if (fieldType === 'adapterVersion') {
+    if (formData.spiFile && !value) {
+      callback(new Error('上传适配器固件时，版本号为必填项'))
+      return
+    }
+    if (value && !versionPattern.test(value)) {
+      callback(new Error('版本号格式不正确'))
+      return
+    }
   }
-  else {
-    callback()
+
+  // 如果是鼠标版本号
+  if (fieldType === 'mouseVersion') {
+    if (formData.usbFile && !value) {
+      callback(new Error('上传鼠标固件时，版本号为必填项'))
+      return
+    }
+    if (value && !versionPattern.test(value)) {
+      callback(new Error('版本号格式不正确'))
+      return
+    }
   }
+
+  callback()
 }
 
 function validateSpiFile(rule: any, value: any, callback: any) {
@@ -119,9 +147,11 @@ function validateSpiFile(rule: any, value: any, callback: any) {
 }
 
 const rules = {
-  version: [
-    { required: true, message: '请填写上传的更新包的版本号', trigger: 'blur' },
-    { validator: validateVersion, trigger: 'blur' },
+  adapterVersion: [
+    { validator: validateVersion, trigger: 'blur', field: 'adapterVersion' },
+  ],
+  mouseVersion: [
+    { validator: validateVersion, trigger: 'blur', field: 'mouseVersion' },
   ],
   description: [
     { required: true, message: '请填写更新描述', trigger: 'blur' },
@@ -152,8 +182,21 @@ async function submitForm() {
       return
     }
 
+    // 验证：如果上传了适配器文件，必须有适配器版本号
+    if (formData.spiFile && !formData.adapterVersion) {
+      ElMessage.error('请填写适配器更新包的版本号')
+      return
+    }
+
+    // 验证：如果上传了鼠标文件，必须有鼠标版本号
+    if (formData.usbFile && !formData.mouseVersion) {
+      ElMessage.error('请填写鼠标更新包的版本号')
+      return
+    }
+
     const _formData = new FormData()
-    _formData.append('version', formData.version)
+    _formData.append('adapterVersion', formData.adapterVersion || '')
+    _formData.append('mouseVersion', formData.mouseVersion || '')
     _formData.append('description', formData.description)
     _formData.append('file1', formData.spiFile)
     _formData.append('file2', formData.usbFile)
@@ -170,7 +213,8 @@ async function submitForm() {
       ElMessage.success('上传成功')
 
       // 清空表单
-      formData.version = ''
+      formData.adapterVersion = ''
+      formData.mouseVersion = ''
       formData.description = ''
       formData.spiFile = null
       formData.usbFile = null
@@ -245,89 +289,103 @@ async function submitForm() {
           label-width="120px"
           class="mx-auto my-10 w-200"
         >
-          <ElFormItem>
-            <div class="w-full p-10 text-center text-2xl" style="text-align: center;">
+           <div class="w-full p-10 text-center text-2xl" style="text-align: center;">
               更新包上传
             </div>
-          </ElFormItem>
-          <ElFormItem label="版本号" prop="version">
-            <ElInput v-model="formData.version" placeholder="1" />
-          </ElFormItem>
-          <ElFormItem label="更新描述" prop="description">
-            <ElInput v-model="formData.description" type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="1. 修复了一些已知的问题" />
-          </ElFormItem>
-          <!-- v-if="deviceType === DEVICE_TYPE.RECEIVER" -->
-          <ElFormItem label="适配器更新包" prop="spiFile">
-            <template #label>
-              <div style="display: flex; align-items: center;">
-                适配器更新包
-                <ElTooltip
-                  effect="dark"
-                  placement="top"
-                >
-                  <template #content>
-                    <span style="font-size: 15px;">请上传 .bin 文件更新包, 不能大于 10MB！</span>
-                  </template>
-                  <ElIcon size="4" style="margin-left: 5px;">
-                    <InfoFilled />
-                  </ElIcon>
-                </ElTooltip>
-              </div>
-            </template>
-            <ElUpload
-              action=""
-              :file-list="spiFileList"
-              :auto-upload="false"
-              accept=".bin"
-              :on-change="spiHandleFileChange"
-              class="update_upload"
-            >
-              <ElButton type="primary">
-                选择文件
-              </ElButton>
-            </ElUpload>
-          </ElFormItem>
-          <!-- v-if="deviceType === DEVICE_TYPE.MOUSE" -->
-          <ElFormItem prop="usbFile">
-            <template #label>
-              <div style="display: flex; align-items: center;">
-                鼠标更新包
-                <ElTooltip
-                  effect="dark"
-                  placement="top"
-                >
-                  <template #content>
-                    <span style="font-size: 15px;">请上传 .bin 文件更新包, 不能大于 10MB！</span>
-                  </template>
-                  <ElIcon size="4" style="margin-left: 5px;">
-                    <InfoFilled />
-                  </ElIcon>
-                </ElTooltip>
-              </div>
-            </template>
-            <ElUpload
-              action=""
-              :file-list="usbFileList"
-              :auto-upload="false"
-              accept=".bin"
-              :on-change="usbHandleFileChange"
-              class="update_upload"
-            >
-              <ElButton type="primary">
-                选择文件
-              </ElButton>
-              <!-- <template #tip>
-                <div class="el-upload__tip" style="position: absolute; left: 125px;top: -7px;">
-                  请上传 .bin 文件更新包, 不能大于 10MB！
+
+          <!-- 适配器更新包模块 -->
+          <div class="module-card">
+            <div class="module-title">
+              适配器更新包
+            </div>
+            <ElFormItem label="版本号" prop="adapterVersion">
+              <ElInput v-model="formData.adapterVersion" placeholder="请输入版本号" />
+            </ElFormItem>
+            <ElFormItem label="更新包文件" prop="spiFile">
+              <template #label>
+                <div style="display: flex; align-items: center;">
+                  更新包文件
+                  <ElTooltip
+                    effect="dark"
+                    placement="top"
+                  >
+                    <template #content>
+                      <span style="font-size: 15px;">请上传 .bin 文件更新包, 不能大于 10MB！</span>
+                    </template>
+                    <ElIcon size="4" style="margin-left: 5px;">
+                      <InfoFilled />
+                    </ElIcon>
+                  </ElTooltip>
                 </div>
-              </template> -->
-            </ElUpload>
-          </ElFormItem>
-          <ElFormItem>
-            <ElButton type="primary" class="w-full" :loading="eLoading" @click="submitForm">
+              </template>
+              <ElUpload
+                action=""
+                :file-list="spiFileList"
+                :auto-upload="false"
+                accept=".bin"
+                :on-change="spiHandleFileChange"
+                class="update_upload"
+              >
+                <ElButton type="primary">
+                  选择文件
+                </ElButton>
+              </ElUpload>
+            </ElFormItem>
+          </div>
+
+          <!-- 鼠标更新包模块 -->
+          <div class="module-card">
+            <div class="module-title">
+              鼠标更新包
+            </div>
+            <ElFormItem label="版本号" prop="mouseVersion">
+              <ElInput v-model="formData.mouseVersion" placeholder="请输入版本号" />
+            </ElFormItem>
+            <ElFormItem label="更新包文件" prop="usbFile">
+              <template #label>
+                <div style="display: flex; align-items: center;">
+                  更新包文件
+                  <ElTooltip
+                    effect="dark"
+                    placement="top"
+                  >
+                    <template #content>
+                      <span style="font-size: 15px;">请上传 .bin 文件更新包, 不能大于 10MB！</span>
+                    </template>
+                    <ElIcon size="4" style="margin-left: 5px;">
+                      <InfoFilled />
+                    </ElIcon>
+                  </ElTooltip>
+                </div>
+              </template>
+              <ElUpload
+                action=""
+                :file-list="usbFileList"
+                :auto-upload="false"
+                accept=".bin"
+                :on-change="usbHandleFileChange"
+                class="update_upload"
+              >
+                <ElButton type="primary">
+                  选择文件
+                </ElButton>
+              </ElUpload>
+            </ElFormItem>
+          </div>
+
+          <!-- 更新描述（共享） -->
+          <div class="module-card">
+            <div class="module-title">
+              更新描述
+            </div>
+            <ElFormItem label="描述内容" prop="description">
+              <ElInput v-model="formData.description" type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="" />
+            </ElFormItem>
+          </div>
+
+          <ElButton type="primary" class="w-full submit-btn" :loading="eLoading" @click="submitForm">
               提交
             </ElButton>
-          </ElFormItem>
         </ElForm>
       </div>
     </div>
@@ -369,5 +427,30 @@ async function submitForm() {
 }
 .update_upload .el-upload-list__item-file-name:hover {
   color: #409eff;
+}
+
+/* 模块卡片样式 */
+.module-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.module-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* 提交按钮样式 */
+.submit-btn {
+  margin-top: 10px;
+  height: 45px;
+  font-size: 16px;
 }
 </style>

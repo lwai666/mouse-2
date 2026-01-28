@@ -12,31 +12,56 @@ const db = new sqlite3.Database(path.join(__dirname, 'firmware.db'), (err) => {
 
 // Initialize the database table
 db.serialize(() => {
-    // 先检查表是否存在，如果存在则更新结构
-    db.run(`PRAGMA table_info(firmware_updates)`, (err, rows) => {
+    // 创建新表
+    db.run(`CREATE TABLE IF NOT EXISTS firmware_updates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        adapter_version TEXT,
+        mouse_version TEXT,
+        description TEXT,
+        productId TEXT,
+        vendorId TEXT,
+        productName TEXT,
+        spi_file_path TEXT,
+        usb_file_path TEXT,
+        upload_date DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`, (err) => {
         if (err) {
-            console.error('Error checking table:', err);
-            return;
-        }
+            console.error('Error creating table:', err);
+        } else {
+            console.log('Firmware updates table ready');
 
-        // 如果表不存在，创建新表
-        db.run(`CREATE TABLE IF NOT EXISTS firmware_updates (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            version TEXT,
-            description TEXT,
-            productId TEXT,
-            vendorId TEXT,
-            productName TEXT,
-            spi_file_path TEXT,
-            usb_file_path TEXT,
-            upload_date DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`, (err) => {
-            if (err) {
-                console.error('Error creating table:', err);
-            } else {
-                console.log('Firmware updates table ready');
-            }
-        });
+            // 检查并添加新字段（用于旧版本升级）
+            db.all(`PRAGMA table_info(firmware_updates)`, (err, columns) => {
+                if (err) {
+                    console.error('Error checking columns:', err);
+                    return;
+                }
+
+                const columnNames = columns.map(col => col.name);
+
+                // 如果缺少 adapter_version 字段，则添加
+                if (!columnNames.includes('adapter_version')) {
+                    db.run(`ALTER TABLE firmware_updates ADD COLUMN adapter_version TEXT`, (err) => {
+                        if (err) {
+                            console.error('Error adding adapter_version column:', err);
+                        } else {
+                            console.log('Added adapter_version column');
+                        }
+                    });
+                }
+
+                // 如果缺少 mouse_version 字段，则添加
+                if (!columnNames.includes('mouse_version')) {
+                    db.run(`ALTER TABLE firmware_updates ADD COLUMN mouse_version TEXT`, (err) => {
+                        if (err) {
+                            console.error('Error adding mouse_version column:', err);
+                        } else {
+                            console.log('Added mouse_version column');
+                        }
+                    });
+                }
+            });
+        }
     });
 });
 
