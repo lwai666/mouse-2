@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowLeftBold } from '@element-plus/icons-vue'
 import autofit from 'autofit.js'
-import { ElBadge, ElButton, ElInput, ElProgress } from 'element-plus'
+import { ElBadge, ElButton, ElInput, ElMessageBox, ElProgress } from 'element-plus'
 import { useApiConfig } from '~/composables/useApiConfig'
 import { combineLowAndHigh8Bits, sleep } from '~/utils'
 import { useTransportWebHID } from '~/utils/hidHandle'
@@ -512,6 +512,27 @@ async function onClickUpdate(type: 'spi' | 'usb') {
     return
   }
 
+  // 如果是更新鼠标，且接收器也有可更新固件，先提示建议先更新接收器
+  if (type === 'usb' && updateList.spi.disabled) {
+    try {
+      await ElMessageBox({
+        title: '更新提示',
+        message: '建议您先更新接收器再更新鼠标，这样更新过程体验更佳，是否仍要更新？',
+        confirmButtonText: '确认更新',
+        cancelButtonText: '取消',
+        type: '',
+        customClass: 'update-confirm-box',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        showClose: true,
+      })
+    }
+    catch {
+      // 用户点击了取消
+      return
+    }
+  }
+
   isMSDevice.value = type === 'usb'
   currentUpdateKey.value = type
   currentUpdate.value.status = 'updating'
@@ -608,7 +629,7 @@ onMounted(async () => {
 
               <!-- 网页环境：显示"一键升级"按钮 -->
               <ElButton v-if="!isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
-                一键升级
+                立即更新
               </ElButton>
             </ElBadge>
           </div>
@@ -720,5 +741,127 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+</style>
+
+<style>
+/* 科技感提示框 - 增强发光效果 */
+.update-confirm-box {
+  width: 420px !important;
+  border-radius: 12px !important;
+  background: rgba(20, 25, 40, 0.75) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(64, 158, 255, 0.3) !important;
+  box-shadow:
+    0 0 20px rgba(64, 158, 255, 0.3),
+    0 0 40px rgba(64, 158, 255, 0.2),
+    0 0 60px rgba(64, 158, 255, 0.1),
+    0 15px 50px rgba(0, 0, 0, 0.4),
+    inset 0 0 30px rgba(64, 158, 255, 0.05) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  animation: boxGlow 3s ease-in-out infinite !important;
+}
+
+@keyframes boxGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(64, 158, 255, 0.3),
+      0 0 40px rgba(64, 158, 255, 0.2),
+      0 0 60px rgba(64, 158, 255, 0.1),
+      0 15px 50px rgba(0, 0, 0, 0.4),
+      inset 0 0 30px rgba(64, 158, 255, 0.05) !important;
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(64, 158, 255, 0.5),
+      0 0 60px rgba(64, 158, 255, 0.3),
+      0 0 80px rgba(64, 158, 255, 0.15),
+      0 15px 50px rgba(0, 0, 0, 0.4),
+      inset 0 0 40px rgba(64, 158, 255, 0.08) !important;
+  }
+}
+
+.update-confirm-box .el-message-box__header {
+  padding: 20px 24px 16px !important;
+  background: rgba(64, 158, 255, 0.08) !important;
+  border-bottom: 1px solid rgba(64, 158, 255, 0.2) !important;
+  margin: 0 !important;
+  box-shadow: 0 1px 0 rgba(64, 158, 255, 0.1) !important;
+}
+
+.update-confirm-box .el-message-box__title {
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  color: #409eff !important;
+  letter-spacing: 0.5px !important;
+  text-shadow: 0 0 10px rgba(64, 158, 255, 0.8), 0 0 20px rgba(64, 158, 255, 0.4) !important;
+}
+
+.update-confirm-box .el-message-box__content {
+  padding: 18px 24px 20px !important;
+}
+
+.update-confirm-box .el-message-box__message {
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  color: #c0c4cc !important;
+  font-weight: 400 !important;
+  text-shadow: 0 0 2px rgba(192, 196, 204, 0.3) !important;
+}
+
+.update-confirm-box .el-message-box__btns {
+  padding: 0 24px 20px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+}
+
+.update-confirm-box .el-button {
+  min-width: 85px !important;
+  height: 38px !important;
+  border-radius: 8px !important;
+  padding: 0 20px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid !important;
+}
+
+.update-confirm-box .el-button--default {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #909399 !important;
+  border-color: rgba(144, 147, 153, 0.3) !important;
+  text-shadow: 0 0 5px rgba(144, 147, 153, 0.3) !important;
+}
+
+.update-confirm-box .el-button--default:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(144, 147, 153, 0.5) !important;
+  color: #c0c4cc !important;
+  box-shadow: 0 0 15px rgba(144, 147, 153, 0.3) !important;
+  text-shadow: 0 0 8px rgba(192, 196, 204, 0.5) !important;
+}
+
+.update-confirm-box .el-button--primary {
+  background: linear-gradient(135deg, #409eff 0%, #3a8ee6 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow:
+    0 0 20px rgba(64, 158, 255, 0.5),
+    0 4px 20px rgba(64, 158, 255, 0.3),
+    inset 0 0 15px rgba(255, 255, 255, 0.1) !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4) !important;
+}
+
+.update-confirm-box .el-button--primary:hover {
+  background: linear-gradient(135deg, #66b1ff 0%, #409eff 100%) !important;
+  box-shadow:
+    0 0 30px rgba(64, 158, 255, 0.7),
+    0 6px 25px rgba(64, 158, 255, 0.5),
+    inset 0 0 20px rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-1px) !important;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 0.6) !important;
 }
 </style>
