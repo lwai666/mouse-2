@@ -649,7 +649,7 @@ onMounted(async () => {
         <!-- (item.version < item.latestVersion) &&  -->
         <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="item.disabled ? '' : 'opacity-50 pointer-events-none'">
           <div class="w-100% flex items-center justify-between">
-            <div>{{ item.title }}： {{ item.version }}</div>
+            <div>{{ item.title }}： {{ item.version }} {{ item.disabled ? '(已更新)' : '(可更新)' }}</div>
             <ElBadge :value="item.disabled ? 'new' : ''">
               <!-- exe 环境：显示"选择文件"按钮 -->
               <ElButton v-if="isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
