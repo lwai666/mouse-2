@@ -11,7 +11,7 @@ import { useTransportWebHID } from '~/utils/hidHandle'
 const { t } = useI18n()
 const router = useRouter()
 const userStore = useUserStore()
-const { isElectron } = useApiConfig()
+const { isElectron, getApiUrl } = useApiConfig()
 
 const transport = ref()
 const inputDataList = ref<string[]>([])
@@ -418,6 +418,9 @@ async function onClickStartUpdate() {
     console.log('固件更新完成！')
     currentUpdate.value.status = 'updateCompleted'
 
+    // 标记已更新的固件
+    await markFirmwareUpdated()
+
     // 等待后重新加载
     await sleep(1000)
     location.reload()
@@ -437,6 +440,31 @@ function onClose() {
   selectFile.value = null
   currentUpdate.value.progress = 0
   currentUpdate.value.status = 'updateNow'
+}
+
+// 标记固件已更新
+async function markFirmwareUpdated() {
+  try {
+    const formData = new FormData()
+
+    // 根据当前更新的类型，设置对应的字段为空字符串
+    if (currentUpdateKey.value === 'spi') {
+      formData.append('spiFilePath', '')
+    }
+    else if (currentUpdateKey.value === 'usb') {
+      formData.append('usbFilePath', '')
+    }
+
+    await fetch(getApiUrl('api/upload-update-package'), {
+      method: 'POST',
+      body: formData,
+    })
+
+    console.log('固件更新标记成功', currentUpdateKey.value)
+  }
+  catch (error) {
+    console.error('标记固件更新失败:', error)
+  }
 }
 
 async function getLatestVersion() {
@@ -618,10 +646,10 @@ onMounted(async () => {
 
       <div class="align-center flex justify-between">
         <!-- (item.version < item.latestVersion) &&  -->
-        <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="(item.version < item.latestVersion) && item.disabled ? '' : 'opacity-50 pointer-events-none'">
+        <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="item.disabled ? '' : 'opacity-50 pointer-events-none'">
           <div class="w-100% flex items-center justify-between">
             <div>{{ item.title }}： {{ item.version }}</div>
-            <ElBadge :value="getNewStatus(index, item.version, item.latestVersion) ? 'new' : ''">
+            <ElBadge :value="item.disabled ? 'new' : ''">
               <!-- exe 环境：显示"选择文件"按钮 -->
               <ElButton v-if="isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
                 选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">

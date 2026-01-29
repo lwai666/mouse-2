@@ -70,12 +70,15 @@ app.post('/api/upload-update-package', upload.fields([
   { name: 'file2', maxCount: 1 },
 ]), async (req, res) => {
   try {
-    const { adapterVersion, mouseVersion, description, productId, vendorId, productName } = req.body
+    const { adapterVersion, mouseVersion, description, productId, vendorId, productName, spiFilePath, usbFilePath } = req.body
     const files = req.files
 
-    // 检查是否至少上传了一个文件
-    if (!files.file1 && !files.file2) {
-      return res.status(400).json({ error: 'At least one file (SPI or USB) is required ' })
+    // 检查是否至少上传了一个文件或者要标记为已更新
+    const hasFiles = files.file1 || files.file2
+    const hasMarkUpdate = spiFilePath !== undefined || usbFilePath !== undefined
+
+    if (!hasFiles && !hasMarkUpdate) {
+      return res.status(400).json({ error: 'At least one file or mark update is required ' })
     }
 
     const spiFile = files.file1 ? files.file1[0] : null
@@ -121,18 +124,32 @@ app.post('/api/upload-update-package', upload.fields([
           updateValues.push(productName)
         }
 
-        // 更新文件字段：如果没有上传，设置为 null
-        if (spiFile) {
+        // 更新文件字段
+        // 优先检查是否要标记为已更新（空字符串）
+        if (spiFilePath !== undefined) {
+          if (spiFilePath === '') {
+            updateFields.push('spi_file_path = NULL')
+          } else {
+            updateFields.push('spi_file_path = ?')
+            updateValues.push(spiFilePath)
+          }
+        } else if (spiFile) {
+          // 如果上传了新文件
           updateFields.push('spi_file_path = ?')
           updateValues.push(spiFile.path)
-        } else {
-          updateFields.push('spi_file_path = NULL')
         }
-        if (usbFile) {
+
+        if (usbFilePath !== undefined) {
+          if (usbFilePath === '') {
+            updateFields.push('usb_file_path = NULL')
+          } else {
+            updateFields.push('usb_file_path = ?')
+            updateValues.push(usbFilePath)
+          }
+        } else if (usbFile) {
+          // 如果上传了新文件
           updateFields.push('usb_file_path = ?')
           updateValues.push(usbFile.path)
-        } else {
-          updateFields.push('usb_file_path = NULL')
         }
 
         updateValues.push(row.id) // WHERE id = ?
@@ -154,8 +171,8 @@ app.post('/api/upload-update-package', upload.fields([
             productId: productId !== undefined ? productId : row.productId,
             vendorId: vendorId !== undefined ? vendorId : row.vendorId,
             productName: productName !== undefined ? productName : row.productName,
-            spiFilePath: spiFile ? spiFile.path : null,
-            usbFilePath: usbFile ? usbFile.path : null,
+            spiFilePath: spiFile ? spiFile.path : (spiFilePath === '' ? null : row.spi_file_path),
+            usbFilePath: usbFile ? usbFile.path : (usbFilePath === '' ? null : row.usb_file_path),
           })
         })
       }
@@ -197,15 +214,24 @@ app.post('/api/upload-update-package', upload.fields([
           placeholders.push('?')
         }
 
+        // 文件路径：优先使用上传的文件，否则使用参数
         if (spiFile) {
           fields.push('spi_file_path')
           values.push(spiFile.path)
+          placeholders.push('?')
+        } else if (spiFilePath !== undefined && spiFilePath !== '') {
+          fields.push('spi_file_path')
+          values.push(spiFilePath)
           placeholders.push('?')
         }
 
         if (usbFile) {
           fields.push('usb_file_path')
           values.push(usbFile.path)
+          placeholders.push('?')
+        } else if (usbFilePath !== undefined && usbFilePath !== '') {
+          fields.push('usb_file_path')
+          values.push(usbFilePath)
           placeholders.push('?')
         }
 
@@ -226,8 +252,8 @@ app.post('/api/upload-update-package', upload.fields([
             productId,
             vendorId,
             productName,
-            spiFilePath: spiFile ? spiFile.path : null,
-            usbFilePath: usbFile ? usbFile.path : null,
+            spiFilePath: spiFile ? spiFile.path : (spiFilePath || null),
+            usbFilePath: usbFile ? usbFile.path : (usbFilePath || null),
           })
         })
       }
