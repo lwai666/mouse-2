@@ -33,7 +33,7 @@ if (!fs.existsSync('uploads')) {
 // Get latest firmware version
 app.get('/api/latest-version', (req, res) => {
   const sql = `
-    SELECT id, adapter_version, mouse_version, description, spi_file_path, usb_file_path, upload_date
+    SELECT id, adapter_version, mouse_version, description, spi_file_path, usb_file_path, upload_date, productId, vendorId, productName
     FROM firmware_updates
     ORDER BY upload_date DESC
     LIMIT 1
@@ -57,6 +57,9 @@ app.get('/api/latest-version', (req, res) => {
       spiFilePath: row.spi_file_path,
       usbFilePath: row.usb_file_path,
       uploadDate: row.upload_date,
+      productId: row.productId,
+      vendorId: row.vendorId,
+      productName: row.productName,
     })
   })
 })
