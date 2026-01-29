@@ -289,14 +289,14 @@ async function submitForm() {
           label-width="120px"
           class="mx-auto my-10 w-200"
         >
-           <div class="w-full p-10 text-center text-2xl" style="text-align: center;">
-              更新包上传
-            </div>
+          <div class="w-full p-10 text-center text-2xl" style="text-align: center;">
+            更新包上传
+          </div>
 
           <!-- 适配器更新包模块 -->
           <div class="module-card">
             <div class="module-title">
-              适配器更新包
+              接收器更新包
             </div>
             <ElFormItem label="版本号" prop="adapterVersion">
               <ElInput v-model="formData.adapterVersion" placeholder="请输入版本号" />
@@ -383,9 +383,9 @@ async function submitForm() {
             </ElFormItem>
           </div>
 
-          <ElButton type="primary" class="w-full submit-btn" :loading="eLoading" @click="submitForm">
-              提交
-            </ElButton>
+          <ElButton type="primary" class="submit-btn w-full" :loading="eLoading" @click="submitForm">
+            提交
+          </ElButton>
         </ElForm>
       </div>
     </div>
