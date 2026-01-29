@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ArrowLeftBold } from '@element-plus/icons-vue'
+import autofit from 'autofit.js'
 import { ElBadge, ElButton, ElInput, ElProgress } from 'element-plus'
+import { useApiConfig } from '~/composables/useApiConfig'
 import { combineLowAndHigh8Bits, sleep } from '~/utils'
 import { useTransportWebHID } from '~/utils/hidHandle'
-import { useApiConfig } from '~/composables/useApiConfig'
+
 // import { stringSplit } from '~/utils';
 
 const { t } = useI18n()
@@ -18,7 +20,7 @@ const bin_Uint8Array = ref<Uint8Array>()
 const updateList = reactive({
   spi: {
     title: t('settings.spiVersion'),
-    version: '1.0',
+    version: '**',
     latestVersion: '1.0.0',
     status: 'updateNow', // updateNow updating updateCompleted updateFailed
     img: '/update-receiver.png',
@@ -27,10 +29,12 @@ const updateList = reactive({
     errorHint: t('settings.errorHint11'),
     progress: 0,
     disabled: true,
+    disabled1: false,
+
   },
   usb: {
     title: t('settings.usbVersion'),
-    version: '1.0',
+    version: '**',
     latestVersion: '8.0.2',
     status: 'updateNow', // updateNow updating updateCompleted updateFailed
     img: '/update-mouse.png',
@@ -39,6 +43,8 @@ const updateList = reactive({
     errorHint: t('settings.errorHint21'),
     progress: 0,
     disabled: true,
+    disabled1: false,
+
   },
 })
 
@@ -69,39 +75,34 @@ useTransportWebHID('v8', async (instance) => {
 
 // 获取版本号
 async function getVersion() {
-  // { vendorId: 0x2FE3, productId: 0x0007, name: "鼠标", sendData: 0x0F },
-  // { vendorId: 0x2FE5, productId: 0x0005, name: "接收器", sendData: 0x18 },
-
   const { productId, vendorId } = transport.value.device
+
   if (vendorId === 0x2FE3 && productId === 0x0007) {
-    updateList.usb.disabled = false
+    updateList.usb.disabled1 = true
   }
   else if (vendorId === 0x2FE5 && productId === 0x0005) {
-    updateList.spi.disabled = false
+    updateList.spi.disabled1 = true
   }
 
   const currentDevice = userStore.devices.find(item => item.vendorId === vendorId && item.productId === productId)
 
-  console.log('currentDevice====', currentDevice)
-
   const res = await transport.value.send([currentDevice?.sendData])
+
+  // 获取另外一个芯片 USB PHY 的版本号
+  const PhyRes = await transport.value.send([0x21])
 
   const version = combineLowAndHigh8Bits(res[3], res[4])
 
   switch (currentDevice?.name) {
     case '接收器':
-      updateList.spi.version = String(version)
+      updateList.spi.version = `${String(version)}.${combineLowAndHigh8Bits(PhyRes[3], PhyRes[4])}`
       currentUpdateKey.value = 'spi'
       break
     case '鼠标':
-      updateList.usb.version = String(version)
+      updateList.usb.version = `${String(version)}.${combineLowAndHigh8Bits(PhyRes[3], PhyRes[4])}`
       currentUpdateKey.value = 'usb'
       break
   }
-
-  // 获取另外一个芯片 USB PHY 的版本号
-  const PhyRes = await transport.value.send([0x21])
-  updateList.usb.version = `${updateList.usb.version}.${combineLowAndHigh8Bits(PhyRes[3], PhyRes[4])}`
 }
 
 const isMSDevice = ref(false)
@@ -440,8 +441,10 @@ function onClose() {
 
 async function getLatestVersion() {
   await userStore.fetchLatestVersion()
-  updateList.spi.latestVersion = userStore.latestVersion.version
-  updateList.usb.latestVersion = userStore.latestVersion.version
+  updateList.spi.latestVersion = userStore.latestVersion.adapterVersion
+  updateList.usb.latestVersion = userStore.latestVersion.mouseVersion
+  updateList.usb.disabled = !!userStore.latestVersion.usbFilePath
+  updateList.spi.disabled = !!userStore.latestVersion.spiFilePath
 }
 
 async function fetchWithProgress(url: string, onProgress: (progress: string) => void) {
@@ -495,8 +498,14 @@ async function fetchWithProgress(url: string, onProgress: (progress: string) => 
 }
 
 async function onClickUpdate(type: 'spi' | 'usb') {
-
-  
+  if (type === 'spi' && !updateList.spi.disabled1) {
+    showMessage('请确认接收器已通过原装线连接')
+    return
+  }
+  if (type === 'usb' && !updateList.usb.disabled1) {
+    showMessage('请确认鼠标已通过原装线连接')
+    return
+  }
 
   // 如果有固件正在更新中，不允许触发新的更新
   if (updateList.spi.status === 'updating' || updateList.usb.status === 'updating') {
@@ -550,7 +559,18 @@ async function onClickUpdate(type: 'spi' | 'usb') {
   }
 }
 
+function getNewStatus(type, version, latestVersion) {
+  return version < latestVersion
+}
+
 onMounted(async () => {
+  autofit.init({
+    dh: 1080,
+    dw: 1920,
+    el: '#app',
+    resize: true,
+    allowScroll: true,
+  })
   getLatestVersion()
 })
 </script>
@@ -567,7 +587,7 @@ onMounted(async () => {
         {{ t('settings.title') }}
       </h1>
       <h1 class="mb-5 text-center text-xl">
-        {{ t('settings.versionTitle', { version: userStore.latestVersion.version }) }}
+        {{ t('settings.versionTitle', { version: updateList.usb.disabled1 ? userStore.latestVersion.mouseVersion : userStore.latestVersion.adapterVersion }) }}
       </h1>
 
       <div class="mb-20 flex items-center justify-center text-start">
@@ -577,10 +597,10 @@ onMounted(async () => {
 
       <div class="align-center flex justify-between">
         <!-- (item.version < item.latestVersion) &&  -->
-        <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="!item.disabled ? '' : 'opacity-50 pointer-events-none'">
+        <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="item.disabled ? '' : 'opacity-50 pointer-events-none'">
           <div class="w-100% flex items-center justify-between">
             <div>{{ item.title }}： {{ item.version }}</div>
-            <ElBadge :value="userStore.latestVersion.version !== (`${item.version}`) ? 'new' : ''">
+            <ElBadge :value="getNewStatus(index, item.version, item.latestVersion) ? 'new' : ''">
               <!-- exe 环境：显示"选择文件"按钮 -->
               <ElButton v-if="isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
                 选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
@@ -593,7 +613,9 @@ onMounted(async () => {
             </ElBadge>
           </div>
           <img class="h-[80px]" :src="item.img" alt="img">
-          <div>*{{ item.hint1 }}*</div>
+          <div :style="{ color: (index === 'usb' && !item.disabled1) || (index === 'spi' && !item.disabled1) ? 'red' : '' }">
+            *{{ item.hint1 }}*
+          </div>
           <ElProgress class="w-full" :percentage="item.progress" :status="item.progress == 100 ? 'success' : ''" :stroke-width="10" :striped="item.progress !== 100" striped-flow :duration="10" :show-text="false" />
           <div v-if="item.status === 'updateFailed'" class="color-red">
             {{ item.errorHint }}

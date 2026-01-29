@@ -28,6 +28,7 @@ export function getImagePaths(): string[] {
       '/v9/wenhao_active.png',
       '/v9/setting.png',
       '/v9/setting_active.png',
+
       // Root level images
       '/background.png',
       '/logo.png',

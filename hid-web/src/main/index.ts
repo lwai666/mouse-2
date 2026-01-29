@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, session, shell } from 'electron'
 
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/icon.png'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = join(__filename, '..')

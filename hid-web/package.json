@@ -8,7 +8,7 @@
   "scripts": {
     "start": "pnpm --filter mouse-hid-backend start",
     "build": "vite build",
-    "dev": "vite --port 3010 --open",
+    "dev": "vite --port 9000 --open",
     "lint": "eslint .",
     "preview": "vite preview",
     "preview-https": "serve dist",

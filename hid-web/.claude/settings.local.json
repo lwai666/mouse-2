@@ -15,7 +15,11 @@
       "Bash(gh release create:*)",
       "Bash(where:*)",
       "Bash(pnpm build:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(pnpm start:*)",
+      "Bash(pnpm rebuild:*)",
+      "Bash(cat:*)",
+      "Bash(npm rebuild:*)"
     ]
   }
 }
