@@ -468,6 +468,7 @@ async function markFirmwareUpdated() {
 }
 
 async function getLatestVersion() {
+
   await userStore.fetchLatestVersion()
   updateList.spi.latestVersion = userStore.latestVersion.adapterVersion
   updateList.usb.latestVersion = userStore.latestVersion.mouseVersion
@@ -646,10 +647,10 @@ onMounted(async () => {
 
       <div class="align-center flex justify-between">
         <!-- (item.version < item.latestVersion) &&  -->
-        <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="!item.disabled ? '' : 'opacity-50 pointer-events-none'">
+        <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="item.disabled ? '' : 'opacity-50 pointer-events-none'">
           <div class="w-100% flex items-center justify-between">
             <div>{{ item.title }}： {{ item.version }}</div>
-            <ElBadge :value="!item.disabled ? 'new' : ''">
+            <ElBadge :value="item.disabled ? 'new' : ''">
               <!-- exe 环境：显示"选择文件"按钮 -->
               <ElButton v-if="isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
                 选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
