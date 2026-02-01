@@ -70,6 +70,24 @@ useTransportWebHID('v8', async (instance) => {
 
   navigator.hid.addEventListener('disconnect', (event) => {
     console.log('设备断开连接:', event.device)
+      const { productId, vendorId } = event.device
+      if (vendorId === 0x2FE3 && productId === 0x0007) {
+          updateList.usb.disabled1 = false
+      } else if (vendorId === 0x2FE5 && productId === 0x0005) {
+        updateList.spi.disabled1 = false
+      }
+  })
+
+  navigator.hid.addEventListener('connect', (event) => {
+    console.log('设备连接:', event.device)
+    const { productId, vendorId } = event.device
+
+    if (vendorId === 0x2FE3 && productId === 0x0007) {
+        updateList.usb.disabled1 = true
+    } else if (vendorId === 0x2FE5 && productId === 0x0005) {
+      updateList.spi.disabled1 = true
+    }
+
   })
 })
 
