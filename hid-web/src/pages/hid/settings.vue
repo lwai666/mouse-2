@@ -4,16 +4,18 @@ import autofit from 'autofit.js'
 import { ElBadge, ElButton, ElInput, ElMessageBox, ElProgress } from 'element-plus'
 import { useApiConfig } from '~/composables/useApiConfig'
 import { combineLowAndHigh8Bits, sleep } from '~/utils'
-import { useTransportWebHID } from '~/utils/hidHandle'
+import { createTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 // import { stringSplit } from '~/utils';
 
 const { t } = useI18n()
 const router = useRouter()
 const userStore = useUserStore()
-const { isElectron, getApiUrl } = useApiConfig()
+const { isElectron } = useApiConfig()
 
 const transport = ref()
+const adapterTransport = ref()
+
 const inputDataList = ref<string[]>([])
 const bin_Uint8Array = ref<Uint8Array>()
 
@@ -61,7 +63,7 @@ useTransportWebHID('v8', async (instance) => {
     return
   }
 
-  await getVersion()
+  await getVersion(transport.value)
 
   // // 测试代码
   // transport.value.setHandler((data: Uint8Array) => {
@@ -75,6 +77,10 @@ useTransportWebHID('v8', async (instance) => {
           updateList.usb.disabled1 = false
       } else if (vendorId === 0x2FE5 && productId === 0x0005) {
         updateList.spi.disabled1 = false
+        // 接收器断开，清除 adapterTransport
+        if (adapterTransport.value?.device?.productId === productId && adapterTransport.value?.device?.vendorId === vendorId) {
+          adapterTransport.value = null
+        }
       }
   })
 
@@ -92,8 +98,14 @@ useTransportWebHID('v8', async (instance) => {
 })
 
 // 获取版本号
-async function getVersion() {
-  const { productId, vendorId } = transport.value.device
+async function getVersion(transportInstance?: any) {
+  const currentTransport = transportInstance || transport.value
+  if (!currentTransport) {
+    console.error('设备未连接')
+    return
+  }
+
+  const { productId, vendorId } = currentTransport.device
 
   if (vendorId === 0x2FE3 && productId === 0x0007) {
     updateList.usb.disabled1 = true
@@ -104,10 +116,10 @@ async function getVersion() {
 
   const currentDevice = userStore.devices.find(item => item.vendorId === vendorId && item.productId === productId)
 
-  const res = await transport.value.send([currentDevice?.sendData])
+  const res = await currentTransport.send([currentDevice?.sendData])
 
   // 获取另外一个芯片 USB PHY 的版本号
-  const PhyRes = await transport.value.send([0x21])
+  const PhyRes = await currentTransport.send([0x21])
 
   const version = combineLowAndHigh8Bits(res[3], res[4])
 
@@ -289,12 +301,17 @@ function selectFileHandle(event: any) {
   }
 }
 
+// 获取当前对应的 transport
+function getTransport() {
+  return currentUpdateKey.value === 'spi' ? adapterTransport.value : transport.value
+}
+
 async function sendSpiBoot(data: any) {
-  await transport.value.send([0x85, 0, 0, 0, ...data])
+  await getTransport().send([0x85, 0, 0, 0, ...data])
 }
 
 async function sendUsbBoot(data: any) {
-  await transport.value.send([0x86, 0, 0, ...data])
+  await getTransport().send([0x86, 0, 0, ...data])
 }
 
 // 字节数组转32位整数（大端序）
@@ -305,7 +322,7 @@ function bytesToUint32(bytes: Uint8Array): number {
 async function sendFirmwareSize(firmware: Uint8Array) {
   const byte = firmware?.byteLength || 0
   const fw_size = [byte & 0xFF, byte >> 8 & 0xFF, byte >> 16 & 0xFF, byte >> 24 & 0xFF]
-  await transport.value.send([0x87, 0x00, 0x00, 0x04, ...fw_size], 20000) // 这里响应慢，给 20 秒超时时间
+  await getTransport().send([0x87, 0x00, 0x00, 0x04, ...fw_size], 20000) // 这里响应慢，给 20 秒超时时间
 }
 
 function setProgress(progress: number) {
@@ -318,7 +335,7 @@ async function sendFirmware(firmware: Uint8Array) {
     const byte = num - 1 - i
     const data = firmware.slice(i * 57, (i + 1) * 57)
     try {
-      await transport.value.send([0x88, ...[byte & 0xFF, byte >> 8], data.length, ...data])
+      await getTransport().send([0x88, ...[byte & 0xFF, byte >> 8], data.length, ...data])
     }
     catch (err) {
       console.error(err)
@@ -331,11 +348,11 @@ async function sendFirmware(firmware: Uint8Array) {
 
 async function sendFirmwareChecksum(checksum: number) {
   const checksumBytes = [checksum & 0xFF, checksum >> 8 & 0xFF, checksum >> 16 & 0xFF, checksum >> 24 & 0xFF]
-  await transport.value.send([0x89, 0x00, 0x00, 0x04, ...checksumBytes], 5000) // 这里响应慢，给 5 秒超时时间
+  await getTransport().send([0x89, 0x00, 0x00, 0x04, ...checksumBytes], 5000) // 这里响应慢，给 5 秒超时时间
 }
 
 async function quitBoot() {
-  await transport.value.send([0x8A])
+  await getTransport().send([0x8A])
 }
 
 // 一键升级功能 - 使用新协议的固件包格式
@@ -346,98 +363,88 @@ async function onClickStartUpdate() {
   }
 
   try {
-    // 一键更新：更新所有有数据的固件（SPI 和 USB）
-    const updateTasks: Array<'spi' | 'usb'> = []
+    // 根据 currentUpdateKey.value 判断更新哪个固件
+    const type = currentUpdateKey.value
+    const firmwareData = type === 'spi' ? uint8ArrayObj.SPI : uint8ArrayObj.USB
 
-    // 检查哪些固件需要更新
-    if (uint8ArrayObj.SPI.size > 0) {
-      updateTasks.push('spi')
-    }
-    if (uint8ArrayObj.USB.size > 0) {
-      updateTasks.push('usb')
-    }
-
-    if (updateTasks.length === 0) {
-      console.error('固件文件中没有有效的固件数据')
+    if (firmwareData.size === 0) {
+      console.error(`固件文件中没有有效的 ${type.toUpperCase()} 固件数据`)
       return
     }
 
-    // 依次更新每个固件
-    for (const type of updateTasks) {
-      if (type === 'spi') {
-        console.log('开始更新 SPI 固件...')
-        currentUpdate.value.status = 'updating'
-        currentUpdate.value.progress = 0
+    if (type === 'spi') {
+      console.log('开始更新 SPI 固件...')
+      currentUpdate.value.status = 'updating'
+      currentUpdate.value.progress = 0
 
-        // 1. 进入 SPI BOOT 模式，发送头信息（0-31字节）+ spiInfoBytes（32-47字节）
-        const spiBootData = new Uint8Array([
-          ...uint8ArrayObj.headerBytes,
-          ...uint8ArrayObj.projectBytes,
-          ...uint8ArrayObj.spiInfoBytes,
-        ])
-        await sendSpiBoot(spiBootData)
-        console.log('发送 SPI BOOT 头信息（48字节）')
-        setProgress(10)
+      // 1. 进入 SPI BOOT 模式，发送头信息（0-31字节）+ spiInfoBytes（32-47字节）
+      const spiBootData = new Uint8Array([
+        ...uint8ArrayObj.headerBytes,
+        ...uint8ArrayObj.projectBytes,
+        ...uint8ArrayObj.spiInfoBytes,
+      ])
+      await sendSpiBoot(spiBootData)
+      console.log('发送 SPI BOOT 头信息（48字节）')
+      setProgress(10)
 
-        // 2. 发送固件大小
-        await sendFirmwareSize(uint8ArrayObj.SPI.firmware!)
-        console.log(`发送 SPI 固件大小: ${uint8ArrayObj.SPI.firmware!.length} 字节`)
-        setProgress(20)
+      // 2. 发送固件大小
+      await sendFirmwareSize(uint8ArrayObj.SPI.firmware!)
+      console.log(`发送 SPI 固件大小: ${uint8ArrayObj.SPI.firmware!.length} 字节`)
+      setProgress(20)
 
-        // 3. 发送固件数据
-        await sendFirmware(uint8ArrayObj.SPI.firmware!)
-        console.log('发送 SPI 固件数据完成')
-        setProgress(80)
+      // 3. 发送固件数据
+      await sendFirmware(uint8ArrayObj.SPI.firmware!)
+      console.log('发送 SPI 固件数据完成')
+      setProgress(80)
 
-        // 4. 发送固件 checksum
-        await sendFirmwareChecksum(uint8ArrayObj.SPI.checksum)
-        console.log(`发送 SPI 固件 checksum: ${uint8ArrayObj.SPI.checksum}`)
-        setProgress(100)
+      // 4. 发送固件 checksum
+      await sendFirmwareChecksum(uint8ArrayObj.SPI.checksum)
+      console.log(`发送 SPI 固件 checksum: ${uint8ArrayObj.SPI.checksum}`)
+      setProgress(100)
 
-        // 5. 退出 BOOT 模式
-        quitBoot()
-        console.log('SPI 固件更新完成，退出 BOOT')
-      }
-      else if (type === 'usb') {
-        console.log('开始更新 USB 固件...')
-        currentUpdate.value.status = 'updating'
-        currentUpdate.value.progress = 0
+      // 5. 退出 BOOT 模式
+      await quitBoot()
+      console.log('SPI 固件更新完成，退出 BOOT')
+    }
+    else if (type === 'usb') {
+      console.log('开始更新 USB 固件...')
+      currentUpdate.value.status = 'updating'
+      currentUpdate.value.progress = 0
 
-        // 1. 进入 USB BOOT 模式，发送头信息（0-31字节）+ usbInfoBytes（48-63字节）
-        const usbBootData = new Uint8Array([
-          ...uint8ArrayObj.headerBytes,
-          ...uint8ArrayObj.projectBytes,
-          ...uint8ArrayObj.usbInfoBytes,
-        ])
-        await sendUsbBoot(usbBootData)
-        console.log('发送 USB BOOT 头信息（48字节）')
-        setProgress(10)
+      // 1. 进入 USB BOOT 模式，发送头信息（0-31字节）+ usbInfoBytes（48-63字节）
+      const usbBootData = new Uint8Array([
+        ...uint8ArrayObj.headerBytes,
+        ...uint8ArrayObj.projectBytes,
+        ...uint8ArrayObj.usbInfoBytes,
+      ])
+      await sendUsbBoot(usbBootData)
+      console.log('发送 USB BOOT 头信息（48字节）')
+      setProgress(10)
 
-        // 2. 发送固件大小
-        await sendFirmwareSize(uint8ArrayObj.USB.firmware!)
-        console.log(`发送 USB 固件大小: ${uint8ArrayObj.USB.firmware!.length} 字节`)
-        setProgress(20)
+      // 2. 发送固件大小
+      await sendFirmwareSize(uint8ArrayObj.USB.firmware!)
+      console.log(`发送 USB 固件大小: ${uint8ArrayObj.USB.firmware!.length} 字节`)
+      setProgress(20)
 
-        // 3. 发送固件数据
-        await sendFirmware(uint8ArrayObj.USB.firmware!)
-        console.log('发送 USB 固件数据完成')
-        setProgress(80)
+      // 3. 发送固件数据
+      await sendFirmware(uint8ArrayObj.USB.firmware!)
+      console.log('发送 USB 固件数据完成')
+      setProgress(80)
 
-        // 4. 发送固件 checksum
-        await sendFirmwareChecksum(uint8ArrayObj.USB.checksum)
-        console.log(`发送 USB 固件 checksum: ${uint8ArrayObj.USB.checksum}`)
-        setProgress(100)
+      // 4. 发送固件 checksum
+      await sendFirmwareChecksum(uint8ArrayObj.USB.checksum)
+      console.log(`发送 USB 固件 checksum: ${uint8ArrayObj.USB.checksum}`)
+      setProgress(100)
 
-        // 5. 退出 BOOT 模式
-        quitBoot()
-      }
+      // 5. 退出 BOOT 模式
+      await quitBoot()
+      console.log('USB 固件更新完成，退出 BOOT')
     }
 
     console.log('固件更新完成！')
     currentUpdate.value.status = 'updateCompleted'
 
-    // 标记已更新的固件
-    await markFirmwareUpdated()
+
 
     // 等待后重新加载
     await sleep(1000)
@@ -460,30 +467,41 @@ function onClose() {
   currentUpdate.value.status = 'updateNow'
 }
 
-// 标记固件已更新
-async function markFirmwareUpdated() {
+// 连接接收器设备
+async function connectAdapterDevice() {
   try {
-    const formData = new FormData()
-
-    // 根据当前更新的类型，设置对应的字段为空字符串
-    if (currentUpdateKey.value === 'spi') {
-      formData.append('spiFilePath', '')
-    }
-    else if (currentUpdateKey.value === 'usb') {
-      formData.append('usbFilePath', '')
-    }
-
-    await fetch(getApiUrl('api/upload-update-package'), {
-      method: 'POST',
-      body: formData,
+    adapterTransport.value = await createTransportWebHID({
+      id: 'v8',
+      filters: [
+        // 接收器设备
+        { vendorId: 0x2FE5, productId: 0x0005 }
+      ],
+      commandHandler: async (data) => {
+        // 处理响应数据
+      },
     })
 
-    console.log('固件更新标记成功', currentUpdateKey.value)
+    // 连接成功后获取版本号
+    await getAdapterVersion()
+
+    showMessage('接收器连接成功')
   }
   catch (error) {
-    console.error('标记固件更新失败:', error)
+    console.error('连接接收器失败:', error)
+    showMessage('接收器连接失败')
   }
 }
+
+// 获取接收器版本号
+async function getAdapterVersion() {
+  if (!adapterTransport.value) {
+    console.error('接收器未连接')
+    return
+  }
+
+  await getVersion(adapterTransport.value)
+}
+
 
 async function getLatestVersion() {
 
@@ -588,7 +606,7 @@ async function onClickUpdate(type: 'spi' | 'usb') {
   let url = `${import.meta.env.VITE_SERVER_API}/`
 
   if (type === 'spi') {
-    if (!userStore.latestVersion.usbFilePath) {
+    if (!userStore.latestVersion.spiFilePath) {
       showMessage(`未找到接收器固件信息!`)
       return
     }
@@ -627,9 +645,7 @@ async function onClickUpdate(type: 'spi' | 'usb') {
   }
 }
 
-function getNewStatus(type, version, latestVersion) {
-  return version < latestVersion
-}
+
 
 onMounted(async () => {
   autofit.init({
@@ -665,7 +681,7 @@ onMounted(async () => {
 
       <div class="align-center flex justify-between">
         <!-- (item.version < item.latestVersion) &&  -->
-        <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="item.disabled ? '' : 'opacity-50 pointer-events-none'">
+        <div v-for="(item, index) in updateList" :key="index" class="min-w-[300px] w-40% flex flex-col items-center gap-6 rounded-2xl" :class="(item.version < item.latestVersion) && item.disabled ? '' : 'opacity-50 pointer-events-none'">
           <div class="w-100% flex items-center justify-between">
             <div>{{ item.title }}： {{ item.version }} </div>
             <ElBadge :value="item.disabled ? 'new' : ''">
@@ -675,7 +691,17 @@ onMounted(async () => {
               </ElButton>
 
               <!-- 网页环境：显示"一键升级"按钮 -->
-              <ElButton v-if="!isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
+               
+              <ElButton v-if="!isElectron && index !== 'usb' && adapterTransport" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
+                立即更新
+              </ElButton>
+
+               <ElButton v-if="!isElectron && index !== 'usb' && !adapterTransport" :disabled="item.status !== 'updateNow'" type="primary" round @click="connectAdapterDevice">
+                获取当前接收器版本
+              </ElButton>
+
+               <!-- 网页环境：显示"一键升级"按钮 -->
+              <ElButton v-if="!isElectron && index == 'usb'" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
                 立即更新
               </ElButton>
             </ElBadge>
