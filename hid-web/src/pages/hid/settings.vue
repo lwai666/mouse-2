@@ -72,16 +72,17 @@ useTransportWebHID('v8', async (instance) => {
 
   navigator.hid.addEventListener('disconnect', (event) => {
     console.log('设备断开连接:', event.device)
-      const { productId, vendorId } = event.device
-      if (vendorId === 0x2FE3 && productId === 0x0007) {
-          updateList.usb.disabled1 = false
-      } else if (vendorId === 0x2FE5 && productId === 0x0005) {
-        updateList.spi.disabled1 = false
-        // 接收器断开，清除 adapterTransport
-        if (adapterTransport.value?.device?.productId === productId && adapterTransport.value?.device?.vendorId === vendorId) {
-          adapterTransport.value = null
-        }
+    const { productId, vendorId } = event.device
+    if (vendorId === 0x2FE3 && productId === 0x0007) {
+      updateList.usb.disabled1 = false
+    }
+    else if (vendorId === 0x2FE5 && productId === 0x0005) {
+      updateList.spi.disabled1 = false
+      // 接收器断开，清除 adapterTransport
+      if (adapterTransport.value?.device?.productId === productId && adapterTransport.value?.device?.vendorId === vendorId) {
+        adapterTransport.value = null
       }
+    }
   })
 
   navigator.hid.addEventListener('connect', (event) => {
@@ -89,11 +90,11 @@ useTransportWebHID('v8', async (instance) => {
     const { productId, vendorId } = event.device
 
     if (vendorId === 0x2FE3 && productId === 0x0007) {
-        updateList.usb.disabled1 = true
-    } else if (vendorId === 0x2FE5 && productId === 0x0005) {
+      updateList.usb.disabled1 = true
+    }
+    else if (vendorId === 0x2FE5 && productId === 0x0005) {
       updateList.spi.disabled1 = true
     }
-
   })
 })
 
@@ -356,6 +357,8 @@ async function quitBoot() {
 }
 
 // 一键升级功能 - 使用新协议的固件包格式
+
+// 一键升级功能 - 使用新协议的固件包格式
 async function onClickStartUpdate() {
   if (!uint8ArrayObj) {
     console.error('请先选择固件文件')
@@ -363,88 +366,95 @@ async function onClickStartUpdate() {
   }
 
   try {
-    // 根据 currentUpdateKey.value 判断更新哪个固件
-    const type = currentUpdateKey.value
-    const firmwareData = type === 'spi' ? uint8ArrayObj.SPI : uint8ArrayObj.USB
+    // 一键更新：更新所有有数据的固件（SPI 和 USB）
+    const updateTasks: Array<'spi' | 'usb'> = []
 
-    if (firmwareData.size === 0) {
-      console.error(`固件文件中没有有效的 ${type.toUpperCase()} 固件数据`)
+    // 检查哪些固件需要更新
+    if (uint8ArrayObj.SPI.size > 0) {
+      updateTasks.push('spi')
+    }
+    if (uint8ArrayObj.USB.size > 0) {
+      updateTasks.push('usb')
+    }
+
+    if (updateTasks.length === 0) {
+      console.error('固件文件中没有有效的固件数据')
       return
     }
 
-    if (type === 'spi') {
-      console.log('开始更新 SPI 固件...')
-      currentUpdate.value.status = 'updating'
-      currentUpdate.value.progress = 0
+    // 依次更新每个固件
+    for (const type of updateTasks) {
+      if (type === 'spi') {
+        console.log('开始更新 SPI 固件...')
+        currentUpdate.value.status = 'updating'
+        currentUpdate.value.progress = 0
 
-      // 1. 进入 SPI BOOT 模式，发送头信息（0-31字节）+ spiInfoBytes（32-47字节）
-      const spiBootData = new Uint8Array([
-        ...uint8ArrayObj.headerBytes,
-        ...uint8ArrayObj.projectBytes,
-        ...uint8ArrayObj.spiInfoBytes,
-      ])
-      await sendSpiBoot(spiBootData)
-      console.log('发送 SPI BOOT 头信息（48字节）')
-      setProgress(10)
+        // 1. 进入 SPI BOOT 模式，发送头信息（0-31字节）+ spiInfoBytes（32-47字节）
+        const spiBootData = new Uint8Array([
+          ...uint8ArrayObj.headerBytes,
+          ...uint8ArrayObj.projectBytes,
+          ...uint8ArrayObj.spiInfoBytes,
+        ])
+        await sendSpiBoot(spiBootData)
+        console.log('发送 SPI BOOT 头信息（48字节）')
+        setProgress(10)
 
-      // 2. 发送固件大小
-      await sendFirmwareSize(uint8ArrayObj.SPI.firmware!)
-      console.log(`发送 SPI 固件大小: ${uint8ArrayObj.SPI.firmware!.length} 字节`)
-      setProgress(20)
+        // 2. 发送固件大小
+        await sendFirmwareSize(uint8ArrayObj.SPI.firmware!)
+        console.log(`发送 SPI 固件大小: ${uint8ArrayObj.SPI.firmware!.length} 字节`)
+        setProgress(20)
 
-      // 3. 发送固件数据
-      await sendFirmware(uint8ArrayObj.SPI.firmware!)
-      console.log('发送 SPI 固件数据完成')
-      setProgress(80)
+        // 3. 发送固件数据
+        await sendFirmware(uint8ArrayObj.SPI.firmware!)
+        console.log('发送 SPI 固件数据完成')
+        setProgress(80)
 
-      // 4. 发送固件 checksum
-      await sendFirmwareChecksum(uint8ArrayObj.SPI.checksum)
-      console.log(`发送 SPI 固件 checksum: ${uint8ArrayObj.SPI.checksum}`)
-      setProgress(100)
+        // 4. 发送固件 checksum
+        await sendFirmwareChecksum(uint8ArrayObj.SPI.checksum)
+        console.log(`发送 SPI 固件 checksum: ${uint8ArrayObj.SPI.checksum}`)
+        setProgress(100)
 
-      // 5. 退出 BOOT 模式
-      await quitBoot()
-      console.log('SPI 固件更新完成，退出 BOOT')
-    }
-    else if (type === 'usb') {
-      console.log('开始更新 USB 固件...')
-      currentUpdate.value.status = 'updating'
-      currentUpdate.value.progress = 0
+        // 5. 退出 BOOT 模式
+        quitBoot()
+        console.log('SPI 固件更新完成，退出 BOOT')
+      }
+      else if (type === 'usb') {
+        console.log('开始更新 USB 固件...')
+        currentUpdate.value.status = 'updating'
+        currentUpdate.value.progress = 0
 
-      // 1. 进入 USB BOOT 模式，发送头信息（0-31字节）+ usbInfoBytes（48-63字节）
-      const usbBootData = new Uint8Array([
-        ...uint8ArrayObj.headerBytes,
-        ...uint8ArrayObj.projectBytes,
-        ...uint8ArrayObj.usbInfoBytes,
-      ])
-      await sendUsbBoot(usbBootData)
-      console.log('发送 USB BOOT 头信息（48字节）')
-      setProgress(10)
+        // 1. 进入 USB BOOT 模式，发送头信息（0-31字节）+ usbInfoBytes（48-63字节）
+        const usbBootData = new Uint8Array([
+          ...uint8ArrayObj.headerBytes,
+          ...uint8ArrayObj.projectBytes,
+          ...uint8ArrayObj.usbInfoBytes,
+        ])
+        await sendUsbBoot(usbBootData)
+        console.log('发送 USB BOOT 头信息（48字节）')
+        setProgress(10)
 
-      // 2. 发送固件大小
-      await sendFirmwareSize(uint8ArrayObj.USB.firmware!)
-      console.log(`发送 USB 固件大小: ${uint8ArrayObj.USB.firmware!.length} 字节`)
-      setProgress(20)
+        // 2. 发送固件大小
+        await sendFirmwareSize(uint8ArrayObj.USB.firmware!)
+        console.log(`发送 USB 固件大小: ${uint8ArrayObj.USB.firmware!.length} 字节`)
+        setProgress(20)
 
-      // 3. 发送固件数据
-      await sendFirmware(uint8ArrayObj.USB.firmware!)
-      console.log('发送 USB 固件数据完成')
-      setProgress(80)
+        // 3. 发送固件数据
+        await sendFirmware(uint8ArrayObj.USB.firmware!)
+        console.log('发送 USB 固件数据完成')
+        setProgress(80)
 
-      // 4. 发送固件 checksum
-      await sendFirmwareChecksum(uint8ArrayObj.USB.checksum)
-      console.log(`发送 USB 固件 checksum: ${uint8ArrayObj.USB.checksum}`)
-      setProgress(100)
+        // 4. 发送固件 checksum
+        await sendFirmwareChecksum(uint8ArrayObj.USB.checksum)
+        console.log(`发送 USB 固件 checksum: ${uint8ArrayObj.USB.checksum}`)
+        setProgress(100)
 
-      // 5. 退出 BOOT 模式
-      await quitBoot()
-      console.log('USB 固件更新完成，退出 BOOT')
+        // 5. 退出 BOOT 模式
+        quitBoot()
+      }
     }
 
     console.log('固件更新完成！')
     currentUpdate.value.status = 'updateCompleted'
-
-
 
     // 等待后重新加载
     await sleep(1000)
@@ -474,7 +484,7 @@ async function connectAdapterDevice() {
       id: 'v8',
       filters: [
         // 接收器设备
-        { vendorId: 0x2FE5, productId: 0x0005 }
+        { vendorId: 0x2FE5, productId: 0x0005 },
       ],
       commandHandler: async (data) => {
         // 处理响应数据
@@ -502,9 +512,7 @@ async function getAdapterVersion() {
   await getVersion(adapterTransport.value)
 }
 
-
 async function getLatestVersion() {
-
   await userStore.fetchLatestVersion()
   updateList.spi.latestVersion = userStore.latestVersion.adapterVersion
   updateList.usb.latestVersion = userStore.latestVersion.mouseVersion
@@ -645,8 +653,6 @@ async function onClickUpdate(type: 'spi' | 'usb') {
   }
 }
 
-
-
 onMounted(async () => {
   autofit.init({
     dh: 1080,
@@ -691,16 +697,16 @@ onMounted(async () => {
               </ElButton>
 
               <!-- 网页环境：显示"一键升级"按钮 -->
-               
+
               <ElButton v-if="!isElectron && index !== 'usb' && adapterTransport" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
                 立即更新
               </ElButton>
 
-               <ElButton v-if="!isElectron && index !== 'usb' && !adapterTransport" :disabled="item.status !== 'updateNow'" type="primary" round @click="connectAdapterDevice">
+              <ElButton v-if="!isElectron && index !== 'usb' && !adapterTransport" :disabled="item.status !== 'updateNow'" type="primary" round @click="connectAdapterDevice">
                 获取当前接收器版本
               </ElButton>
 
-               <!-- 网页环境：显示"一键升级"按钮 -->
+              <!-- 网页环境：显示"一键升级"按钮 -->
               <ElButton v-if="!isElectron && index == 'usb'" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
                 立即更新
               </ElButton>
@@ -838,7 +844,8 @@ onMounted(async () => {
 }
 
 @keyframes boxGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow:
       0 0 20px rgba(64, 158, 255, 0.3),
       0 0 40px rgba(64, 158, 255, 0.2),
@@ -869,7 +876,9 @@ onMounted(async () => {
   font-weight: 600 !important;
   color: #409eff !important;
   letter-spacing: 0.5px !important;
-  text-shadow: 0 0 10px rgba(64, 158, 255, 0.8), 0 0 20px rgba(64, 158, 255, 0.4) !important;
+  text-shadow:
+    0 0 10px rgba(64, 158, 255, 0.8),
+    0 0 20px rgba(64, 158, 255, 0.4) !important;
 }
 
 .update-confirm-box .el-message-box__content {
@@ -925,7 +934,9 @@ onMounted(async () => {
     0 0 20px rgba(64, 158, 255, 0.5),
     0 4px 20px rgba(64, 158, 255, 0.3),
     inset 0 0 15px rgba(255, 255, 255, 0.1) !important;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4) !important;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(255, 255, 255, 0.4) !important;
 }
 
 .update-confirm-box .el-button--primary:hover {
@@ -935,6 +946,8 @@ onMounted(async () => {
     0 6px 25px rgba(64, 158, 255, 0.5),
     inset 0 0 20px rgba(255, 255, 255, 0.15) !important;
   transform: translateY(-1px) !important;
-  text-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 25px rgba(255, 255, 255, 0.6) !important;
+  text-shadow:
+    0 0 15px rgba(255, 255, 255, 1),
+    0 0 25px rgba(255, 255, 255, 0.6) !important;
 }
 </style>
