@@ -493,19 +493,11 @@ async function connectAdapterDevice() {
 
     // 连接成功后获取版本号
     await getAdapterVersion()
-
-    showMessage('接收器连接成功')
   }
-  catch (error) {
-    console.error('连接接收器失败:', error)
-    showMessage('接收器连接失败')
-  }
-}
 
 // 获取接收器版本号
 async function getAdapterVersion() {
   if (!adapterTransport.value) {
-    console.error('接收器未连接')
     return
   }
 
