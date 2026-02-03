@@ -494,6 +494,10 @@ async function connectAdapterDevice() {
     // 连接成功后获取版本号
     await getAdapterVersion()
   }
+  catch (err) {
+    console.error('连接接收器失败', err)
+  }
+}
 
 // 获取接收器版本号
 async function getAdapterVersion() {
