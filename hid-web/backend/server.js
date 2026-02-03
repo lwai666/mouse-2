@@ -99,11 +99,11 @@ app.post('/api/upload-update-package', upload.fields([
         const updateValues = []
 
         // 只更新传了的字段
-        if (adapterVersion !== undefined) {
+        if (adapterVersion !== undefined && adapterVersion !== '') {
           updateFields.push('adapter_version = ?')
           updateValues.push(adapterVersion)
         }
-        if (mouseVersion !== undefined) {
+        if (mouseVersion !== undefined && mouseVersion !== '') {
           updateFields.push('mouse_version = ?')
           updateValues.push(mouseVersion)
         }
@@ -126,26 +126,18 @@ app.post('/api/upload-update-package', upload.fields([
 
         // 更新文件字段
         // 优先检查是否要标记为已更新（空字符串）
-        if (spiFilePath !== undefined) {
-          if (spiFilePath === '') {
-            updateFields.push('spi_file_path = NULL')
-          } else {
-            updateFields.push('spi_file_path = ?')
-            updateValues.push(spiFilePath)
-          }
+        if (spiFilePath !== undefined && spiFilePath !== '') {
+          updateFields.push('spi_file_path = ?')
+          updateValues.push(spiFilePath)
         } else if (spiFile) {
           // 如果上传了新文件
           updateFields.push('spi_file_path = ?')
           updateValues.push(spiFile.path)
         }
 
-        if (usbFilePath !== undefined) {
-          if (usbFilePath === '') {
-            updateFields.push('usb_file_path = NULL')
-          } else {
-            updateFields.push('usb_file_path = ?')
-            updateValues.push(usbFilePath)
-          }
+        if (usbFilePath !== undefined && usbFilePath !== '') {
+          updateFields.push('usb_file_path = ?')
+          updateValues.push(usbFilePath)
         } else if (usbFile) {
           // 如果上传了新文件
           updateFields.push('usb_file_path = ?')

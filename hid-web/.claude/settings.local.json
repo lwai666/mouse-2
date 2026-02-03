@@ -19,7 +19,8 @@
       "Bash(pnpm start:*)",
       "Bash(pnpm rebuild:*)",
       "Bash(cat:*)",
-      "Bash(npm rebuild:*)"
+      "Bash(npm rebuild:*)",
+      "Bash(lsof:*)"
     ]
   }
 }
