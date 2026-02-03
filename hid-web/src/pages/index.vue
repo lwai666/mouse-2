@@ -38,8 +38,9 @@ const selectLanguageList = ref([
 const languageShow = ref(false)
 
 const slideshowList = computed(() => [
-  { title: t('index.pairingGuide'), type: 'img', img: `/slideshow/2.png` },
-  { title: t('index.schematicGuide'), type: 'component', component: 'MouseCarouseItem' },
+  { title:t('index.pairingGuide'), type: 'component', component: 'MouseCarouseItem' },
+  { title:t('index.schematicGuide'), type: 'img', img: `/slideshow/2.png` },
+
 ])
 
 const carouselRef = ref(null)
@@ -106,6 +107,12 @@ async function onAddNouseClick() {
     },
   })
 
+  let data = transport.value.send([0x2E, 0x00, 0x03])
+
+  console.log('send data====', data)
+
+
+
   if (transport.value) {
     const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
 
@@ -114,14 +121,14 @@ async function onAddNouseClick() {
     })
 
     if (flag) {
-      router.push(`/hid/v8`)
+      // router.push(`/hid/v8`)
       localStorage.setItem('tabActive', 'performance')
       return
     }
     transportList.value.push({ ...transport.value, productId: transport.value.device.productId, vendorId: transport.value.device.vendorId, productName: transport.value.device.productName, collections: transport.value.device.collections })
     localStorage.setItem('transportList', JSON.stringify(transportList.value))
     localStorage.setItem('tabActive', 'performance')
-    router.push(`/hid/v8`)
+    // router.push(`/hid/v8`)
   }
 }
 
@@ -198,31 +205,32 @@ function sortedColorItems(mouseColor: any) {
 
   return filteredItems
 }
-function onDisconnect() {
-  instanceRef.value = null
-}
+// function onDisconnect() {
+//   instanceRef.value = null
+// }
 
-useTransportWebHID('v8', async (instance) => {
-  instanceRef.value = instance
-  transport.value = instance
-  // 监听鼠标断开
-  navigator.hid.addEventListener('disconnect', onDisconnect)
-})
+// useTransportWebHID('v8', async (instance) => {
+
+//   instanceRef.value = instance
+//   transport.value = instance
+//   // 监听鼠标断开
+//   navigator.hid.addEventListener('disconnect', onDisconnect)
+// })
 
 async function setColor(mode: any, profileInfo: any) {
-  if (profileInfo.mouseColor === mode.id) {
-    return
-  }
-  profileInfo.mouseColor = mode.id
-  await instanceRef.value.send([0x29, 0x00, 0x00, mode.id])
+  // if (profileInfo.mouseColor === mode.id) {
+  //   return
+  // }
+  // profileInfo.mouseColor = mode.id
+  // await instanceRef.value.send([0x29, 0x00, 0x00, mode.id])
 
-  transportList.value = transportList.value.map((item: any) => {
-    if (item.reportId === transport.value.reportId) {
-      item.mouseColor = mode.id
-    }
-    return item
-  })
-  localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  // transportList.value = transportList.value.map((item: any) => {
+  //   if (item.reportId === transport.value.reportId) {
+  //     item.mouseColor = mode.id
+  //   }
+  //   return item
+  // })
+  // localStorage.setItem('transportList', JSON.stringify(transportList.value))
 }
 
 // 滚动容器相关
@@ -334,12 +342,23 @@ watch(() => transportList.value, () => {
           <div
             v-for="item in transportList"
             :key="item.reportId"
-            class="relative mb-5 flex flex-shrink-0 items-center justify-center"
-            style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px; border: 1px solid rgba(255, 255, 255, 0.4);"
+            class="relative mb-5 flex flex-shrink-0 items-center"
+            style="width: 231px;
+            height: 248px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1); 
+            margin-right: 10px; 
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            flex-direction: column;
+            padding-top: 15px;"
             @click="onNouseClick(item)"
           >
+            <p  style="color: #fff; font-weight: bold;font-size: 18px;">
+              {{ item.productName }}
+            </p>
+
             <img
-              style="width: 84px; height:142px;object-fit: contain;"
+              style="width: 84px; height:142px;object-fit: contain;margin-top: 10px;"
               :src="`/mouse_${{
                 3: 'black',
                 4: 'white',
@@ -347,11 +366,17 @@ watch(() => transportList.value, () => {
               alt=""
               srcset=""
             >
-            <p class="absolute bottom-1" style="color: black; font-weight: bold;font-size: 20px;">
-              {{ item.productName }}
-            </p>
 
-            <div class="color-box absolute right-3 top-5">
+            <div class="flex mt-3 ">
+              <img src="/v9/icon3.png" alt="" srcset="" class="mr-2" >
+              <img src="/v9/icon4.png" alt="" srcset="" class="mr-2" >
+              <img src="/v9/icon5.png" alt="" srcset="" class="mr-2">
+              <img src="/v9/icon6.png" alt="" srcset="" class="mr-2">
+            </div>
+
+            
+      
+            <div class="color-box absolute right-3 top-4">
               <div v-for="key in sortedColorItems(item.mouseColor)" :key="key.id" class="mb-2" :style="{ background: key.backgroundColor }" style="width: 18px;height: 18px; border-radius: 50%;" @click.stop="setColor(key, item)" />
             </div>
 
@@ -362,7 +387,7 @@ watch(() => transportList.value, () => {
 
           <div
             class="relative mb-5 flex flex-shrink-0 items-center justify-center"
-            style="width: 231px;height: 218px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;border: 1px solid rgba(255, 255, 255, 0.4);"
+            style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;border: 1px solid rgba(255, 255, 255, 0.4);"
             @click="onAddNouseClick"
           >
             <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
