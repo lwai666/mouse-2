@@ -3,7 +3,7 @@ import { CircleClose, Plus } from '@element-plus/icons-vue'
 
 import autofit from 'autofit.js'
 
-import { ElCarousel, ElCarouselItem } from 'element-plus'
+import { ElCarousel, ElCarouselItem, ElIcon } from 'element-plus'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -96,14 +96,15 @@ async function onNouseClick(item: any) {
 }
 
 async function onAddNouseClick() {
+  console.log("1=======")
   transport.value = await createTransportWebHID({
     id: 'v8',
     filters: [
       ...toRaw(userStore.devices),
       // 其他设备
       { vendorId: 0x1532, productId: 0x00BF },
-      // { vendorId: 0x3554, productId: 0xF5F7 },
-      // { vendorId: 0x3554, productId: 0xF5F4 },
+      { vendorId: 0x3554, productId: 0xF5F7 },
+      { vendorId: 0x3554, productId: 0xF5F4 },
     ],
     commandHandler: async (data) => {
       // console.log('接收的数据=======', data)

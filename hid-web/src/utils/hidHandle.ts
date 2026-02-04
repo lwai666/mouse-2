@@ -829,8 +829,48 @@ export async function HIDDeviceChangeTransportWebHID(devices: any, config: { id:
 }
 // 创建的时候
 export async function createTransportWebHID(config: { id: string, filters: HIDDeviceFilter[], commandHandler: CommandHandler }) {
-  const devices = typeof window !== 'undefined' ? await window.navigator.hid.requestDevice({ filters: config.filters }) : []
-  if (devices.length === 0) { return false }
+  if (typeof window === 'undefined') {
+    console.error('[createTransportWebHID] window is undefined')
+    return false
+  }
+
+  console.log('[createTransportWebHID] 开始请求设备，filters:', config.filters)
+  console.log('[createTransportWebHID] isElectron:', !!(window as any).electron)
+  console.log('[createTransportWebHID] navigator.hid 可用:', !!window.navigator.hid)
+
+  let devices: HIDDevice[] = []
+
+  try {
+    // 在 Electron 中，requestDevice 不会弹出对话框，而是直接返回匹配的设备
+    devices = await window.navigator.hid.requestDevice({ filters: config.filters })
+    console.log('[createTransportWebHID] requestDevice 返回:', devices)
+  } catch (error) {
+    console.error('[createTransportWebHID] requestDevice 错误:', error)
+  }
+
+  // // 如果 requestDevice 返回空数组，尝试使用 getDevices 获取已授权的设备
+  // if (devices.length === 0) {
+  //   console.log('[createTransportWebHID] requestDevice 返回空，尝试 getDevices')
+  //   try {
+  //     const allDevices = await window.navigator.hid.getDevices()
+  //     console.log('[createTransportWebHID] getDevices 返回:', allDevices)
+
+  //     // 过滤出匹配的设备
+  //     devices = allDevices.filter(device => {
+  //       return config.filters.some(filter =>
+  //         device.vendorId === filter.vendorId && device.productId === filter.productId
+  //       )
+  //     })
+  //     console.log('[createTransportWebHID] 过滤后的设备:', devices)
+  //   } catch (error) {
+  //     console.error('[createTransportWebHID] getDevices 错误:', error)
+  //   }
+  // }
+
+  if (devices.length === 0) {
+    console.error('[createTransportWebHID] 没有找到匹配的设备')
+    return false
+  }
 
   const currentTransportWebHID = transportWebHID?._s.get(config.id)
   // 多设备的话, 创建新的链接需要先断开之前的设备, 重新进行connect
@@ -848,6 +888,9 @@ export async function createTransportWebHID(config: { id: string, filters: HIDDe
     transportWebHID?._s.set(config.id, transport)
     return transport
   }
+
+  console.error('[createTransportWebHID] 没有找到支持 sendReport 的设备集合')
+  return false
 }
 
 // 进入设置页面获取当前实例

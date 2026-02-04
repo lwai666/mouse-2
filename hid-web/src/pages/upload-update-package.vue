@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { InfoFilled, Plus } from '@element-plus/icons-vue'
-import { ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElTooltip, ElUpload } from 'element-plus'
+import { ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElTooltip, ElUpload, ElIcon } from 'element-plus'
 import { reactive, ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'

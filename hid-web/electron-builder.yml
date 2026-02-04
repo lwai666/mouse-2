@@ -4,6 +4,7 @@ directories:
   buildResources: build
 files:
   - out/**/*            # electron-vite 编译后的 main/preload
+  - backend/**/*        # 后端文件 (server.js, database.js 等)
   - backend/dist/**/*   # vite 构建的前端产物
   - resources/**        # 资源文件
 asarUnpack:
