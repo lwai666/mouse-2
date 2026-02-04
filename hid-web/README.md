@@ -10,7 +10,7 @@ pnpm i
 pnpm dev
 pnpm run electron:dev  # 开发环境启动 PC 端应用
 ```
-打开 http://localhost:3333
+打开 http://localhost:3010
 
 ### 打包
 
