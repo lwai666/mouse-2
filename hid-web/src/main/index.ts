@@ -1,15 +1,43 @@
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { spawn } from 'node:child_process'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, session, shell } from 'electron'
 
-import icon from '../../resources/icon.png'
+import icon from '../../resources/icon.png?asset'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = join(__filename, '..')
 
 let mainWindow: BrowserWindow | null = null
-let hidDeviceCallback: ((deviceId: string) => void) | null = null
+let serverProcess: ReturnType<typeof spawn> | null = null
+
+/**
+ * 启动后端 Express 服务器
+ * 在生产环境，Electron 应用也会启动 Express 服务器
+ * 这样可以保持 Web 模式和 Electron 模式的一致性
+ */
+function startBackendServer() {
+  // 在开发环境使用当前工作目录，生产环境使用打包后的路径
+  const backendPath = is.dev
+    ? join(process.cwd(), 'backend/server.js')
+    : join(__dirname, '../../backend/server.js')
+
+  console.log('启动后端服务器:', backendPath)
+
+  serverProcess = spawn(process.execPath, [backendPath], {
+    env: { ...process.env, PORT: '3010' },
+    stdio: 'inherit',
+  })
+
+  serverProcess.on('error', (err) => {
+    console.error('启动后端服务器失败:', err)
+  })
+
+  serverProcess.on('exit', (code) => {
+    console.log('后端服务器退出，代码:', code)
+  })
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -58,11 +86,14 @@ function createWindow(): void {
     mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   }
   else {
-    // 生产环境：加载前端构建产物 (backend/dist/index.html)
-    // __dirname 在打包后是 app.asar/out/main，需要回退到 backend/dist
-    const htmlPath = join(__dirname, '../../backend/dist/index.html')
-    console.log('加载前端文件:', htmlPath)
-    mainWindow.loadFile(htmlPath)
+    // 生产环境：先启动后端 Express 服务器，然后加载 http://localhost:3010
+    // 这样可以保持 Web 模式和 Electron 模式的一致性
+    startBackendServer()
+
+    // 等待服务器启动后加载 URL
+    setTimeout(() => {
+      mainWindow?.loadURL('http://localhost:3010')
+    }, 1000)
   }
 }
 
@@ -154,5 +185,13 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+
+// 退出前清理后端服务器进程
+app.on('before-quit', () => {
+  if (serverProcess) {
+    console.log('关闭后端服务器')
+    serverProcess.kill()
   }
 })
