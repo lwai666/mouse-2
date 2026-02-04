@@ -1,13 +1,14 @@
 
 ## 使用方法
 
+
 ### 开发
 
 要开发应用程序，请运行
 ```bash
 pnpm i
 pnpm dev
-pnpm run electron:dev  # 启动 PC 端应用
+pnpm run electron:dev  # 开发环境启动 PC 端应用
 ```
 打开 http://localhost:3333
 
