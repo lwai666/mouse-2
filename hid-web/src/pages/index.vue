@@ -4,7 +4,7 @@ import { CircleClose, Plus } from '@element-plus/icons-vue'
 import autofit from 'autofit.js'
 
 import { ElCarousel, ElCarouselItem, ElIcon } from 'element-plus'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { loadLanguageAsync } from '~/modules/i18n'
@@ -68,6 +68,136 @@ nextTick(() => {
 
 const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
 
+// console.log(11111111111111)
+
+onMounted(() => {
+  getDeviceStatus()
+})
+// 获取面板卡片所有的状态
+async function getDeviceStatus() {
+  const storedTransportList: any[] = JSON.parse(localStorage.getItem('transportList') || '[]')
+
+  if (!storedTransportList.length) {
+    return
+  }
+
+  // 1. 获取所有已授权的设备
+  const devices = await navigator.hid.getDevices()
+  if (!devices || devices.length === 0) {
+    return []
+  }
+
+  // 2. 合并所有授权的设备类型（接收器 + 鼠标）
+  const authorizedDevices = [
+    ...toRaw(userStore.devices),
+    ...toRaw(userStore.devicesMouse),
+  ]
+
+  // 3. 过滤出实际连接的授权设备，且具有 inputReports 和 outputReports
+  const connectedDevices = devices.filter((device) => {
+    // 检查是否是授权设备
+    const isAuthorized = authorizedDevices.some(
+      auth => auth.vendorId === device.vendorId && auth.productId === device.productId,
+    )
+
+    if (!isAuthorized)
+      return false
+
+    // 检查是否有 inputReports 和 outputReports
+    const hasValidCollection = device.collections?.some(
+      collection => collection.inputReports?.length === 1 && collection.outputReports?.length === 1,
+    )
+
+    return hasValidCollection
+  })
+
+  if (connectedDevices.length === 0) {
+    return []
+  }
+
+  console.log('connectedDevices====', connectedDevices)
+
+  // 4. 并行获取所有设备状态
+  const deviceStatusList = await Promise.all(
+    connectedDevices.map(async (device) => {
+      console.log('device====', device)
+      try {
+        // 转换为 transport
+        const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
+        transportWebHID?._s.set('v8', HIDDeviceRef)
+
+        // 发送命令获取设备信息
+        const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
+
+        // 解析设备信息
+        const deviceInfo = parseDeviceInfo(data)
+
+        return {
+          vendorId: device.vendorId,
+          productId: device.productId,
+          productName: device.productName,
+          ...deviceInfo,
+        }
+      }
+      catch (error) {
+        console.error(`获取设备状态失败: ${device.vendorId}-${device.productId}`, error)
+        return {
+          vendorId: device.vendorId,
+          productId: device.productId,
+          productName: device.productName,
+          error: true,
+        }
+      }
+    }),
+  )
+
+  // await transportWebHIDdisconnect('v8')
+
+  // console.log('deviceStatusList====', deviceStatusList)
+
+  // 5. 更新 localStorage 中的 transportList
+  let updated = false
+
+  deviceStatusList.forEach((deviceStatus: any) => {
+    // 跳过有错误或未连接的设备
+    if (deviceStatus.error || !deviceStatus.isConnected)
+      return
+
+    // 查找匹配的设备
+    const matchedIndex = storedTransportList.findIndex(
+      (item: any) => item.productId === deviceStatus.productId && item.vendorId === deviceStatus.vendorId,
+    )
+
+    if (matchedIndex !== -1) {
+      // 更新设备状态信息
+      storedTransportList[matchedIndex] = {
+        ...storedTransportList[matchedIndex],
+        battery: deviceStatus.battery,
+        isCharging: deviceStatus.isCharging,
+        isConnected: deviceStatus.isConnected,
+        sn: deviceStatus.sn,
+        isOnline: true, // 设备当前处于连接状态
+      }
+
+      // 如果是接收器且已连接，添加 WiFi 连接标识
+      if (deviceStatus.vendorId === 0x2FE5 && deviceStatus.productId === 0x0005) {
+        storedTransportList[matchedIndex].isWifiConnected = true
+      }
+
+      updated = true
+    }
+  })
+
+  // 如果有更新，保存到 localStorage 和 ref
+  if (updated) {
+    localStorage.setItem('transportList', JSON.stringify(storedTransportList))
+    transportList.value = storedTransportList
+    console.log('transportList 已更新====', storedTransportList)
+  }
+
+  return deviceStatusList
+}
+
 async function onNouseClick(item: any) {
   // 获取所有已授权的设备
   const devices = await navigator.hid.getDevices()
@@ -77,9 +207,13 @@ async function onNouseClick(item: any) {
     return
   }
 
-  // 从现有连接中查找匹配的设备
+  // 从现有连接中查找匹配的设备，需要有 inputReports 和 outputReports
   const matchedDevice = devices.find(device =>
-    device.vendorId === item.vendorId && device.productId === item.productId,
+    device.vendorId === item.vendorId
+    && device.productId === item.productId
+    && device.collections?.some(
+      collection => collection.inputReports?.length === 1 && collection.outputReports?.length === 1,
+    ),
   )
   if (!matchedDevice) {
     showMessage(t('description.please_insert_this_device'))
@@ -95,43 +229,87 @@ async function onNouseClick(item: any) {
   router.push(`/hid/v8`)
 }
 
+// 解析设备信息
+interface DeviceInfo {
+  sn: string
+  battery: number // 电量 0-100
+  isCharging: boolean // 充电状态
+  isConnected: boolean // 鼠标连接状态
+}
+
+function parseDeviceInfo(data: Uint8Array): DeviceInfo {
+  const battery = data[3] // byte 3: 电量 0-100
+  const isCharging = data[4] === 1 // byte 4: 充电状态 1:充电 0:不充电
+  const isConnected = data[5] === 1 // byte 5: 鼠标连接状态 1:连接 0:断开
+
+  // byte 6 开始是 SN，固定取 13 个字节
+  const snBytes = data.slice(6, 6 + 13)
+  const sn = String.fromCharCode(...snBytes)
+
+  return {
+    sn,
+    battery,
+    isCharging,
+    isConnected,
+  }
+}
+
 async function onAddNouseClick() {
-  console.log("1=======")
   transport.value = await createTransportWebHID({
     id: 'v8',
     filters: [
       ...toRaw(userStore.devices),
-      // 其他设备
-      { vendorId: 0x1532, productId: 0x00BF },
-      { vendorId: 0x3554, productId: 0xF5F7 },
-      { vendorId: 0x3554, productId: 0xF5F4 },
+      ...toRaw(userStore.devicesMouse),
+      // // 其他设备
+      // { vendorId: 0x1532, productId: 0x00BF },
+      // { vendorId: 0x3554, productId: 0xF5F7 },
+      // { vendorId: 0x3554, productId: 0xF5F4 },
     ],
     commandHandler: async (data) => {
       // console.log('接收的数据=======', data)
     },
   })
 
-  let data = transport.value.send([0x2E, 0x00, 0x03])
+  if (!transport.value)
+    return
 
-  console.log('send data====', data)
+  const data = await transport.value.send([0x2E, 0x00, 0x03])
+  console.log('获取的设备信息数据:', data)
+  const device = parseDeviceInfo(data)
+  const { productId, vendorId } = transport.value.device
 
-  if (transport.value) {
-    const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
+  console.log('device info====', device)
+  console.log('设备ID:', vendorId, productId)
 
-    const flag = transportListCopy.some((item) => {
-      return (item.productId === transport.value.device.productId && item.vendorId === transport.value.device.vendorId)
-    })
+  // 接收器设备需要检查鼠标连接状态
+  const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
 
-    if (flag) {
-      router.push(`/hid/v8`)
-      localStorage.setItem('tabActive', 'performance')
-      return
-    }
-    transportList.value.push({ ...transport.value, productId: transport.value.device.productId, vendorId: transport.value.device.vendorId, productName: transport.value.device.productName, collections: transport.value.device.collections })
-    localStorage.setItem('transportList', JSON.stringify(transportList.value))
-    localStorage.setItem('tabActive', 'performance')
-    router.push(`/hid/v8`)
+  if (isReceiver && device.isConnected !== 1) {
+    return
   }
+
+  const transportListCopy = JSON.parse(localStorage.getItem('transportList') || '[]')
+  const exists = transportListCopy.some(
+    item => item.productId === productId && item.vendorId === vendorId,
+  )
+
+  if (exists) {
+    router.push('/hid/v8')
+    localStorage.setItem('tabActive', 'performance')
+    return
+  }
+
+  transportList.value.push({
+    ...transport.value,
+    productId,
+    vendorId,
+    productName: transport.value.device.productName,
+    collections: transport.value.device.collections,
+  })
+
+  localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  localStorage.setItem('tabActive', 'performance')
+  router.push('/hid/v8')
 }
 
 function deleteTransport(item) {
@@ -207,9 +385,25 @@ function sortedColorItems(mouseColor: any) {
 
   return filteredItems
 }
-// function onDisconnect() {
-//   instanceRef.value = null
-// }
+// 监听设备断开
+function onDisconnect(event: any) {
+  const { productId, vendorId } = event.device
+
+  // 查找匹配的设备
+  const matchedIndex = transportList.value.findIndex(
+    (item: any) => item.productId === productId && item.vendorId === vendorId,
+  )
+
+  if (matchedIndex !== -1) {
+    // 更新设备在线状态
+    transportList.value[matchedIndex].isOnline = false
+
+    // 保存到 localStorage
+    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+
+    console.log(`设备已断开: vendorId=${vendorId}, productId=${productId}`)
+  }
+}
 
 // useTransportWebHID('v8', async (instance) => {
 
@@ -218,6 +412,66 @@ function sortedColorItems(mouseColor: any) {
 //   // 监听鼠标断开
 //   navigator.hid.addEventListener('disconnect', onDisconnect)
 // })
+
+navigator.hid.addEventListener('disconnect', onDisconnect)
+
+// 监听设备连接
+navigator.hid.addEventListener('connect', async (event: any) => {
+  const { productId, vendorId } = event.device
+
+  console.log('event.device====', event.device)
+
+  console.log(`设备已连接: vendorId=${vendorId}, productId=${productId}`)
+
+  // 查找匹配的设备
+  const matchedIndex = transportList.value.findIndex(
+    (item: any) => item.productId === productId && item.vendorId === vendorId,
+  )
+
+  if (matchedIndex === -1) {
+    console.log('设备不在 transportList 中，跳过')
+    return
+  }
+
+  try {
+    // 转换为 transport
+    const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([event.device], { id: 'v8' })
+    transportWebHID?._s.set('v8', HIDDeviceRef)
+
+    console.log('HIDDeviceRef====', HIDDeviceRef)
+
+    // 发送命令获取设备信息
+    const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
+
+    console.log('连接后获取的设备信息数据:', data)
+
+    // 解析设备信息
+    const deviceInfo = parseDeviceInfo(data)
+
+    // 更新 transportList
+    transportList.value[matchedIndex] = {
+      ...transportList.value[matchedIndex],
+      battery: deviceInfo.battery,
+      isCharging: deviceInfo.isCharging,
+      isConnected: deviceInfo.isConnected,
+      sn: deviceInfo.sn,
+      isOnline: true, // 设备已连接
+    }
+
+    // 如果是接收器且已连接，添加 WiFi 连接标识
+    if (vendorId === 0x2FE5 && productId === 0x0005 && deviceInfo.isConnected) {
+      transportList.value[matchedIndex].isWifiConnected = true
+    }
+    // 保存到 localStorage
+    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  }
+  catch (error) {
+    console.error('获取设备信息失败:', error)
+    // 即使出错，也标记为在线状态
+    transportList.value[matchedIndex].isOnline = true
+    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  }
+})
 
 async function setColor(mode: any, profileInfo: any) {
   // if (profileInfo.mouseColor === mode.id) {
@@ -359,6 +613,8 @@ watch(() => transportList.value, () => {
               {{ item.productName }}
             </p>
 
+            <div v-if="!item.isOnline" style="width: 100%;height: 100%; background-color: rgba(255, 255, 255, 0.4); position: absolute; top: 0; left: 0;;z-index: 100;" @click.stop />
+
             <img
               style="width: 84px; height:142px;object-fit: contain;margin-top: 10px;"
               :src="`/mouse_${{
@@ -370,19 +626,19 @@ watch(() => transportList.value, () => {
             >
 
             <div class="mt-3 flex">
-              <img src="/v9/icon3.png" alt="" srcset="" class="mr-2">
-              <img src="/v9/icon4.png" alt="" srcset="" class="mr-2">
-              <img src="/v9/icon5.png" alt="" srcset="" class="mr-2">
-              <img src="/v9/icon6.png" alt="" srcset="" class="mr-2">
+              <img v-show="item.isCharging" src="/v9/icon3.png" alt="" srcset="" class="mr-2">
+              <img v-show="!item.isCharging" src="/v9/icon4.png" alt="" srcset="" class="mr-2">
+              <img v-show="!item.isWifiConnected" src="/v9/icon5.png" alt="" srcset="" class="mr-2">
+              <img v-show="item.isWifiConnected" src="/v9/icon6.png" alt="" srcset="" class="mr-2">
             </div>
 
             <div class="color-box absolute right-3 top-4">
               <div v-for="key in sortedColorItems(item.mouseColor)" :key="key.id" class="mb-2" :style="{ background: key.backgroundColor }" style="width: 18px;height: 18px; border-radius: 50%;" @click.stop="setColor(key, item)" />
             </div>
 
-            <el-icon size="5" color="#ffff" class="absolute left-2 top-3" @click.stop="deleteTransport(item)">
+            <ElIcon size="15" color="#ffff" class="absolute left-2 top-3" @click.stop="deleteTransport(item)">
               <CircleClose />
-            </el-icon>
+            </ElIcon>
           </div>
 
           <div
@@ -393,7 +649,7 @@ watch(() => transportList.value, () => {
             <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
               {{ t('title.new_device') }}
             </p>
-            <ElIcon size="20" color="#ffff">
+            <ElIcon size="50" color="#ffff">
               <Plus />
             </ElIcon>
           </div>

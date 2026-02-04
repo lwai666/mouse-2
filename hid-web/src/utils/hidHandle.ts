@@ -844,7 +844,8 @@ export async function createTransportWebHID(config: { id: string, filters: HIDDe
     // 在 Electron 中，requestDevice 不会弹出对话框，而是直接返回匹配的设备
     devices = await window.navigator.hid.requestDevice({ filters: config.filters })
     console.log('[createTransportWebHID] requestDevice 返回:', devices)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('[createTransportWebHID] requestDevice 错误:', error)
   }
 

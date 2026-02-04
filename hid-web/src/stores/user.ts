@@ -28,8 +28,11 @@ export const useUserStore = defineStore('user', () => {
   const otherNames = computed(() => usedNames.value.filter(name => name !== savedName.value))
 
   const devices = ref([
-    { vendorId: 0x2FE3, productId: 0x0007, name: '鼠标', sendData: 0x0F },
     { vendorId: 0x2FE5, productId: 0x0005, name: '接收器', sendData: 0x18 },
+  ])
+
+  const devicesMouse = ref([
+    { vendorId: 0x2FE3, productId: 0x0007, name: '鼠标', sendData: 0x0F }
   ])
 
   /**
@@ -63,6 +66,7 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     devices,
+    devicesMouse,
     alertTitle,
     latestVersion,
     setAlertTitle,
