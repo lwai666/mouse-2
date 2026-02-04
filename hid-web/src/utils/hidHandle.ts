@@ -1,4 +1,4 @@
-import { ElLoading, ElMessage } from 'element-plus'
+import { ElLoading } from 'element-plus'
 import { type App, inject } from 'vue'
 
 import { sleep } from '.'
@@ -806,6 +806,24 @@ export async function getTransportWebHID(config: { id: string, commandHandler?: 
     await transport.connect()
     transportWebHID?._s.set(config.id, transport)
 
+    return transport
+  }
+}
+
+export async function HIDDeviceChangeTransportWebHID(devices: any, config: { id: any }) {
+  if (!devices || devices.length === 0) { return false }
+
+  const currentTransportWebHID = transportWebHID?._s.get(config.id)
+  // 创建新的链接需要先断开之前的设备, 重新进行connect
+  if (currentTransportWebHID) {
+    transportWebHID?._s.set(config.id, null)
+    currentTransportWebHID.disconnect()
+  }
+
+  const collection = checkDevicesSupportSendReport(devices)
+  if (collection) {
+    const transport = new TransportWebHID(collection.reportId, collection.device)
+    await transport.connect()
     return transport
   }
 }

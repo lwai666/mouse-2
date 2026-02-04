@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { loadLanguageAsync } from '~/modules/i18n'
 
-import { createTransportWebHID, getTransportWebHID, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { createTransportWebHID, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
 
 defineOptions({
   name: 'Scyrox',
@@ -38,8 +38,8 @@ const selectLanguageList = ref([
 const languageShow = ref(false)
 
 const slideshowList = computed(() => [
-  { title:t('index.pairingGuide'), type: 'component', component: 'MouseCarouseItem' },
-  { title:t('index.schematicGuide'), type: 'img', img: `/slideshow/2.png` },
+  { title: t('index.pairingGuide'), type: 'component', component: 'MouseCarouseItem' },
+  { title: t('index.schematicGuide'), type: 'img', img: `/slideshow/2.png` },
 
 ])
 
@@ -71,6 +71,7 @@ const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JS
 async function onNouseClick(item: any) {
   // 获取所有已授权的设备
   const devices = await navigator.hid.getDevices()
+
   if (!devices || devices.length === 0) {
     showMessage(t('description.please_insert_device'))
     return
@@ -80,11 +81,13 @@ async function onNouseClick(item: any) {
   const matchedDevice = devices.find(device =>
     device.vendorId === item.vendorId && device.productId === item.productId,
   )
-
   if (!matchedDevice) {
     showMessage(t('description.please_insert_this_device'))
     return
   }
+  // 每次点击相当于新创建, 把V8 重置了
+  const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([matchedDevice], { id: 'v8' })
+  transportWebHID?._s.set('v8', HIDDeviceRef)
 
   // 使用找到的实例
   transport.value = matchedDevice
@@ -111,8 +114,6 @@ async function onAddNouseClick() {
 
   console.log('send data====', data)
 
-
-
   if (transport.value) {
     const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
 
@@ -121,14 +122,14 @@ async function onAddNouseClick() {
     })
 
     if (flag) {
-      // router.push(`/hid/v8`)
+      router.push(`/hid/v8`)
       localStorage.setItem('tabActive', 'performance')
       return
     }
     transportList.value.push({ ...transport.value, productId: transport.value.device.productId, vendorId: transport.value.device.vendorId, productName: transport.value.device.productName, collections: transport.value.device.collections })
     localStorage.setItem('transportList', JSON.stringify(transportList.value))
     localStorage.setItem('tabActive', 'performance')
-    // router.push(`/hid/v8`)
+    router.push(`/hid/v8`)
   }
 }
 
@@ -346,14 +347,14 @@ watch(() => transportList.value, () => {
             style="width: 231px;
             height: 248px;
             border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.1); 
-            margin-right: 10px; 
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-right: 10px;
             border: 1px solid rgba(255, 255, 255, 0.4);
             flex-direction: column;
             padding-top: 15px;"
             @click="onNouseClick(item)"
           >
-            <p  style="color: #fff; font-weight: bold;font-size: 18px;">
+            <p style="color: #fff; font-weight: bold;font-size: 18px;">
               {{ item.productName }}
             </p>
 
@@ -367,15 +368,13 @@ watch(() => transportList.value, () => {
               srcset=""
             >
 
-            <div class="flex mt-3 ">
-              <img src="/v9/icon3.png" alt="" srcset="" class="mr-2" >
-              <img src="/v9/icon4.png" alt="" srcset="" class="mr-2" >
+            <div class="mt-3 flex">
+              <img src="/v9/icon3.png" alt="" srcset="" class="mr-2">
+              <img src="/v9/icon4.png" alt="" srcset="" class="mr-2">
               <img src="/v9/icon5.png" alt="" srcset="" class="mr-2">
               <img src="/v9/icon6.png" alt="" srcset="" class="mr-2">
             </div>
 
-            
-      
             <div class="color-box absolute right-3 top-4">
               <div v-for="key in sortedColorItems(item.mouseColor)" :key="key.id" class="mb-2" :style="{ background: key.backgroundColor }" style="width: 18px;height: 18px; border-radius: 50%;" @click.stop="setColor(key, item)" />
             </div>
