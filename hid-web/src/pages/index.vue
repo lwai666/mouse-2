@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { loadLanguageAsync } from '~/modules/i18n'
 
-import { createTransportWebHID, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, createTransportWebHID, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
 
 defineOptions({
   name: 'Scyrox',
@@ -199,33 +199,20 @@ async function getDeviceStatus() {
 }
 
 async function onNouseClick(item: any) {
-  // 获取所有已授权的设备
-  const devices = await navigator.hid.getDevices()
-
-  if (!devices || devices.length === 0) {
-    showMessage(t('description.please_insert_device'))
-    return
-  }
-
-  // 从现有连接中查找匹配的设备，需要有 inputReports 和 outputReports
-  const matchedDevice = devices.find(device =>
-    device.vendorId === item.vendorId
-    && device.productId === item.productId
-    && device.collections?.some(
-      collection => collection.inputReports?.length === 1 && collection.outputReports?.length === 1,
-    ),
+  const HIDDeviceRef = await connectAndStoreDevice(
+    item.vendorId,
+    item.productId,
+    'v8',
+    {
+      showMessage,
+      noDeviceMessage: t('description.please_insert_device'),
+      deviceNotFoundMessage: t('description.please_insert_this_device'),
+    },
   )
-  if (!matchedDevice) {
-    showMessage(t('description.please_insert_this_device'))
-    return
-  }
-  // 每次点击相当于新创建, 把V8 重置了
-  const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([matchedDevice], { id: 'v8' })
-  transportWebHID?._s.set('v8', HIDDeviceRef)
 
   // 使用找到的实例
-  transport.value = matchedDevice
-  instanceRef.value = matchedDevice
+  transport.value = HIDDeviceRef
+  instanceRef.value = HIDDeviceRef
   router.push(`/hid/v8`)
 }
 
@@ -274,12 +261,8 @@ async function onAddNouseClick() {
     return
 
   const data = await transport.value.send([0x2E, 0x00, 0x03])
-  console.log('获取的设备信息数据:', data)
   const device = parseDeviceInfo(data)
   const { productId, vendorId } = transport.value.device
-
-  console.log('device info====', device)
-  console.log('设备ID:', vendorId, productId)
 
   // 接收器设备需要检查鼠标连接状态
   const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
@@ -294,7 +277,7 @@ async function onAddNouseClick() {
   )
 
   if (exists) {
-    router.push('/hid/v8')
+    // router.push('/hid/v8')
     localStorage.setItem('tabActive', 'performance')
     return
   }
@@ -305,11 +288,16 @@ async function onAddNouseClick() {
     vendorId,
     productName: transport.value.device.productName,
     collections: transport.value.device.collections,
+    battery: device.battery,
+    isCharging: device.isCharging,
+    isConnected: device.isConnected,
+    sn: device.sn,
+    isOnline: true, // 设备已连接
   })
 
   localStorage.setItem('transportList', JSON.stringify(transportList.value))
   localStorage.setItem('tabActive', 'performance')
-  router.push('/hid/v8')
+  // router.push('/hid/v8')
 }
 
 function deleteTransport(item) {
@@ -474,19 +462,32 @@ navigator.hid.addEventListener('connect', async (event: any) => {
 })
 
 async function setColor(mode: any, profileInfo: any) {
-  // if (profileInfo.mouseColor === mode.id) {
-  //   return
-  // }
-  // profileInfo.mouseColor = mode.id
-  // await instanceRef.value.send([0x29, 0x00, 0x00, mode.id])
+  if (profileInfo.mouseColor === mode.id) {
+    return
+  }
 
-  // transportList.value = transportList.value.map((item: any) => {
-  //   if (item.reportId === transport.value.reportId) {
-  //     item.mouseColor = mode.id
-  //   }
-  //   return item
-  // })
-  // localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  const HIDDeviceRef = await connectAndStoreDevice(
+    profileInfo.vendorId,
+    profileInfo.productId,
+    'v8',
+    {
+      showMessage,
+      noDeviceMessage: t('description.please_insert_device'),
+      deviceNotFoundMessage: t('description.please_insert_this_device'),
+    },
+  )
+
+  await HIDDeviceRef.send([0x29, 0x00, 0x00, mode.id])
+
+  profileInfo.mouseColor = mode.id
+
+  transportList.value = transportList.value.map((item: any) => {
+    if (item.reportId === profileInfo.reportId) {
+      item.mouseColor = mode.id
+    }
+    return item
+  })
+  localStorage.setItem('transportList', JSON.stringify(transportList.value))
 }
 
 // 滚动容器相关
@@ -613,7 +614,7 @@ watch(() => transportList.value, () => {
               {{ item.productName }}
             </p>
 
-            <div v-if="!item.isOnline" style="width: 100%;height: 100%; background-color: rgba(255, 255, 255, 0.4); position: absolute; top: 0; left: 0;;z-index: 100;" @click.stop />
+            <div v-if="!item.isOnline" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
 
             <img
               style="width: 84px; height:142px;object-fit: contain;margin-top: 10px;"
@@ -625,9 +626,12 @@ watch(() => transportList.value, () => {
               srcset=""
             >
 
-            <div class="mt-3 flex">
+            <div class="mt-5 flex">
               <img v-show="item.isCharging" src="/v9/icon3.png" alt="" srcset="" class="mr-2">
-              <img v-show="!item.isCharging" src="/v9/icon4.png" alt="" srcset="" class="mr-2">
+              <div v-show="!item.isCharging" style="position: relative;">
+                <img src="/v9/icon4.png" alt="" srcset="" class="mr-2">
+                <span style="font-size: 10px; position: absolute;top: 50%; left: 18%; transform: translate(0%,-50%);">{{ item.battery }}</span>
+              </div>
               <img v-show="!item.isWifiConnected" src="/v9/icon5.png" alt="" srcset="" class="mr-2">
               <img v-show="item.isWifiConnected" src="/v9/icon6.png" alt="" srcset="" class="mr-2">
             </div>
@@ -636,7 +640,7 @@ watch(() => transportList.value, () => {
               <div v-for="key in sortedColorItems(item.mouseColor)" :key="key.id" class="mb-2" :style="{ background: key.backgroundColor }" style="width: 18px;height: 18px; border-radius: 50%;" @click.stop="setColor(key, item)" />
             </div>
 
-            <ElIcon size="15" color="#ffff" class="absolute left-2 top-3" @click.stop="deleteTransport(item)">
+            <ElIcon size="20" color="#ffff" class="absolute left-2 top-3" style="z-index: 101;" @click.stop="deleteTransport(item)">
               <CircleClose />
             </ElIcon>
           </div>
@@ -649,7 +653,7 @@ watch(() => transportList.value, () => {
             <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
               {{ t('title.new_device') }}
             </p>
-            <ElIcon size="50" color="#ffff">
+            <ElIcon size="60" color="#ffff">
               <Plus />
             </ElIcon>
           </div>

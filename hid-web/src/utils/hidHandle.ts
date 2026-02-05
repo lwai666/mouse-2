@@ -827,6 +827,62 @@ export async function HIDDeviceChangeTransportWebHID(devices: any, config: { id:
     return transport
   }
 }
+
+/**
+ * 从已连接的设备中查找并连接指定设备
+ * @param vendorId 设备 vendorId
+ * @param productId 设备 productId
+ * @param id 存储 transport 的 key
+ * @param options 配置选项
+ * @returns transport 实例，失败返回 false
+ */
+export async function connectAndStoreDevice(
+  vendorId: number,
+  productId: number,
+  id: string,
+  options?: {
+    showMessage?: (msg: string) => void
+    noDeviceMessage?: string
+    deviceNotFoundMessage?: string
+  },
+) {
+  if (typeof window === 'undefined') {
+    console.error('[connectAndStoreDevice] window is undefined')
+    return false
+  }
+
+  const devices = await navigator.hid.getDevices()
+
+  if (!devices || devices.length === 0) {
+    options?.showMessage?.(options?.noDeviceMessage || '')
+    return false
+  }
+
+  // 从现有连接中查找匹配的设备，需要有 inputReports 和 outputReports
+  const matchedDevice = devices.find(device =>
+    device.vendorId === vendorId
+    && device.productId === productId
+    && device.collections?.some(
+      collection => collection.inputReports?.length === 1 && collection.outputReports?.length === 1,
+    ),
+  )
+
+  if (!matchedDevice) {
+    options?.showMessage?.(options?.deviceNotFoundMessage || '')
+    return false
+  }
+
+  // 创建 transport 连接
+  const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([matchedDevice], { id })
+  if (!HIDDeviceRef) {
+    return false
+  }
+
+  // 存储 transport
+  transportWebHID?._s.set(id, HIDDeviceRef)
+
+  return HIDDeviceRef
+}
 // 创建的时候
 export async function createTransportWebHID(config: { id: string, filters: HIDDeviceFilter[], commandHandler: CommandHandler }) {
   if (typeof window === 'undefined') {
