@@ -115,9 +115,18 @@ async function getVersion(transportInstance?: any) {
     updateList.spi.disabled1 = true
   }
 
-  const currentDevice = userStore.devices.find(item => item.vendorId === vendorId && item.productId === productId)
+  const authorizedDevices = [
+    ...toRaw(userStore.devices),
+    ...toRaw(userStore.devicesMouse),
+  ]
 
-  const res = await currentTransport.send([currentDevice?.sendData])
+  const currentDevice = authorizedDevices.find(item => item.vendorId === vendorId && item.productId === productId)
+
+  if (!currentDevice) {
+    return
+  }
+
+  const res = await currentTransport.send([currentDevice.sendData])
 
   // 获取另外一个芯片 USB PHY 的版本号
   const PhyRes = await currentTransport.send([0x21])

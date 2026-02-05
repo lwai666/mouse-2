@@ -20,7 +20,13 @@
       "Bash(pnpm rebuild:*)",
       "Bash(cat:*)",
       "Bash(npm rebuild:*)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git push)",
+      "Bash(ssh-keygen:*)",
+      "Bash(ssh-keyscan:*)",
+      "Bash(~/.ssh/known_hosts)",
+      "Bash(git config:*)"
     ]
   }
 }
