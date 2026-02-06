@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { InfoFilled, Plus } from '@element-plus/icons-vue'
-import { ElButton, ElForm, ElFormItem, ElInput, ElMessage, ElTooltip, ElUpload, ElIcon } from 'element-plus'
+import { ElButton, ElForm, ElFormItem, ElIcon, ElInput, ElMessage, ElTooltip, ElUpload } from 'element-plus'
 import { reactive, ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'
@@ -41,8 +41,9 @@ async function onAddNouseClick() {
     id: 'v8',
     filters: [
       ...toRaw(userStore.devices),
+      ...toRaw(userStore.devicesMouse),
       // 其他设备
-      { vendorId: 0x1532, productId: 0x00BF },
+      // { vendorId: 0x1532, productId: 0x00BF },
       // { vendorId: 0x3554, productId: 0xF5F7 },
       // { vendorId: 0x3554, productId: 0xF5F4 },
     ],
@@ -276,7 +277,7 @@ async function submitForm() {
         <!-- <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
         点击进入
       </p> -->
-        <ElIcon size="20" color="#ffff">
+        <ElIcon size="60" color="#ffff">
           <Plus />
         </ElIcon>
       </div>
