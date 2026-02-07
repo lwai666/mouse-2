@@ -75,6 +75,7 @@ useTransportWebHID('v8', async (instance) => {
     const { productId, vendorId } = event.device
     if (vendorId === 0x2FE3 && productId === 0x0007) {
       updateList.usb.disabled1 = false
+      router.push('/')
     }
     else if (vendorId === 0x2FE5 && productId === 0x0005) {
       updateList.spi.disabled1 = false
@@ -675,7 +676,7 @@ onMounted(async () => {
     <a class="absolute left-30px top-30px" href="/">
       <img class="h-45px" src="/logo.png" alt="logo">
     </a>
-    <ArrowLeftBold class="fixed bottom-30px right-50px w-[40px] color-#fff font-900 opacity-30 hover:opacity-100" @click="router.back()" />
+    <ArrowLeftBold class="fixed bottom-30px right-50px w-[40px] color-#fff font-900 opacity-30 hover:opacity-100" @click="router.push('/hid/v8')" />
 
     <div class="w-70% pt-10">
       <h1 class="mb-20 text-center text-2xl">
