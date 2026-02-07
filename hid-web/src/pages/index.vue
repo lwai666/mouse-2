@@ -180,6 +180,8 @@ async function getDeviceStatus() {
         isConnected: deviceStatus.isConnected,
         sn: deviceStatus.sn,
         isOnline: true, // 设备当前处于连接状态
+        version: deviceStatus.version,
+        mouseColor: deviceStatus.mouseColor,
       }
 
       // 如果是接收器且已连接，添加 WiFi 连接标识
@@ -225,15 +227,23 @@ interface DeviceInfo {
   battery: number // 电量 0-100
   isCharging: boolean // 充电状态
   isConnected: boolean // 鼠标连接状态
+  version: number // 固件版本号
+  mouseColor: number // 颜色
 }
 
 function parseDeviceInfo(data: Uint8Array): DeviceInfo {
   const battery = data[3] // byte 3: 电量 0-100
   const isCharging = data[4] === 1 // byte 4: 充电状态 1:充电 0:不充电
   const isConnected = data[5] === 1 // byte 5: 鼠标连接状态 1:连接 0:断开
+  const versionLow = data[6] // byte 6: 版本号低8位
+  const versionHigh = data[7] // byte 7: 版本号高8位
+  const mouseColor = data[8] // byte 8: 颜色
 
-  // byte 6 开始是 SN，固定取 13 个字节
-  const snBytes = data.slice(6, 6 + 13)
+  // 版本号 = (高8位 << 8) | 低8位
+  const version = (versionHigh << 8) | versionLow
+
+  // byte 9 开始是 SN，固定取 13 个字节
+  const snBytes = data.slice(9, 9 + 13)
   const sn = String.fromCharCode(...snBytes)
 
   return {
@@ -241,6 +251,8 @@ function parseDeviceInfo(data: Uint8Array): DeviceInfo {
     battery,
     isCharging,
     isConnected,
+    version,
+    mouseColor,
   }
 }
 
@@ -451,6 +463,8 @@ navigator.hid.addEventListener('connect', async (event: any) => {
       isConnected: deviceInfo.isConnected,
       sn: deviceInfo.sn,
       isOnline: true, // 设备已连接
+      version: deviceInfo.version,
+      mouseColor: deviceInfo.color,
     }
 
     // 如果是接收器且已连接，添加 WiFi 连接标识
