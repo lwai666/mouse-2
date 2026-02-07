@@ -3,8 +3,8 @@ import { getApiUrl } from '~/composables/useApiConfig'
 
 interface LatestVersionType {
   id: number
-  version: string
-  url: string
+  adapterVersion: string
+  mouseVersion: string
   description: string
   spiFilePath: string
   usbFilePath: string

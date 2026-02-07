@@ -548,10 +548,7 @@ function updateScrollButtons() {
 async function getLatestVersion() {
   await userStore.fetchLatestVersion()
 
-  latestVersion.value = {
-    forceUpdate: userStore.forceUpdate,
-    mouseVersion: userStore.mouseVersion,
-  }
+  latestVersion.value = userStore.latestVersion
 }
 
 // 监听 transportList 变化，更新按钮状态
@@ -641,11 +638,10 @@ watch(() => transportList.value, () => {
             @click="onNouseClick(item)"
           >
             <p style="color: #fff; font-weight: bold;font-size: 18px;">
-              {{ item.productName }}
             </p>
 
             <div v-if="!item.isOnline" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
-            {{ latestVersion.mouseVersion, item.version, latestVersion.forceUpdate }}
+
             <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
               <div style="color: black; width: 146px; height: 33px; text-align: center; line-height: 33px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="goPath">
                 点击更新设备
