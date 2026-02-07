@@ -316,7 +316,7 @@ async function submitForm() {
                     <template #content>
                       <span style="font-size: 15px;">请上传 .bin 文件更新包, 不能大于 10MB！</span>
                     </template>
-                    <ElIcon size="4" style="margin-left: 5px;">
+                    <ElIcon size="15" style="margin-left: 5px;">
                       <InfoFilled />
                     </ElIcon>
                   </ElTooltip>
@@ -356,7 +356,7 @@ async function submitForm() {
                     <template #content>
                       <span style="font-size: 15px;">请上传 .bin 文件更新包, 不能大于 10MB！</span>
                     </template>
-                    <ElIcon size="4" style="margin-left: 5px;">
+                    <ElIcon size="15" style="margin-left: 5px;">
                       <InfoFilled />
                     </ElIcon>
                   </ElTooltip>
