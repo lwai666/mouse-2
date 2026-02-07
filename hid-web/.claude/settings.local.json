@@ -26,7 +26,8 @@
       "Bash(ssh-keygen:*)",
       "Bash(ssh-keyscan:*)",
       "Bash(~/.ssh/known_hosts)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(pnpm typecheck:*)"
     ]
   }
 }

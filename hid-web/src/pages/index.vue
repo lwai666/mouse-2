@@ -70,7 +70,10 @@ const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JS
 
 // console.log(11111111111111)
 
+const latestVersion = ref({}) as any
+
 onMounted(() => {
+  getLatestVersion()
   getDeviceStatus()
 })
 // 获取面板卡片所有的状态
@@ -333,6 +336,10 @@ function handleTitleClick() {
   }
 }
 
+function goPath() {
+  router.push('/hid/settings')
+}
+
 const notSupportHid = ref(false)
 
 onMounted(() => {
@@ -524,6 +531,15 @@ function updateScrollButtons() {
   canScrollRight.value = scrollWidth > clientWidth && Math.ceil(scrollLeft) < scrollWidth - clientWidth
 }
 
+async function getLatestVersion() {
+  await userStore.fetchLatestVersion()
+
+  latestVersion.value = {
+    forceUpdate: userStore.forceUpdate,
+    mouseVersion: userStore.mouseVersion,
+  }
+}
+
 // 监听 transportList 变化，更新按钮状态
 watch(() => transportList.value, () => {
   nextTick(() => {
@@ -616,6 +632,12 @@ watch(() => transportList.value, () => {
 
             <div v-if="!item.isOnline" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
 
+            <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
+              <div style="color: black; width: 146px; height: 33px; text-align: center; line-height: 33px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="goPath">
+                点击更新设备
+              </div>
+            </div>
+
             <img
               style="width: 84px; height:142px;object-fit: contain;margin-top: 10px;"
               :src="`/mouse_${{
@@ -671,7 +693,7 @@ watch(() => transportList.value, () => {
 
       <div class="mb-10">
         <div class="relative h-20 w-100%">
-          <div v-for="(item, index) in slideshowList" class="absolute top-0 w-100% cursor-pointer transition-all duration-500" :class="activeIndex === index ? 'top-8 text-2xl color-#e1fe52' : ''" @click="carouselRef?.setActiveItem(index)">
+          <div v-for="(item, index) in slideshowList" class="absolute top-0 w-100% cursor-pointer transition-all duration-500" :class="activeIndex === index ? 'top-8 text-2xl textShadow color-#e1fe52' : ''" @click="carouselRef?.setActiveItem(index)">
             {{ item.title }}
           </div>
         </div>
@@ -788,5 +810,13 @@ watch(() => transportList.value, () => {
   border-right: 2.5px solid white;
   border-bottom: 2.5px solid white;
   transform: rotate(-45deg);
+}
+
+.textShadow {
+  text-shadow:
+    0 0 1px #e1fe52,
+    /* 红色发光 */ 0 0 0px #e1fe52,
+    /* 更亮的红色发光 */ 0 0 15px #e1fe52,
+    /* 最亮的红色发光 */ 0 0 5px #e1fe52; /* 最外围的红色发光 */
 }
 </style>

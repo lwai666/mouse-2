@@ -12,6 +12,7 @@ interface LatestVersionType {
   productId: number
   vendorId: number
   productName: string
+  forceUpdate: boolean
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -32,7 +33,7 @@ export const useUserStore = defineStore('user', () => {
   ])
 
   const devicesMouse = ref([
-    { vendorId: 0x2FE3, productId: 0x0007, name: '鼠标', sendData: 0x0F }
+    { vendorId: 0x2FE3, productId: 0x0007, name: '鼠标', sendData: 0x0F },
   ])
 
   /**
