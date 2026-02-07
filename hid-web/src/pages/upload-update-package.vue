@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { InfoFilled, Plus } from '@element-plus/icons-vue'
-import { ElButton, ElForm, ElFormItem, ElIcon, ElInput, ElMessage, ElTooltip, ElUpload } from 'element-plus'
+import { ElButton, ElForm, ElFormItem, ElIcon, ElInput, ElMessage, ElSwitch, ElTooltip, ElUpload } from 'element-plus'
 import { reactive, ref } from 'vue'
 
 import { useI18n } from 'vue-i18n'
@@ -86,6 +86,7 @@ const formData = reactive({
   adapterVersion: '',
   mouseVersion: '',
   description: '',
+  forceUpdate: false, // 是否强制更新
   spiFile: null,
   usbFile: null,
 })
@@ -199,6 +200,7 @@ async function submitForm() {
     _formData.append('adapterVersion', formData.adapterVersion || '')
     _formData.append('mouseVersion', formData.mouseVersion || '')
     _formData.append('description', formData.description)
+    _formData.append('forceUpdate', formData.forceUpdate ? '1' : '0')
     _formData.append('file1', formData.spiFile)
     _formData.append('file2', formData.usbFile)
     _formData.append('productId', transport.value.device.productId)
@@ -217,6 +219,7 @@ async function submitForm() {
       formData.adapterVersion = ''
       formData.mouseVersion = ''
       formData.description = ''
+      formData.forceUpdate = false
       formData.spiFile = null
       formData.usbFile = null
       spiFileList.value = []
@@ -381,6 +384,17 @@ async function submitForm() {
             </div>
             <ElFormItem label="描述内容" prop="description">
               <ElInput v-model="formData.description" type="textarea" :autosize="{ minRows: 6, maxRows: 6 }" placeholder="" />
+            </ElFormItem>
+          </div>
+
+          <!-- 强制更新设置 -->
+          <div class="module-card">
+            <div class="module-title">
+              更新设置
+            </div>
+            <ElFormItem label="强制更新">
+              <ElSwitch v-model="formData.forceUpdate" />
+              <span style="margin-left: 10px; color: #999; font-size: 12px;">开启后，用户将强制升级到此版本</span>
             </ElFormItem>
           </div>
 

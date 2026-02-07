@@ -60,6 +60,17 @@ db.serialize(() => {
                         }
                     });
                 }
+
+                // 如果缺少 force_update 字段，则添加
+                if (!columnNames.includes('force_update')) {
+                    db.run(`ALTER TABLE firmware_updates ADD COLUMN force_update INTEGER DEFAULT 0`, (err) => {
+                        if (err) {
+                            console.error('Error adding force_update column:', err);
+                        } else {
+                            console.log('Added force_update column');
+                        }
+                    });
+                }
             });
         }
     });

@@ -33,7 +33,7 @@ if (!fs.existsSync('uploads')) {
 // Get latest firmware version
 app.get('/api/latest-version', (req, res) => {
   const sql = `
-    SELECT id, adapter_version, mouse_version, description, spi_file_path, usb_file_path, upload_date, productId, vendorId, productName
+    SELECT id, adapter_version, mouse_version, description, spi_file_path, usb_file_path, upload_date, productId, vendorId, productName, force_update
     FROM firmware_updates
     ORDER BY upload_date DESC
     LIMIT 1
@@ -60,6 +60,7 @@ app.get('/api/latest-version', (req, res) => {
       productId: row.productId,
       vendorId: row.vendorId,
       productName: row.productName,
+      forceUpdate: row.force_update === 1,
     })
   })
 })
@@ -70,7 +71,7 @@ app.post('/api/upload-update-package', upload.fields([
   { name: 'file2', maxCount: 1 },
 ]), async (req, res) => {
   try {
-    const { adapterVersion, mouseVersion, description, productId, vendorId, productName, spiFilePath, usbFilePath } = req.body
+    const { adapterVersion, mouseVersion, description, productId, vendorId, productName, spiFilePath, usbFilePath, forceUpdate } = req.body
     const files = req.files
 
     // 检查是否至少上传了一个文件或者要标记为已更新
@@ -123,6 +124,10 @@ app.post('/api/upload-update-package', upload.fields([
           updateFields.push('productName = ?')
           updateValues.push(productName)
         }
+        if (forceUpdate !== undefined) {
+          updateFields.push('force_update = ?')
+          updateValues.push(forceUpdate === '1' ? 1 : 0)
+        }
 
         // 更新文件字段
         // 优先检查是否要标记为已更新（空字符串）
@@ -163,6 +168,7 @@ app.post('/api/upload-update-package', upload.fields([
             productId: productId !== undefined ? productId : row.productId,
             vendorId: vendorId !== undefined ? vendorId : row.vendorId,
             productName: productName !== undefined ? productName : row.productName,
+            forceUpdate: forceUpdate !== undefined ? (forceUpdate === '1') : (row.force_update === 1),
             spiFilePath: spiFile ? spiFile.path : (spiFilePath === '' ? null : row.spi_file_path),
             usbFilePath: usbFile ? usbFile.path : (usbFilePath === '' ? null : row.usb_file_path),
           })
@@ -205,6 +211,11 @@ app.post('/api/upload-update-package', upload.fields([
           values.push(productName)
           placeholders.push('?')
         }
+        if (forceUpdate !== undefined) {
+          fields.push('force_update')
+          values.push(forceUpdate === '1' ? 1 : 0)
+          placeholders.push('?')
+        }
 
         // 文件路径：优先使用上传的文件，否则使用参数
         if (spiFile) {
@@ -244,6 +255,7 @@ app.post('/api/upload-update-package', upload.fields([
             productId,
             vendorId,
             productName,
+            forceUpdate: forceUpdate === '1',
             spiFilePath: spiFile ? spiFile.path : (spiFilePath || null),
             usbFilePath: usbFile ? usbFile.path : (usbFilePath || null),
           })
