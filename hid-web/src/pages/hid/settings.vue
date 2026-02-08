@@ -4,7 +4,7 @@ import autofit from 'autofit.js'
 import { ElBadge, ElButton, ElInput, ElMessageBox, ElProgress } from 'element-plus'
 import { useApiConfig } from '~/composables/useApiConfig'
 import { combineLowAndHigh8Bits, sleep } from '~/utils'
-import { createTransportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, transportWebHID, type TransportWebHIDInstance, useTransportWebHID } from '~/utils/hidHandle'
 
 // import { stringSplit } from '~/utils';
 
@@ -56,47 +56,99 @@ const description = computed(() => {
   return userStore?.latestVersion?.description?.replace(/\n/g, '<br>')
 })
 
-useTransportWebHID('v8', async (instance) => {
+/**
+ * 初始化 transport 实例
+ */
+async function initTransport(instance: TransportWebHIDInstance) {
   transport.value = instance
   if (!transport.value) {
     router.push('/')
     return
   }
+  console.log('连接成功，transport====', transport.value)
 
   await getVersion(transport.value)
+}
 
-  // // 测试代码
-  // transport.value.setHandler((data: Uint8Array) => {
-  //   inputDataList.value.push(data.toString())
-  // })
+/**
+ * 处理页面刷新后的设备重连
+ */
+async function handlePageRefresh() {
+  const currentDeviceStr = localStorage.getItem('currentDevice')
 
-  navigator.hid.addEventListener('disconnect', (event) => {
-    console.log('设备断开连接:', event.device)
-    const { productId, vendorId } = event.device
-    if (vendorId === 0x2FE3 && productId === 0x0007) {
-      updateList.usb.disabled1 = false
-      router.push('/')
-    }
-    else if (vendorId === 0x2FE5 && productId === 0x0005) {
-      updateList.spi.disabled1 = false
-      // 接收器断开，清除 adapterTransport
-      if (adapterTransport.value?.device?.productId === productId && adapterTransport.value?.device?.vendorId === vendorId) {
-        adapterTransport.value = null
-      }
-    }
+  if (!currentDeviceStr) {
+    console.error('[settings.vue] 未找到设备信息，请从首页进入')
+    router.push('/')
+    return
+  }
+
+  const currentDevice = JSON.parse(currentDeviceStr)
+  const { vendorId, productId } = currentDevice
+
+  console.log(`[settings.vue] 检测到页面刷新，重新连接设备: vendorId=0x${vendorId.toString(16)}, productId=0x${productId.toString(16)}`)
+
+  const reconnectedDevice = await connectAndStoreDevice(
+    vendorId,
+    productId,
+    'v8',
+    {
+      showMessage: (msg) => console.error('[settings.vue]', msg),
+      noDeviceMessage: '未找到已授权的设备，请从首页重新连接',
+      deviceNotFoundMessage: '设备未找到，请从首页重新连接',
+    },
+  )
+
+  if (reconnectedDevice) {
+    await initTransport(reconnectedDevice)
+  }
+  else {
+    console.error('[settings.vue] 重新连接设备失败')
+    router.push('/')
+  }
+}
+
+// 判断是否有缓存的 transport 实例
+const cachedTransport = transportWebHID?._s.get('v8')
+
+if (cachedTransport) {
+  // ✅ 有缓存：正常跳转
+  console.log('[settings.vue] 检测到缓存的 transport 实例，正常加载')
+  useTransportWebHID('v8', async (instance) => {
+    await initTransport(instance)
   })
+}
+else {
+  // ❌ 无缓存：页面刷新
+  console.log('[settings.vue] 未检测到缓存的 transport 实例，尝试重新连接')
+  handlePageRefresh()
+}
 
-  navigator.hid.addEventListener('connect', (event) => {
-    console.log('设备连接:', event.device)
-    const { productId, vendorId } = event.device
+navigator.hid.addEventListener('disconnect', (event) => {
+  console.log('设备断开连接:', event.device)
+  const { productId, vendorId } = event.device
+  if (vendorId === 0x2FE3 && productId === 0x0007) {
+    updateList.usb.disabled1 = false
+    router.push('/')
+  }
+  else if (vendorId === 0x2FE5 && productId === 0x0005) {
+    updateList.spi.disabled1 = false
+    // 接收器断开，清除 adapterTransport
+    if (adapterTransport.value?.device?.productId === productId && adapterTransport.value?.device?.vendorId === vendorId) {
+      adapterTransport.value = null
+    }
+  }
+})
 
-    if (vendorId === 0x2FE3 && productId === 0x0007) {
-      updateList.usb.disabled1 = true
-    }
-    else if (vendorId === 0x2FE5 && productId === 0x0005) {
-      updateList.spi.disabled1 = true
-    }
-  })
+navigator.hid.addEventListener('connect', (event) => {
+  console.log('设备连接:', event.device)
+  const { productId, vendorId } = event.device
+
+  if (vendorId === 0x2FE3 && productId === 0x0007) {
+    updateList.usb.disabled1 = true
+  }
+  else if (vendorId === 0x2FE5 && productId === 0x0005) {
+    updateList.spi.disabled1 = true
+  }
 })
 
 // 获取版本号
@@ -491,7 +543,7 @@ function onClose() {
 async function connectAdapterDevice() {
   try {
     adapterTransport.value = await createTransportWebHID({
-      id: 'v8',
+      id: 'v8_adapter',
       filters: [
         // 接收器设备
         { vendorId: 0x2FE5, productId: 0x0005 },

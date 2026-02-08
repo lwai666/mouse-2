@@ -28,7 +28,7 @@ import { useGlobalInputListener } from '~/composables/useGlobalInputListener.ts'
 
 import { loadLanguageAsync } from '~/modules/i18n'
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/utils'
-import { keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 const { t, locale } = useI18n()
 
@@ -1529,16 +1529,19 @@ function onInputReport(uint8ArrayRes: Uint8Array) {
   }
 
   // 🆕 电量变化主动上报（需要确认报告 ID，暂时先监听所有未知报告）
-  else if (reportId === 0x21) {
+  else if (reportId === 0x40) {
     const oldLevel = profileInfo.battery_level
     const newLevel = uint8ArrayRes[3]
     console.log('  ✅ [电量更新]', oldLevel, '% →', newLevel, '%')
     profileInfo.battery_level = newLevel
   }
-
 }
 
-useTransportWebHID('v8', async (instance) => {
+/**
+ * 初始化 transport 实例
+ * 设置监听器并初始化配置
+ */
+async function initTransport(instance: TransportWebHIDInstance) {
   transport.value = instance
   console.log('transport.value ======', transport.value)
 
@@ -1547,16 +1550,65 @@ useTransportWebHID('v8', async (instance) => {
   // 监听鼠标断开
   navigator.hid.addEventListener('disconnect', onDisconnect)
 
+  // 初始化配置
   initProfile()
-})
+}
 
+/**
+ * 处理页面刷新后的设备重连
+ */
+async function handlePageRefresh() {
+  const currentDeviceStr = localStorage.getItem('currentDevice')
 
+  if (!currentDeviceStr) {
+    console.error('[v8.vue] 未找到设备信息，请从首页进入')
+    router.push('/')
+    return
+  }
 
-const ElDropdownRef = ref(null)
+  const currentDevice = JSON.parse(currentDeviceStr)
+  const { vendorId, productId } = currentDevice
+
+  console.log(`[v8.vue] 检测到页面刷新，重新连接设备: vendorId=0x${vendorId.toString(16)}, productId=0x${productId.toString(16)}`)
+
+  const reconnectedDevice = await connectAndStoreDevice(
+    vendorId,
+    productId,
+    'v8',
+    {
+      showMessage: msg => console.error('[v8.vue]', msg),
+      noDeviceMessage: '未找到已授权的设备，请从首页重新连接',
+      deviceNotFoundMessage: '设备未找到，请从首页重新连接',
+    },
+  )
+
+  if (reconnectedDevice) {
+    await initTransport(reconnectedDevice)
+  }
+  else {
+    console.error('[v8.vue] 重新连接设备失败')
+  }
+}
+
+// 判断是否有缓存的 transport 实例
+const cachedTransport = transportWebHID?._s.get('v8')
+
+if (cachedTransport) {
+  // ✅ 有缓存：正常跳转
+  console.log('[v8.vue] 检测到缓存的 transport 实例，正常加载')
+  useTransportWebHID('v8', async (instance) => {
+    await initTransport(instance)
+  })
+}
+else {
+  // ❌ 无缓存：页面刷新
+  console.log('[v8.vue] 未检测到缓存的 transport 实例，尝试重新连接')
+  handlePageRefresh()
+}
 
 onMounted(() => {
   userStore.fetchLatestVersion()
-  const tabActive = localStorage.getItem('tabActive') ? localStorage.getItem('tabActive') : 'performance'
+  const tabActive = localStorage.getItem('tabActive') || 'performance'
   activeBgChange(tabActive)
   autofit.init({
     dh: 1080,

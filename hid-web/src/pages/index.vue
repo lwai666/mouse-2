@@ -120,39 +120,38 @@ async function getDeviceStatus() {
 
   console.log('connectedDevices====', connectedDevices)
 
-  // 4. 并行获取所有设备状态
-  const deviceStatusList = await Promise.all(
-    connectedDevices.map(async (device) => {
-      console.log('device====', device)
-      try {
-        // 转换为 transport
-        const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
-        transportWebHID?._s.set('v8', HIDDeviceRef)
+  // 4. 串行获取所有设备状态（一个一个发送，成功一个后再进行下一个）
+  const deviceStatusList = []
+  for (const device of connectedDevices) {
+    console.log('device====', device)
+    try {
+      // 转换为 transport
+      const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
+      transportWebHID?._s.set('v8', HIDDeviceRef)
 
-        // 发送命令获取设备信息
-        const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
+      // 发送命令获取设备信息
+      const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
 
-        // 解析设备信息
-        const deviceInfo = parseDeviceInfo(data)
+      // 解析设备信息
+      const deviceInfo = parseDeviceInfo(data)
 
-        return {
-          vendorId: device.vendorId,
-          productId: device.productId,
-          productName: device.productName,
-          ...deviceInfo,
-        }
-      }
-      catch (error) {
-        console.error(`获取设备状态失败: ${device.vendorId}-${device.productId}`, error)
-        return {
-          vendorId: device.vendorId,
-          productId: device.productId,
-          productName: device.productName,
-          error: true,
-        }
-      }
-    }),
-  )
+      deviceStatusList.push({
+        vendorId: device.vendorId,
+        productId: device.productId,
+        productName: device.productName,
+        ...deviceInfo,
+      })
+    }
+    catch (error) {
+      console.error(`获取设备状态失败: ${device.vendorId}-${device.productId}`, error)
+      deviceStatusList.push({
+        vendorId: device.vendorId,
+        productId: device.productId,
+        productName: device.productName,
+        error: true,
+      })
+    }
+  }
 
   // await transportWebHIDdisconnect('v8')
 
@@ -202,8 +201,10 @@ async function getDeviceStatus() {
 
   return deviceStatusList
 }
-
+// 点击设备卡片进入设置页面
 async function onNouseClick(item: any) {
+  console.log('点击的设备项====', item)
+  // 连接设备并存储实例, 每次连接的都是都会把上一次的实例断开并替换掉，所以 transportWebHID 中同一 id 只有一个实例
   const HIDDeviceRef = await connectAndStoreDevice(
     item.vendorId,
     item.productId,
@@ -218,6 +219,13 @@ async function onNouseClick(item: any) {
   // 使用找到的实例
   transport.value = HIDDeviceRef
   instanceRef.value = HIDDeviceRef
+
+  // 存储当前设备的 productId 和 vendorId 到 localStorage
+  localStorage.setItem('currentDevice', JSON.stringify({
+    productId: item.productId,
+    vendorId: item.vendorId,
+  }))
+
   router.push(`/hid/v8`)
 }
 
@@ -230,7 +238,7 @@ interface DeviceInfo {
   version: number // 固件版本号
   mouseColor: number // 颜色
 }
-
+// 解析设备信息的函数
 function parseDeviceInfo(data: Uint8Array): DeviceInfo {
   if (!data.length) {
     return {
@@ -265,7 +273,7 @@ function parseDeviceInfo(data: Uint8Array): DeviceInfo {
     mouseColor,
   }
 }
-
+// 添加新设备
 async function onAddNouseClick() {
   transport.value = await createTransportWebHID({
     id: 'v8',
@@ -298,9 +306,38 @@ async function onAddNouseClick() {
     return
   }
 
+  // 添加前先检查设备是否已存在，避免重复添加- 获取配对码
+
+  const pairingCodeData = await transport.value.send([isReceiver ? 0x2F : 0x2D])
+
+  let pairingCode = null
+
+  // 解析配对码（从索引3开始的4个字节，每个字节的前4位是配对码）
+  if (pairingCodeData && pairingCodeData.length >= 7) {
+    const byte0 = pairingCodeData[3] // 配对码低8位，高4位 (bit 4-7)
+    const byte1 = pairingCodeData[4] // 配对码8-15位，高4位 (bit 12-15)
+    const byte2 = pairingCodeData[5] // 配对码16-23位，高4位 (bit 20-23)
+    const byte3 = pairingCodeData[6] // 配对码24-31位，高4位 (bit 28-31)
+
+    // 提取每个字节的高4位（前面4位）
+    const code0 = (byte0 >> 4) & 0x0F // bit 4-7
+    const code1 = (byte1 >> 4) & 0x0F // bit 12-15
+    const code2 = (byte2 >> 4) & 0x0F // bit 20-23
+    const code3 = (byte3 >> 4) & 0x0F // bit 28-31
+
+    // 组合成16位配对码
+    pairingCode = (code3 << 12) | (code2 << 8) | (code1 << 4) | code0
+
+    console.log('配对码解析结果====', {
+      pairingCode,
+    })
+  }
+
   const transportListCopy = JSON.parse(localStorage.getItem('transportList') || '[]')
+
+  // 检查配对码是否已存在，如果存在则不添加新设备，直接进入设置页面
   const exists = transportListCopy.some(
-    item => item.productId === productId && item.vendorId === vendorId,
+    item => item.pairingCode === pairingCode,
   )
 
   if (exists) {
@@ -322,6 +359,8 @@ async function onAddNouseClick() {
     mouseColor: device.mouseColor,
     sn: device.sn,
     isOnline: true, // 设备已连接
+    pairingCode,
+    isWifiConnected: isReceiver && device.isConnected, // 如果是接收器且已连接，标记为 WiFi 已连接
   })
 
   localStorage.setItem('transportList', JSON.stringify(transportList.value))
@@ -329,6 +368,7 @@ async function onAddNouseClick() {
   // router.push('/hid/v8')
 }
 
+// 删除设备
 function deleteTransport(item) {
   const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
   transportList.value = transportListCopy.filter((k) => {
@@ -340,6 +380,7 @@ function deleteTransport(item) {
 const clickCount = ref(0)
 let clickTimer: number | null = null
 
+// 点击标题10次进入更新页面
 function handleTitleClick() {
   clickCount.value++
 
@@ -392,6 +433,7 @@ const colorItems = [
   { id: 3, color: 'black', backgroundColor: '#8B8B8B' },
   { id: 4, color: 'white', backgroundColor: '#fff' },
 ]
+// 根据鼠标颜色排序，确保当前激活项在第一个
 
 function sortedColorItems(mouseColor: any) {
   const filteredItems = colorItems
@@ -425,14 +467,6 @@ function onDisconnect(event: any) {
     console.log(`设备已断开: vendorId=${vendorId}, productId=${productId}`)
   }
 }
-
-// useTransportWebHID('v8', async (instance) => {
-
-//   instanceRef.value = instance
-//   transport.value = instance
-//   // 监听鼠标断开
-//   navigator.hid.addEventListener('disconnect', onDisconnect)
-// })
 
 navigator.hid.addEventListener('disconnect', onDisconnect)
 
@@ -559,6 +593,7 @@ function updateScrollButtons() {
   canScrollRight.value = scrollWidth > clientWidth && Math.ceil(scrollLeft) < scrollWidth - clientWidth
 }
 
+// 获取最新版本信息
 async function getLatestVersion() {
   await userStore.fetchLatestVersion()
 
