@@ -232,6 +232,16 @@ interface DeviceInfo {
 }
 
 function parseDeviceInfo(data: Uint8Array): DeviceInfo {
+  if (!data.length) {
+    return {
+      sn: '',
+      battery: 0,
+      isCharging: false,
+      isConnected: false,
+      version: 0,
+      mouseColor: 0,
+    }
+  }
   const battery = data[3] // byte 3: 电量 0-100
   const isCharging = data[4] === 1 // byte 4: 充电状态 1:充电 0:不充电
   const isConnected = data[5] === 1 // byte 5: 鼠标连接状态 1:连接 0:断开
@@ -276,13 +286,15 @@ async function onAddNouseClick() {
     return
 
   const data = await transport.value.send([0x2E, 0x00, 0x03])
-  const device = parseDeviceInfo(data)
+
+  const device = parseDeviceInfo(data || [])
+
   const { productId, vendorId } = transport.value.device
 
   // 接收器设备需要检查鼠标连接状态
   const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
 
-  if (isReceiver && device.isConnected !== 1) {
+  if (isReceiver && !device.isConnected) {
     return
   }
 
