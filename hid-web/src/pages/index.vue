@@ -307,6 +307,7 @@ async function onAddNouseClick() {
     isCharging: device.isCharging,
     isConnected: device.isConnected,
     version: device.version,
+    mouseColor: device.mouseColor,
     sn: device.sn,
     isOnline: true, // 设备已连接
   })
