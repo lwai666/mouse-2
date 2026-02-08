@@ -306,6 +306,7 @@ async function onAddNouseClick() {
     battery: device.battery,
     isCharging: device.isCharging,
     isConnected: device.isConnected,
+    version: device.version,
     sn: device.sn,
     isOnline: true, // 设备已连接
   })
@@ -637,8 +638,7 @@ watch(() => transportList.value, () => {
             padding-top: 15px;"
             @click="onNouseClick(item)"
           >
-            <p style="color: #fff; font-weight: bold;font-size: 18px;">
-            </p>
+            <p style="color: #fff; font-weight: bold;font-size: 18px;" />
 
             <div v-if="!item.isOnline" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
 
