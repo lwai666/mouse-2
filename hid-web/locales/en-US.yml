@@ -248,8 +248,9 @@ description:
   high_performance_warning_20k: Enabling 20K FPS will significantly increase power consumption and reduce battery life.
   high_performance_requirement: The current polling rate is below 4K, or Competitive Mode is not active. Enabling 20K FPS requires a higher data transmission rate. Due to the large data volume of 20K FPS, operating with an insufficient transmission rate may cause data overload, distortion, latency, and other instabilities. We have adjusted your polling rate to 4K. Please enable Competitive Mode before activating 20K FPS.
   settings_saved: Settings saved.
-  competitive_mode_description: In this mode, all mouse parameters are enhanced for competitive gameplay,
-  competitive_mode_description1: with a significant increase in power consumption.
+  competitive_mode_description: When enabled, uses a pure communication protocol with high-bandwidth uncompressed data transmission,
+  competitive_mode_description1: All mouse parameters are enhanced for professional intensive training,
+  competitive_mode_description2: with a corresponding increase in power consumption.
   performance_mode_description: In this mode, all mouse parameters are enhanced for professional-level intensive training.
   receiver_pairing_instructions: Receiver Pairing Instructions
   factory_reset_confirmation: After clicking "Confirm",

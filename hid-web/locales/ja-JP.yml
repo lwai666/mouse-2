@@ -248,8 +248,9 @@ description:
   high_performance_warning_20k: 20K FPSを有効にすると消費電力が大幅に増加し、バッテリー持続時間が減少します。
   high_performance_requirement: 現在のポーリングレートは4K未満であるか、競技モードがアクティブではありません。20K FPSを有効にするには、より高いデータ伝送速度が必要です。20K FPSのデータ量は大きいため、伝送速度が不十分な条件下では、データの過負荷、歪み、遅延、その他の不安定性が発生する可能性があります。ポーリングレートを4Kに調整しました。20K FPSを有効にする前に競技モードを有効にしてください。
   settings_saved: 設定を保存しました。
-  competitive_mode_description: このモードでは、すべてのマウスパラメータが競技プレイ用に強化され、
-  competitive_mode_description1: 同時に消費電力が大幅に増加します。
+  competitive_mode_description: 有効にすると、純粋な通信プロトコルを使用して高帯域幅の非圧縮データ伝送を行い、
+  competitive_mode_description1: すべてのマウスパラメータがプロフェッショナルな強化トレーニングに必要なレベルに向上し、
+  competitive_mode_description2: 同時に消費電力もそれに応じて増加します。
   performance_mode_description: このモードでは、すべてのマウスパラメータがプロレベルの強化トレーニング用に強化されます。
   receiver_pairing_instructions: レシーバーとのペアリング説明
   factory_reset_confirmation: 「確認」をクリック後、

@@ -245,8 +245,10 @@ description:
   high_performance_warning_20k: 开启20K FPS功耗会进一步增大，续航也会随之减少。
   high_performance_requirement: 现在的回报率是4K以下，或未开启竞技模式。开启20KFPS要求更高的传输速率。因为20KFPS数据量比较大，在传输速率过低的条件下有概率产生数据的超载，失真，延迟，和其他不稳定性。帮您调整到4K回报率，或开启竞技模式再打开20KFPS 功能。
   settings_saved: 设置已保存。
-  competitive_mode_description: 开启此模式后，鼠标的各项参数将提升至职业竞技所需，
-  competitive_mode_description1: 同时功耗将大幅度提升。
+  competitive_mode_description: 开启此模式后，纯净化通信协议，高带宽无压缩数据传输，
+  competitive_mode_description1: 鼠标的各项参数将提升至职业强化训练所需，
+  competitive_mode_description2: 同时功耗也会相应提升。
+
   performance_mode_description: 开启此模式后，鼠标的各项参数将提升至职业强化训练所需。
   receiver_pairing_instructions: 与接收器配对说明
   factory_reset_confirmation: 点击 "确认" 后

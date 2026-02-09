@@ -248,8 +248,9 @@ description:
   high_performance_warning_20k: Das Aktivieren von 20K FPS erhöht den Stromverbrauch erheblich und verringert die Akkulaufzeit.
   high_performance_requirement: Die aktuelle Abtastrate liegt unter 4K oder der Wettkampfmodus ist nicht aktiviert. 20K FPS erfordert eine höhere Datenübertragungsrate. Da die Datenmenge von 20K FPS groß ist, kann es bei unzureichender Übertragungsrate zu Datenüberlastung, Verzerrung, Verzögerung und anderen Instabilitäten kommen. Wir haben Ihre Abtastrate auf 4K eingestellt. Bitte aktivieren Sie den Wettkampfmodus, bevor Sie 20K FPS aktivieren.
   settings_saved: Einstellungen gespeichert.
-  competitive_mode_description: In diesem Modus werden alle Mausparameter für den Wettkampf verbessert,
-  competitive_mode_description1: gleichzeitig steigt der Stromverbrauch erheblich.
+  competitive_mode_description: Wenn aktiviert, wird ein reines Kommunikationsprotokoll mit hochbandbreiter unkomprimierter Datenübertragung verwendet,
+  competitive_mode_description1: Alle Mausparameter werden für professionelles intensives Training verbessert,
+  competitive_mode_description2: mit einem entsprechenden Anstieg des Stromverbrauchs.
   performance_mode_description: In diesem Modus werden alle Mausparameter für professionelles intensives Training verbessert.
   receiver_pairing_instructions: Anleitung zur Kopplung mit dem Empfänger
   factory_reset_confirmation: Nach dem Klicken auf "Bestätigen",

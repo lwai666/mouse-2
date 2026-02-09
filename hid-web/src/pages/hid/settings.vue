@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeftBold } from '@element-plus/icons-vue'
+import { Close } from '@element-plus/icons-vue'
 import autofit from 'autofit.js'
 import { ElBadge, ElButton, ElInput, ElMessageBox, ElProgress } from 'element-plus'
 import { useApiConfig } from '~/composables/useApiConfig'
@@ -726,7 +726,7 @@ onMounted(async () => {
     <a class="absolute left-30px top-30px" href="/">
       <img class="h-45px" src="/logo.png" alt="logo">
     </a>
-    <ArrowLeftBold class="fixed bottom-30px right-50px w-[40px] color-#fff font-900 opacity-30 hover:opacity-100" @click="router.push('/hid/v8')" />
+    <Close class="fixed right-50px top-40px w-[40px] color-#fff font-900 opacity-30 hover:opacity-100" @click="router.push('/hid/v8')" />
 
     <div class="w-70% pt-10">
       <h1 class="mb-20 text-center text-2xl">

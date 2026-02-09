@@ -249,8 +249,9 @@ description:
   high_performance_warning_20k: 20K FPS를 활성화하면 전력 소비가 더욱 증가하고 배터리 수명이随之减少。
   high_performance_requirement: 현재 폴링 레이트는 4K 미만이거나 경쟁 모드가 활성화되어 있지 않습니다. 20K FPS를 사용하려면 더 높은 데이터 전송 속도가 필요합니다. 20K FPS의 데이터 양이 비교적 크기 때문에 전송 속도가 너무 낮은 조건에서 데이터 과부하, 왜곡, 지연 및 기타 불안정성이 발생할 수 있습니다. 폴링 레이트를 4K로 조정했으며, 20K FPS를 활성화하기 전에 경쟁 모드를 먼저 활성화하십시오.
   settings_saved: 설정이 저장되었습니다.
-  competitive_mode_description: 이 모드를 켜면 모든 마우스 매개변수가 경쟁에 필요한 수준으로 향상됩니다,
-  competitive_mode_description1: 동시에 전력 소비가 상당히 증가합니다.
+  competitive_mode_description: 이 모드를 활성화하면 순수 통신 프로토콜을 사용하여 고대역폭의 압축되지 않은 데이터 전송을 하며,
+  competitive_mode_description1: 모든 마우스 매개변수가 전문적인 강화 훈련에 필요한 수준으로 향상되고,
+  competitive_mode_description2: 동시에 전력 소비도 상당히 증가합니다.
   performance_mode_description: 이 모드를 켜면 모든 마우스 매개변수가 전문적인 강화 훈련에 필요한 수준으로 향상됩니다.
   receiver_pairing_instructions: 수신기 페어링 설명
   factory_reset_confirmation: 확인 을 클릭한 후,

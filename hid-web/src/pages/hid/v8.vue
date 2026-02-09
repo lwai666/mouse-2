@@ -3237,8 +3237,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
           <p class="mb-3 mt-3" style="font-size: 18px;line-height: 40px;">
             {{ t('description.competitive_mode_description') }}
           </p>
-          <p style="font-size: 18px;line-height: 40px; color: red;">
-            {{ t('description.competitive_mode_description1') }}
+          <p style="font-size: 18px;line-height: 40px; ">
+            {{ t('description.competitive_mode_description1') }} <span style="color: red">{{ t('description.competitive_mode_description2') }}</span>
           </p>
 
           <div class="flex" style="margin-top: 30px;">
