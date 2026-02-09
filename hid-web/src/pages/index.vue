@@ -686,7 +686,9 @@ watch(() => transportList.value, () => {
             padding-top: 15px;"
             @click="onNouseClick(item)"
           >
-            <p style="color: #fff; font-weight: bold;font-size: 18px;" />
+            <p style="color: #fff; font-weight: bold;font-size: 18px;">
+              {{ item.productName }}
+            </p>
 
             <div v-if="!item.isOnline" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
 

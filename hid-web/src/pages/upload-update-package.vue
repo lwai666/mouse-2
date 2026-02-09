@@ -91,20 +91,72 @@ const formData = reactive({
   usbFile: null,
 })
 
+// 鼠标对象
+const versionObj = reactive({
+  SPI_version: 0,
+  USB_version: 0,
+})
+
 const spiFileList = ref([])
 const usbFileList = ref([])
 
+// 字节数组转32位整数（大端序）
+function bytesToUint32(bytes: Uint8Array): number {
+  return bytes[3] | (bytes[2] << 8) | (bytes[1] << 16) | (bytes[0] << 24)
+}
+
+// 解析固件数据
+function parseFirmwareData(uint8Array: Uint8Array): boolean {
+  console.log('原始固件数据:', uint8Array)
+  // 解析 SPI 固件信息（32-47字节）
+  const spiVersion = bytesToUint32(uint8Array.slice(44, 48))
+
+  // 解析 USB 固件信息（48-63字节）
+  const usbVersion = bytesToUint32(uint8Array.slice(60, 64))
+
+  Object.assign(versionObj, {
+    SPI_version: spiVersion,
+    USB_version: usbVersion,
+  })
+  console.log('解析后的固件对象:', versionObj)
+  return true
+}
+
 function spiHandleFileChange(file: any, fileList: any) {
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = function (e: any) {
+      const arrayBuffer = e.target.result
+      const uint8Array = new Uint8Array(arrayBuffer)
+      const success = parseFirmwareData(uint8Array)
+      if (success) {
+        formData.adapterVersion = `${versionObj.SPI_version}.${versionObj.USB_version}`
+      }
+    }
+    // 读取文件内容返回 ArrayBuffer
+    reader.readAsArrayBuffer(file.raw)
+  }
+
   formData.spiFile = file.raw
   spiFileList.value = fileList.slice(-1)
-  // 触发适配器版本号的验证
-  form.value?.validateField('adapterVersion')
 }
 function usbHandleFileChange(file: any, fileList: any) {
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = function (e: any) {
+      const arrayBuffer = e.target.result
+      const uint8Array = new Uint8Array(arrayBuffer)
+      const success = parseFirmwareData(uint8Array)
+      if (success) {
+        formData.mouseVersion = `${versionObj.SPI_version}`
+      }
+    }
+    // 读取文件内容返回 ArrayBuffer
+    reader.readAsArrayBuffer(file.raw)
+  }
+
   formData.usbFile = file.raw
   usbFileList.value = fileList.slice(-1)
-  // 触发鼠标版本号的验证
-  form.value?.validateField('mouseVersion')
 }
 
 function validateVersion(rule: any, value: string, callback: any) {
@@ -137,14 +189,6 @@ function validateVersion(rule: any, value: string, callback: any) {
     }
   }
 
-  callback()
-}
-
-function validateSpiFile(rule: any, value: any, callback: any) {
-  if (!value) {
-    callback(new Error('请上传适配器更新包'))
-    return
-  }
   callback()
 }
 
@@ -300,7 +344,7 @@ async function submitForm() {
               接收器更新包
             </div>
             <ElFormItem label="版本号" prop="adapterVersion">
-              <ElInput v-model="formData.adapterVersion" placeholder="请输入版本号" />
+              <ElInput v-model="formData.adapterVersion" placeholder="选择文件后回显" disabled />
             </ElFormItem>
             <ElFormItem label="更新包文件" prop="spiFile">
               <template #label>
@@ -340,7 +384,7 @@ async function submitForm() {
               鼠标更新包
             </div>
             <ElFormItem label="版本号" prop="mouseVersion">
-              <ElInput v-model="formData.mouseVersion" placeholder="请输入版本号" />
+              <ElInput v-model="formData.mouseVersion" placeholder="选择文件后回显" disabled />
             </ElFormItem>
             <ElFormItem label="更新包文件" prop="usbFile">
               <template #label>

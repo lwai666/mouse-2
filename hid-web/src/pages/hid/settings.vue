@@ -4,7 +4,7 @@ import autofit from 'autofit.js'
 import { ElBadge, ElButton, ElInput, ElMessageBox, ElProgress } from 'element-plus'
 import { useApiConfig } from '~/composables/useApiConfig'
 import { combineLowAndHigh8Bits, sleep } from '~/utils'
-import { connectAndStoreDevice, transportWebHID, type TransportWebHIDInstance, useTransportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, createTransportWebHID, transportWebHID, type TransportWebHIDInstance, useTransportWebHID } from '~/utils/hidHandle'
 
 // import { stringSplit } from '~/utils';
 

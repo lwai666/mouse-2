@@ -206,8 +206,8 @@ title:
   straight_line_correction_action: 系统将修正鼠标光标移动轨迹时
   straight_line_correction_reason: 因动作抖动产生的轻微的轨迹曲率。
   straight_line_correction_warning: 因运行算法的介入，会导致微小的数据延迟。追求极致电竞体验慎用。
-  connect_device: "连接"
-  disconnect_device: "取消"
+  connect_device: 连接
+  disconnect_device: 取消
   device_name: 设备名称
   no_available_macros: 没有可用宏
 macro:
@@ -225,7 +225,7 @@ macro:
 tabs:
   competitiveMode: 竞技模式
   performanceMode: 性能模式
-  MotionMode: 运动模式
+  MotionMode: 运动同步
   Performance: 性能
   Advanced: 高级
 
@@ -245,7 +245,7 @@ description:
   high_performance_warning_20k: 开启20K FPS功耗会进一步增大，续航也会随之减少。
   high_performance_requirement: 现在的回报率是4K以下，或未开启竞技模式。开启20KFPS要求更高的传输速率。因为20KFPS数据量比较大，在传输速率过低的条件下有概率产生数据的超载，失真，延迟，和其他不稳定性。帮您调整到4K回报率，或开启竞技模式再打开20KFPS 功能。
   settings_saved: 设置已保存。
-  competitive_mode_description: 开启此模式后，鼠标的各项参数将提升至竞技所需，
+  competitive_mode_description: 开启此模式后，鼠标的各项参数将提升至职业竞技所需，
   competitive_mode_description1: 同时功耗将大幅度提升。
   performance_mode_description: 开启此模式后，鼠标的各项参数将提升至职业强化训练所需。
   receiver_pairing_instructions: 与接收器配对说明
@@ -265,4 +265,3 @@ description:
   click_to_add_device: 点击新增设备
   click_to_select_device: 点击选择需要连接的设备名称
   click_to_connect_device: 点击连接设备
-

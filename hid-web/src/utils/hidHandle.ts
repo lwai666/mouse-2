@@ -905,25 +905,6 @@ export async function createTransportWebHID(config: { id: string, filters: HIDDe
     console.error('[createTransportWebHID] requestDevice 错误:', error)
   }
 
-  // // 如果 requestDevice 返回空数组，尝试使用 getDevices 获取已授权的设备
-  // if (devices.length === 0) {
-  //   console.log('[createTransportWebHID] requestDevice 返回空，尝试 getDevices')
-  //   try {
-  //     const allDevices = await window.navigator.hid.getDevices()
-  //     console.log('[createTransportWebHID] getDevices 返回:', allDevices)
-
-  //     // 过滤出匹配的设备
-  //     devices = allDevices.filter(device => {
-  //       return config.filters.some(filter =>
-  //         device.vendorId === filter.vendorId && device.productId === filter.productId
-  //       )
-  //     })
-  //     console.log('[createTransportWebHID] 过滤后的设备:', devices)
-  //   } catch (error) {
-  //     console.error('[createTransportWebHID] getDevices 错误:', error)
-  //   }
-  // }
-
   if (devices.length === 0) {
     console.error('[createTransportWebHID] 没有找到匹配的设备')
     return false
