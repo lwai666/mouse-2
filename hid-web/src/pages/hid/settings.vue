@@ -65,7 +65,6 @@ async function initTransport(instance: TransportWebHIDInstance) {
     router.push('/')
     return
   }
-  console.log('连接成功，transport====', transport.value)
 
   await getVersion(transport.value)
 }
@@ -77,7 +76,6 @@ async function handlePageRefresh() {
   const currentDeviceStr = localStorage.getItem('currentDevice')
 
   if (!currentDeviceStr) {
-    console.error('[settings.vue] 未找到设备信息，请从首页进入')
     router.push('/')
     return
   }
@@ -880,20 +878,20 @@ onMounted(async () => {
 </style>
 
 <style>
-/* 科技感提示框 - 增强发光效果 */
+/* 科技感提示框 - 白色玻璃化效果 */
 .update-confirm-box {
   width: 420px !important;
   border-radius: 12px !important;
-  background: rgba(20, 25, 40, 0.75) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(64, 158, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(30px) !important;
+  -webkit-backdrop-filter: blur(30px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow:
-    0 0 20px rgba(64, 158, 255, 0.3),
-    0 0 40px rgba(64, 158, 255, 0.2),
-    0 0 60px rgba(64, 158, 255, 0.1),
-    0 15px 50px rgba(0, 0, 0, 0.4),
-    inset 0 0 30px rgba(64, 158, 255, 0.05) !important;
+    0 0 20px rgba(255, 255, 255, 0.15),
+    0 0 40px rgba(255, 255, 255, 0.1),
+    0 15px 50px rgba(0, 0, 0, 0.3),
+    inset 0 0 30px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
   padding: 0 !important;
   overflow: hidden !important;
   animation: boxGlow 3s ease-in-out infinite !important;
@@ -903,38 +901,37 @@ onMounted(async () => {
   0%,
   100% {
     box-shadow:
-      0 0 20px rgba(64, 158, 255, 0.3),
-      0 0 40px rgba(64, 158, 255, 0.2),
-      0 0 60px rgba(64, 158, 255, 0.1),
-      0 15px 50px rgba(0, 0, 0, 0.4),
-      inset 0 0 30px rgba(64, 158, 255, 0.05) !important;
+      0 0 20px rgba(255, 255, 255, 0.12),
+      0 0 40px rgba(255, 255, 255, 0.08),
+      0 15px 50px rgba(0, 0, 0, 0.3),
+      inset 0 0 30px rgba(255, 255, 255, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
   }
   50% {
     box-shadow:
-      0 0 30px rgba(64, 158, 255, 0.5),
-      0 0 60px rgba(64, 158, 255, 0.3),
-      0 0 80px rgba(64, 158, 255, 0.15),
-      0 15px 50px rgba(0, 0, 0, 0.4),
-      inset 0 0 40px rgba(64, 158, 255, 0.08) !important;
+      0 0 30px rgba(255, 255, 255, 0.2),
+      0 0 60px rgba(255, 255, 255, 0.12),
+      0 15px 50px rgba(0, 0, 0, 0.3),
+      inset 0 0 40px rgba(255, 255, 255, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
   }
 }
 
 .update-confirm-box .el-message-box__header {
   padding: 20px 24px 16px !important;
-  background: rgba(64, 158, 255, 0.08) !important;
-  border-bottom: 1px solid rgba(64, 158, 255, 0.2) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
   margin: 0 !important;
-  box-shadow: 0 1px 0 rgba(64, 158, 255, 0.1) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 .update-confirm-box .el-message-box__title {
   font-size: 17px !important;
   font-weight: 600 !important;
-  color: #409eff !important;
+  color: #ffffff !important;
   letter-spacing: 0.5px !important;
   text-shadow:
-    0 0 10px rgba(64, 158, 255, 0.8),
-    0 0 20px rgba(64, 158, 255, 0.4) !important;
+    0 0 10px rgba(255, 255, 255, 0.6),
+    0 0 20px rgba(255, 255, 255, 0.3) !important;
 }
 
 .update-confirm-box .el-message-box__content {
@@ -944,9 +941,9 @@ onMounted(async () => {
 .update-confirm-box .el-message-box__message {
   font-size: 14px !important;
   line-height: 1.7 !important;
-  color: #c0c4cc !important;
+  color: #e4e7ed !important;
   font-weight: 400 !important;
-  text-shadow: 0 0 2px rgba(192, 196, 204, 0.3) !important;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.2) !important;
 }
 
 .update-confirm-box .el-message-box__btns {
@@ -964,46 +961,42 @@ onMounted(async () => {
   font-size: 14px !important;
   font-weight: 500 !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  border: 1px solid !important;
+  border: none !important;
 }
 
 .update-confirm-box .el-button--default {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #909399 !important;
-  border-color: rgba(144, 147, 153, 0.3) !important;
-  text-shadow: 0 0 5px rgba(144, 147, 153, 0.3) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e4e7ed !important;
+  border: none !important;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2) !important;
 }
 
 .update-confirm-box .el-button--default:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(144, 147, 153, 0.5) !important;
-  color: #c0c4cc !important;
-  box-shadow: 0 0 15px rgba(144, 147, 153, 0.3) !important;
-  text-shadow: 0 0 8px rgba(192, 196, 204, 0.5) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2) !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
 }
 
 .update-confirm-box .el-button--primary {
-  background: linear-gradient(135deg, #409eff 0%, #3a8ee6 100%) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%) !important;
+  color: #1a1a1a !important;
+  border: none !important;
   box-shadow:
-    0 0 20px rgba(64, 158, 255, 0.5),
-    0 4px 20px rgba(64, 158, 255, 0.3),
-    inset 0 0 15px rgba(255, 255, 255, 0.1) !important;
-  text-shadow:
-    0 0 10px rgba(255, 255, 255, 0.8),
-    0 0 20px rgba(255, 255, 255, 0.4) !important;
+    0 0 20px rgba(255, 255, 255, 0.4),
+    0 4px 20px rgba(255, 255, 255, 0.2),
+    inset 0 0 15px rgba(255, 255, 255, 0.3) !important;
+  text-shadow: none !important;
 }
 
 .update-confirm-box .el-button--primary:hover {
-  background: linear-gradient(135deg, #66b1ff 0%, #409eff 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%) !important;
   box-shadow:
-    0 0 30px rgba(64, 158, 255, 0.7),
-    0 6px 25px rgba(64, 158, 255, 0.5),
-    inset 0 0 20px rgba(255, 255, 255, 0.15) !important;
+    0 0 30px rgba(255, 255, 255, 0.5),
+    0 6px 25px rgba(255, 255, 255, 0.3),
+    inset 0 0 20px rgba(255, 255, 255, 0.4) !important;
   transform: translateY(-1px) !important;
-  text-shadow:
-    0 0 15px rgba(255, 255, 255, 1),
-    0 0 25px rgba(255, 255, 255, 0.6) !important;
+  text-shadow: none !important;
 }
 </style>
