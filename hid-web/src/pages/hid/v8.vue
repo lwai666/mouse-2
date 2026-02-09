@@ -1529,7 +1529,7 @@ function onInputReport(uint8ArrayRes: Uint8Array) {
   }
 
   // 🆕 电量变化主动上报（需要确认报告 ID，暂时先监听所有未知报告）
-  else if (reportId === 0x40) {
+  else if (reportId === 0x0E) {
     const oldLevel = profileInfo.battery_level
     const newLevel = uint8ArrayRes[3]
     console.log('  ✅ [电量更新]', oldLevel, '% →', newLevel, '%')

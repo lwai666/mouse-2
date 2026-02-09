@@ -28,7 +28,7 @@ function checksum(data) {
 }
 
 /*  */
-let Command = {
+const Command = {
   EncryptionData: 1, // 下传加密沟通数据
   PCDriverStatus: 2, // 下传驱动状态的命令（驱动是否处于窗口激活状态）
   DeviceOnLine: 3, // 获取无线鼠标是否在线
