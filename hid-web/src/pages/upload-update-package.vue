@@ -269,7 +269,7 @@ async function submitForm() {
     </ElForm>
 
     <div
-      v-else style="height: 100%; display: flex;justify-content: center;align-items: center;"
+      v-else style="height: 100%; display: flex;justify-content: center;align-items: center;overflow: auto; padding-bottom: 30px;"
     >
       <div
         v-if="!transport"
@@ -284,7 +284,8 @@ async function submitForm() {
           <Plus />
         </ElIcon>
       </div>
-      <div v-else style="height: 100%;">
+      <div v-else>
+        <div class="w-full p-10 text-center text-2xl" style="text-align: center;" />
         <!-- 上传表单 -->
         <ElForm
           ref="form"
@@ -293,10 +294,6 @@ async function submitForm() {
           label-width="120px"
           class="mx-auto my-10 w-200"
         >
-          <div class="w-full p-10 text-center text-2xl" style="text-align: center;">
-            更新包上传
-          </div>
-
           <!-- 适配器更新包模块 -->
           <div class="module-card">
             <div class="module-title">

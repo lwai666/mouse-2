@@ -92,7 +92,7 @@ async function handlePageRefresh() {
     productId,
     'v8',
     {
-      showMessage: (msg) => console.error('[settings.vue]', msg),
+      showMessage: msg => console.error('[settings.vue]', msg),
       noDeviceMessage: '未找到已授权的设备，请从首页重新连接',
       deviceNotFoundMessage: '设备未找到，请从首页重新连接',
     },
@@ -417,8 +417,6 @@ async function sendFirmwareChecksum(checksum: number) {
 async function quitBoot() {
   await getTransport().send([0x8A])
 }
-
-// 一键升级功能 - 使用新协议的固件包格式
 
 // 一键升级功能 - 使用新协议的固件包格式
 async function onClickStartUpdate() {
