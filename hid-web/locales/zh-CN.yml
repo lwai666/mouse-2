@@ -5,6 +5,12 @@ index:
   pairingGuide: 无线连接配对指南
   schematicGuide: 进入设置过程示意指南
   description: 在这里您可以迅速设置您的 Scyrox 设备，尝试一些与众不同的设定，并按您的喜好个性化定制您的设备。 当完成配置之后，后台无需保留。极致性能，为真正的玩家而生。
+language:
+  zhCN: 简体中文
+  deDE: Deutsch
+  enUS: English
+  koKR: 한국어
+  jaJP: 日本語
   add_macro_warning: 最多只能添加4个宏！
   add_macro_warning_1: 请先录制宏！
   record_macro_warning: 宏录制已满！
@@ -24,6 +30,7 @@ settings:
   spiVersion: 接收器固件版本
   usbVersion: 鼠标固件版本
   updateNow: 立即更新
+  selectFile: 选择文件
   updating: 正在更新
   updateCompleted: 更新完成
   updateFailed: 更新失败
@@ -33,6 +40,24 @@ settings:
   hint21: 请确认鼠标已通过原装线连接到Pc
   hint22: 更新过程中请耐心等待将鼠标静默放置并确保与Pc的连接！
   errorHint21: 更新失败请重试！
+  noDeviceMessage: 未找到已授权的设备，请从首页重新连接
+  deviceNotFoundMessage: 设备未找到，请从首页重新连接
+  headerMismatchError: 头字符串对不上，请检查文件
+  projectNameMismatchError: 网页判断项目名不对，请检查文件
+  selectFileFirstError: 请先选择固件文件
+  noValidFirmwareDataError: 固件文件中没有有效的固件数据
+  updateFailedMessage: 更新失败
+  receiverNotConnectedError: 请确认接收器已通过原装线连接
+  mouseNotConnectedError: 请确认鼠标已通过原装线连接
+  noReceiverFirmwareError: 未找到接收器固件信息!
+  noMouseFirmwareError: 未找到鼠标固件信息!
+  parseFirmwareFailedError: 固件文件解析失败，请检查文件格式
+  downloadFirmwareFailedError: 固件文件下载失败
+  getReceiverVersion: 获取当前接收器版本
+  startUpdate: 开始更新
+  updatePromptTitle: 更新提示
+  suggestUpdateReceiverFirst: 建议您先更新接收器再更新鼠标，这样更新过程体验更佳，是否仍要更新？
+  confirmUpdate: 确认更新
 input:
   profile_input: 请粘贴对应的配置
 button:

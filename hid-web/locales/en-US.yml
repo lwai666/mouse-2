@@ -5,6 +5,13 @@ index:
   pairingGuide: Wireless Connection Pairing Guide
   schematicGuide: Settings Process Guide
   description: Here you can quickly set up your Scyrox device, try out some unique settings, and customize your device to your preferences. When the configuration is complete, no background retention is required. Ultimate performance - for true gamers.
+
+language:
+  zhCN: 简体中文
+  deDE: Deutsch
+  enUS: English
+  koKR: 한국어
+  jaJP: 日本語
   add_macro_warning: You can only add a maximum of 4 macros!
   add_macro_warning_1: Please record the macro first!
   record_macro_warning: Macro recording is full!
@@ -24,6 +31,7 @@ settings:
   spiVersion: Receiver Firmware Version
   usbVersion: Mouse Firmware Version
   updateNow: Update Now
+  selectFile: Select File
   updating: Updating
   updateCompleted: Update Completed
   updateFailed: Update Failed
@@ -33,6 +41,24 @@ settings:
   hint21: Please confirm the mouse is connected to PC via original cable
   hint22: During the update, please keep the mouse stationary and ensure connection with PC!
   errorHint21: 'Update failed, please try again!'
+  noDeviceMessage: No authorized device found, please reconnect from the home page
+  deviceNotFoundMessage: Device not found, please reconnect from the home page
+  headerMismatchError: Header string mismatch, please check the file
+  projectNameMismatchError: Project name mismatch, please check the file
+  selectFileFirstError: Please select firmware file first
+  noValidFirmwareDataError: No valid firmware data in the firmware file
+  updateFailedMessage: Update failed
+  receiverNotConnectedError: Please confirm the receiver is connected via original cable
+  mouseNotConnectedError: Please confirm the mouse is connected via original cable
+  noReceiverFirmwareError: Receiver firmware information not found!
+  noMouseFirmwareError: Mouse firmware information not found!
+  parseFirmwareFailedError: Failed to parse firmware file, please check file format
+  downloadFirmwareFailedError: Failed to download firmware file
+  getReceiverVersion: Get Current Receiver Version
+  startUpdate: Start Update
+  updatePromptTitle: Update Prompt
+  suggestUpdateReceiverFirst: It is recommended to update the receiver first before updating the mouse for a better update experience. Do you still want to update?
+  confirmUpdate: Confirm Update
 
 input:
   profile_input: Please paste the corresponding configuration

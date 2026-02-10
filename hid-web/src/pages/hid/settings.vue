@@ -91,8 +91,8 @@ async function handlePageRefresh() {
     'v8',
     {
       showMessage: msg => console.error('[settings.vue]', msg),
-      noDeviceMessage: '未找到已授权的设备，请从首页重新连接',
-      deviceNotFoundMessage: '设备未找到，请从首页重新连接',
+      noDeviceMessage: t('settings.noDeviceMessage'),
+      deviceNotFoundMessage: t('settings.deviceNotFoundMessage'),
     },
   )
 
@@ -251,18 +251,18 @@ function parseFirmwareData(uint8Array: Uint8Array): boolean {
   const projectName = String.fromCharCode(...projectBytes.filter(b => b !== 0xFF && b !== 0x00))
 
   if (isMSDevice.value && header !== 'MS-USB-UPGRADE') {
-    showMessage(`头字符串对不上，请检查文件`)
+    showMessage(t('settings.headerMismatchError'))
     return false
   }
 
   if (!isMSDevice.value && header !== 'DO-USB-UPGRADE') {
-    showMessage(`头字符串对不上，请检查文件`)
+    showMessage(t('settings.headerMismatchError'))
 
     return false
   }
 
   if (isMSDevice.value && projectName !== 'SCYROX_V10') {
-    showMessage(`网页判断项目名不对，请检查文件`)
+    showMessage(t('settings.projectNameMismatchError'))
 
     return false
   }
@@ -303,14 +303,16 @@ function parseFirmwareData(uint8Array: Uint8Array): boolean {
 
   // 校验 SPI checksum
   if (spiSize > 0 && spiChecksum !== spiCalculatedChecksum) {
-    showMessage(`固件校验失败: 固件包中=${spiChecksum}, 计算值=${spiCalculatedChecksum}`)
+    console.log(`固件校验失败: 固件包中=${spiChecksum}, 计算值=${spiCalculatedChecksum}`)
+    // showMessage(t('settings.spiChecksumMismatchError', { checksum: spiChecksum, calculated: spiCalculatedChecksum }))
 
     return false
   }
 
   // 校验 USB checksum
   if (usbSize > 0 && usbChecksum !== usbCalculatedChecksum) {
-    showMessage(`固件校验失败: 固件包中=${usbChecksum}, 计算值=${usbCalculatedChecksum}`)
+    console.log(`固件校验失败: 固件包中=${usbChecksum}, 计算值=${usbCalculatedChecksum}`)
+    // showMessage(t('settings.usbChecksumMismatchError', { checksum: usbChecksum, calculated: usbCalculatedChecksum }))
 
     return false
   }
@@ -419,7 +421,7 @@ async function quitBoot() {
 // 一键升级功能 - 使用新协议的固件包格式
 async function onClickStartUpdate() {
   if (!uint8ArrayObj) {
-    console.error('请先选择固件文件')
+    console.error(t('settings.selectFileFirstError'))
     return
   }
 
@@ -436,7 +438,7 @@ async function onClickStartUpdate() {
     }
 
     if (updateTasks.length === 0) {
-      console.error('固件文件中没有有效的固件数据')
+      console.error(t('settings.noValidFirmwareDataError'))
       return
     }
 
@@ -523,7 +525,7 @@ async function onClickStartUpdate() {
     currentUpdate.value.status = 'updateFailed'
     onClose()
     if (err instanceof Error) {
-      showMessage(`更新失败`)
+      showMessage(t('settings.updateFailedMessage'))
     }
   }
 }
@@ -626,11 +628,11 @@ async function fetchWithProgress(url: string, onProgress: (progress: string) => 
 
 async function onClickUpdate(type: 'spi' | 'usb') {
   if (type === 'spi' && !updateList.spi.disabled1) {
-    showMessage('请确认接收器已通过原装线连接')
+    showMessage(t('settings.receiverNotConnectedError'))
     return
   }
   if (type === 'usb' && !updateList.usb.disabled1) {
-    showMessage('请确认鼠标已通过原装线连接')
+    showMessage(t('settings.mouseNotConnectedError'))
     return
   }
 
@@ -643,10 +645,10 @@ async function onClickUpdate(type: 'spi' | 'usb') {
   if (type === 'usb' && updateList.spi.disabled) {
     try {
       await ElMessageBox({
-        title: '更新提示',
-        message: '建议您先更新接收器再更新鼠标，这样更新过程体验更佳，是否仍要更新？',
-        confirmButtonText: '确认更新',
-        cancelButtonText: '取消',
+        title: t('settings.updatePromptTitle'),
+        message: t('settings.suggestUpdateReceiverFirst'),
+        confirmButtonText: t('settings.confirmUpdate'),
+        cancelButtonText: t('button.cancel'),
         type: '',
         customClass: 'update-confirm-box',
         closeOnClickModal: false,
@@ -669,14 +671,14 @@ async function onClickUpdate(type: 'spi' | 'usb') {
 
   if (type === 'spi') {
     if (!userStore.latestVersion.spiFilePath) {
-      showMessage(`未找到接收器固件信息!`)
+      showMessage(t('settings.noReceiverFirmwareError'))
       return
     }
     url += userStore.latestVersion.spiFilePath
   }
   else if (type === 'usb') {
     if (!userStore.latestVersion.usbFilePath) {
-      showMessage(`未找到鼠标固件信息!`)
+      showMessage(t('settings.noMouseFirmwareError'))
       return
     }
     url += userStore.latestVersion.usbFilePath
@@ -696,13 +698,13 @@ async function onClickUpdate(type: 'spi' | 'usb') {
     }
     else {
       currentUpdate.value.status = 'updateFailed'
-      showMessage(`固件文件解析失败，请检查文件格式`)
+      showMessage(t('settings.parseFirmwareFailedError'))
     }
   }
   catch (err) {
     currentUpdate.value.status = 'updateFailed'
     if (err instanceof Error) {
-      showMessage(`固件文件下载失败`)
+      showMessage(t('settings.downloadFirmwareFailedError'))
     }
   }
 }
@@ -747,22 +749,22 @@ onMounted(async () => {
             <ElBadge :value="(item.version < item.latestVersion) && item.disabled ? 'new' : ''">
               <!-- exe 环境：显示"选择文件"按钮 -->
               <ElButton v-if="isElectron" :disabled="item.status !== 'updateNow'" type="primary" round @click="toSelectFileHandle(item.title, index)">
-                选择文件  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
+                {{ t('settings.selectFile') }}  <input ref="fileInput" type="file" accept=".bin" style="display: none" @change="selectFileHandle">
               </ElButton>
 
               <!-- 网页环境：显示"一键升级"按钮 -->
 
               <ElButton v-if="!isElectron && index !== 'usb' && adapterTransport" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
-                立即更新
+                {{ t('settings.updateNow') }}
               </ElButton>
 
               <ElButton v-if="!isElectron && index !== 'usb' && !adapterTransport" :disabled="item.status !== 'updateNow'" type="primary" round @click="connectAdapterDevice">
-                获取当前接收器版本
+                {{ t('settings.getReceiverVersion') }}
               </ElButton>
 
               <!-- 网页环境：显示"一键升级"按钮 -->
               <ElButton v-if="!isElectron && index == 'usb'" :disabled="item.status !== 'updateNow'" type="primary" round @click="onClickUpdate(index)">
-                立即更新
+                {{ t('settings.updateNow') }}
               </ElButton>
             </ElBadge>
           </div>
@@ -829,22 +831,22 @@ onMounted(async () => {
     </div>
     <div v-if="selectFile" class="zhezhao">
       <ElButton v-if="currentUpdate.status === 'updateNow'" type="primary" round @click="onClickStartUpdate">
-        开始更新
+        {{ t('settings.startUpdate') }}
       </ElButton>
       <div v-if="currentUpdate.status === 'updating'" style="width: 50%;">
         <!-- :percentage="item.progress" :status="item.progress == 100 ? 'success' : ''" :stroke-width="10" :striped="item.progress !== 100" -->
         <div style="margin-bottom: 10px;color: #0090FF;font-size: 30px;">
-          正在更新
+          {{ t('settings.updating') }}
         </div>
         <ElProgress :percentage="currentUpdate.progress" :status="currentUpdate.progress == 100 ? 'success' : ''" class="w-full" striped-flow :duration="10" :show-text="false" :stroke-width="10" :striped="currentUpdate.progress !== 100" />
       </div>
       <div v-if="currentUpdate.status === 'updateCompleted'" style="width: 50%;">
         <!-- :percentage="item.progress" :status="item.progress == 100 ? 'success' : ''" :stroke-width="10" :striped="item.progress !== 100" -->
         <div style="margin-bottom: 10px;color: #0090FF;font-size: 30px;">
-          更新完成
+          {{ t('settings.updateCompleted') }}
         </div>
         <ElButton v-if="currentUpdate.status === 'updateNow'" type="primary" round @click="onClose">
-          确认
+          {{ t('button.ok') }}
         </ElButton>
       </div>
     </div>

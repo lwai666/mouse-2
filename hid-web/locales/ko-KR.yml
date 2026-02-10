@@ -11,6 +11,13 @@ index:
   sports_arena_1: 경기 모드를 활성화하면 더 나은 경기 경험을 향상시키고 더 많은 전력 소비가 발생합니다!
   sports_arena_2: e스포츠 아레나 모드를 활성화하면 더 미세한 손동작과 더 정확한 움직임이 게임에 즉시 반영됩니다. e스포츠 모드보다 두 배 더 빠른 응답성을 제공하지만, PC 하드웨어 요구사항이 매우 높고 무선 전송 환경이 까다로우며 더 진보된 무선 전송 장치가 필요합니다. 또한 전력 소비가 증가합니다!
   not_support_hid_warning: 현재 브라우저는 장치 연결을 지원하지 않습니다. Chrome, Edge 또는 Opera 브라우저를 사용하는 것이 좋습니다!
+
+language:
+  zhCN: 简体中文
+  deDE: Deutsch
+  enUS: English
+  koKR: 한국어
+  jaJP: 日本語
 mouseConnection:
   connecting: 연결 중...
   loop: 루프

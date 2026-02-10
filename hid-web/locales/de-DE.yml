@@ -11,6 +11,12 @@ index:
   sports_arena_1: Das Aktivieren des Sportmodus kann das Wettbewerbserlebnis verbessern, erhöht jedoch auch den Stromverbrauch!
   sports_arena_2: Nach Aktivierung des E-Sport-Arena-Modus werden feinere Handbewegungen und präzise Bewegungen sofort im Spiel umgesetzt. Die Reaktionsgeschwindigkeit ist doppelt so hoch wie im E-Sport-Modus, erfordert aber extrem hohe PC-Hardware-Spezifikationen, eine strenge Funkübertragungsumgebung und fortschrittlichere Funkübertragungsgeräte. Dies führt auch zu einem höheren Stromverbrauch!
   not_support_hid_warning: Der aktuelle Browser unterstützt keine Geräteverbindung. Wir empfehlen die Verwendung von Chrome, Edge oder Opera Browser!
+language:
+  zhCN: 简体中文
+  deDE: Deutsch
+  enUS: English
+  koKR: 한국어
+  jaJP: 日本語
 mouseConnection:
   connecting: Verbindung wird hergestellt...
   loop: Schleife
@@ -36,7 +42,6 @@ settings:
 
 input:
   profile_input: Bitte fügen Sie die entsprechende Konfiguration ein
-
 button:
   about: Über
   back: Zurück
@@ -193,9 +198,9 @@ title:
   lod_height: LOD-Höhe
   key_response: Tastenansprechzeit
   new_device: Neues Gerät
-  connect_device: "Gerät verbinden"
-  disconnect_device: "Verbindung trennen"
-  device_name: "Gerätename"
+  connect_device: Gerät verbinden
+  disconnect_device: Verbindung trennen
+  device_name: Gerätename
   no_available_macros: Keine verfügbaren Makros
 
   sleep_time: Ruhezeit

@@ -1577,8 +1577,8 @@ async function handlePageRefresh() {
     'v8',
     {
       showMessage: msg => console.error('[v8.vue]', msg),
-      noDeviceMessage: '未找到已授权的设备，请从首页重新连接',
-      deviceNotFoundMessage: '设备未找到，请从首页重新连接',
+      noDeviceMessage: t('settings.noDeviceMessage'),
+      deviceNotFoundMessage: t('settings.deviceNotFoundMessage'),
     },
   )
 
@@ -2329,11 +2329,11 @@ function changeModeHide() {
 }
 
 const selectLanguageList = ref([
-  { title: '简体中文', img: '/flag/CN1.png', language: 'zh-CN' },
-  { title: 'Deutsch', img: '/flag/DE1.png', language: 'de-DE' },
-  { title: 'English', img: '/flag/US1.png', language: 'en-US' },
-  { title: '한국어', img: '/flag/KR1.png', language: 'ko-KR' },
-  { title: '日本語', img: '/flag/JP1.png', language: 'ja-JP' },
+  { title: t('language.zhCN'), img: '/flag/CN1.png', language: 'zh-CN' },
+  { title: t('language.deDE'), img: '/flag/DE1.png', language: 'de-DE' },
+  { title: t('language.enUS'), img: '/flag/US1.png', language: 'en-US' },
+  { title: t('language.koKR'), img: '/flag/KR1.png', language: 'ko-KR' },
+  { title: t('language.jaJP'), img: '/flag/JP1.png', language: 'ja-JP' },
 ])
 
 toggleLocales(locale.value)
