@@ -4,6 +4,10 @@ index:
   rightClick: 左键点击进入设置
   pairingGuide: 无线连接配对指南
   schematicGuide: 进入设置过程示意指南
+  majorUpdate: 重大更新
+  cancelUpdate: 取消更新
+  confirmUpdate: 确认更新
+  firmwareUpdateNotification: 有最新的固件版本推送
   description: 在这里您可以迅速设置您的 Scyrox 设备，尝试一些与众不同的设定，并按您的喜好个性化定制您的设备。 当完成配置之后，后台无需保留。极致性能，为真正的玩家而生。
 language:
   zhCN: 简体中文

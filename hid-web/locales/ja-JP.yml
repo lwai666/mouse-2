@@ -4,6 +4,10 @@ index:
   rightClick: 左クリックで設定に入る
   pairingGuide: ワイヤレス接続ペアリングガイド
   schematicGuide: 設定プロセスガイド
+  majorUpdate: メジャーアップデート
+  cancelUpdate: アップデートをキャンセル
+  confirmUpdate: アップデートを確認
+  firmwareUpdateNotification: 最新のファームウェアバージョンが利用可能です
   description: ここでは、Scyrox デバイスをすばやく設定し、ユニークな設定を試し、お好みに合わせてデバイスをカスタマイズできます。設定完了後、バックグラウンドでの実行は不要です。真のゲーマーのための究極のパフォーマンスを実現します。
 
 language:

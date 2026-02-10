@@ -4,6 +4,10 @@ index:
   rightClick: Left Click to Enter Settings
   pairingGuide: Wireless Connection Pairing Guide
   schematicGuide: Settings Process Guide
+  majorUpdate: Major Update
+  cancelUpdate: Cancel Update
+  confirmUpdate: Confirm Update
+  firmwareUpdateNotification: Latest firmware version available
   description: Here you can quickly set up your Scyrox device, try out some unique settings, and customize your device to your preferences. When the configuration is complete, no background retention is required. Ultimate performance - for true gamers.
 
 language:

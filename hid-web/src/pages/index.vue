@@ -4,7 +4,7 @@ import { CircleClose, Plus } from '@element-plus/icons-vue'
 import { useIntervalFn } from '@vueuse/core'
 
 import autofit from 'autofit.js'
-import { ElCarousel, ElCarouselItem, ElIcon } from 'element-plus'
+import { ElCarousel, ElCarouselItem, ElIcon, ElMessageBox, ElSpace } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -29,11 +29,11 @@ const transport = ref()
 const instanceRef = ref()
 
 const selectLanguageList = ref([
-  { title: 'Deutsch', img: '/flag/DE.png', language: 'de-DE' },
-  { title: 'English', img: '/flag/US.png', language: 'en-US' },
-  { title: '简体中文', img: '/flag/CN.png', language: 'zh-CN' },
-  { title: '한국어', img: '/flag/KR.png', language: 'ko-KR' },
-  { title: '日本語', img: '/flag/JP.png', language: 'ja-JP' },
+  { title: t('language.deDE'), img: '/flag/DE.png', language: 'de-DE' },
+  { title: t('language.enUS'), img: '/flag/US.png', language: 'en-US' },
+  { title: t('language.zhCN'), img: '/flag/CN.png', language: 'zh-CN' },
+  { title: t('language.koKR'), img: '/flag/KR.png', language: 'ko-KR' },
+  { title: t('language.jaJP'), img: '/flag/JP.png', language: 'ja-JP' },
 ])
 
 const languageShow = ref(false)
@@ -345,9 +345,9 @@ async function onAddNouseClick() {
 
   const transportListCopy = JSON.parse(localStorage.getItem('transportList') || '[]')
 
-  // 检查配对码是否已存在，如果存在则不添加新设备，直接进入设置页面
+  // 检查配对码是否已存在，或者 vendorId 和 productId 一致，如果存在则不添加新设备，直接进入设置页面
   const exists = transportListCopy.some(
-    item => item.pairingCode === pairingCode,
+    (item: any) => item.pairingCode === pairingCode || (item.productId === productId && item.vendorId === vendorId),
   )
 
   if (exists) {
@@ -415,6 +415,76 @@ function handleTitleClick() {
 
 function goPath() {
   router.push('/hid/settings')
+}
+
+let updateRef = null
+
+function toUpdate(item) {
+  updateRef = item
+  visible.value = true
+}
+
+function cancleUpdate() {
+  if (!updateRef) {
+    return
+  }
+  // 标记为已读
+  markUpdateAsRead(updateRef)
+  onNouseClick(updateRef)
+}
+
+function sureUpdate() {
+  if (!updateRef) {
+    return
+  }
+  // 标记为已读
+  markUpdateAsRead(updateRef)
+  // 存储当前设备的 productId 和 vendorId 到 localStorage
+  localStorage.setItem('currentDevice', JSON.stringify({
+    productId: updateRef.productId,
+    vendorId: updateRef.vendorId,
+  }))
+  goPath()
+}
+
+// 标记更新为已读
+function markUpdateAsRead(item) {
+  const readUpdates = JSON.parse(localStorage.getItem('readUpdates') || '[]')
+  const deviceKey = `${item.vendorId}_${item.productId}`
+
+  // 检查是否已存在，如果存在则更新版本，否则添加新记录
+  const existingIndex = readUpdates.findIndex((r: any) => r.deviceKey === deviceKey)
+
+  const record = {
+    deviceKey,
+    vendorId: item.vendorId,
+    productId: item.productId,
+    readMouseVersion: latestVersion.value.mouseVersion, // 存储服务器最新版本
+  }
+
+  if (existingIndex >= 0) {
+    readUpdates[existingIndex] = record
+  }
+  else {
+    readUpdates.push(record)
+  }
+
+  localStorage.setItem('readUpdates', JSON.stringify(readUpdates))
+}
+
+// 检查是否应该显示重大更新
+function shouldShowMajorUpdate(item): boolean {
+  const readUpdates = JSON.parse(localStorage.getItem('readUpdates') || '[]')
+  const deviceKey = `${item.vendorId}_${item.productId}`
+  const readRecord = readUpdates.find((r: any) => r.deviceKey === deviceKey)
+
+  // 没有已读记录，显示
+  if (!readRecord) {
+    return true
+  }
+
+  // 已读版本 < 当前服务器最新版本，说明有新版本，显示
+  return readRecord.readMouseVersion < latestVersion.value.mouseVersion
 }
 
 const notSupportHid = ref(false)
@@ -618,14 +688,19 @@ watch(() => transportList.value, () => {
     }, 100)
   })
 }, { deep: true })
+
+const description = computed(() => {
+  return userStore?.latestVersion?.description?.replace(/\n/g, '<br>')
+})
+
+let visible = ref(false)
 </script>
 
 <template>
   <div class="contain-content flex flex-col items-center justify-center">
-    <a class="absolute left-30px top-30px" href="https://baidu.com" target="_blank">
+    <a class="absolute left-30px top-30px" href="" target="_blank">
       <img class="h-45px" src="/logo.png" alt="logo">
     </a>
-
     <!-- <div fixed top-6 right-6>
       <nav flex="~ gap-4" justify-end text-xl>
         <button icon-btn :title="t('button.toggle_dark')" @click="toggleDark()">
@@ -701,10 +776,10 @@ watch(() => transportList.value, () => {
             </p>
 
             <div v-if="!item.isOnline" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
-
-            <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
-              <div style="color: black; width: 146px; height: 33px; text-align: center; line-height: 33px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="goPath">
-                重大更新
+            <!-- v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion" -->
+            <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion && shouldShowMajorUpdate(item)" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
+              <div style="color: black; width: 190px; height: 45px; text-align: center; line-height: 45px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="toUpdate(item)">
+                {{ t('index.majorUpdate') }}
               </div>
             </div>
 
@@ -813,6 +888,26 @@ watch(() => transportList.value, () => {
         v{{ version }}
       </div>
     </div>
+    <div v-if="visible" class="zhezhao">
+      <div class="zhezhao_con">
+        <p class="zhezhao_tit">
+          {{ t('index.firmwareUpdateNotification') }}
+        </p>
+        <div class="mb-20 mt-5 flex items-center justify-center text-start">
+          <span class="leading-7" v-html="description" />
+        </div>
+        <div class="btn-box">
+          <ElSpace :size="50">
+            <div class="btn_item btn_item_cancle" @click="cancleUpdate">
+              {{ t('index.cancelUpdate') }}
+            </div>
+            <div class="btn_item btn_item_sure" @click="sureUpdate">
+              {{ t('index.confirmUpdate') }}
+            </div>
+          </ElSpace>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -888,5 +983,57 @@ watch(() => transportList.value, () => {
     /* 红色发光 */ 0 0 0px #e1fe52,
     /* 更亮的红色发光 */ 0 0 15px #e1fe52,
     /* 最亮的红色发光 */ 0 0 5px #e1fe52; /* 最外围的红色发光 */
+}
+
+.zhezhao {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.08);
+  z-index: 100;
+}
+
+.zhezhao_con {
+  margin: auto;
+  width: 740px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -44%);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding-top: 40px;
+}
+.btn-box {
+  position: absolute;
+  bottom: 30px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.btn_item_cancle {
+  background: #333333;
+  color: #fff;
+}
+.btn_item_sure {
+  background: #daff00;
+  color: #333333;
+}
+.btn_item {
+  padding: 11px 56px;
+  border: 1px solid #daff00;
+  border-radius: 50px;
+  font-size: 16px;
+}
+.zhezhao_tit {
+  font-size: 27px;
 }
 </style>
