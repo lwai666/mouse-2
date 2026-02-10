@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { CircleClose, Plus } from '@element-plus/icons-vue'
 
-import autofit from 'autofit.js'
+import { useIntervalFn } from '@vueuse/core'
 
+import autofit from 'autofit.js'
 import { ElCarousel, ElCarouselItem, ElIcon } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -72,9 +73,21 @@ const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JS
 
 const latestVersion = ref({}) as any
 
+// 设备状态轮询（每 5 分钟）
+const POLLING_INTERVAL = 5 * 60 * 1000 // 5 分钟
+
+const { resume } = useIntervalFn(
+  () => {
+    getDeviceStatus()
+  },
+  POLLING_INTERVAL,
+  { immediate: false }, // 不立即执行，在 onMounted 中手动调用第一次
+)
+
 onMounted(() => {
   getLatestVersion()
   getDeviceStatus()
+  resume() // 启动轮询，组件销毁时自动停止
 })
 // 获取面板卡片所有的状态
 async function getDeviceStatus() {
@@ -118,8 +131,6 @@ async function getDeviceStatus() {
     return []
   }
 
-  console.log('connectedDevices====', connectedDevices)
-
   // 4. 串行获取所有设备状态（一个一个发送，成功一个后再进行下一个）
   const deviceStatusList = []
   for (const device of connectedDevices) {
@@ -128,7 +139,6 @@ async function getDeviceStatus() {
       // 转换为 transport
       const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
       transportWebHID?._s.set('v8', HIDDeviceRef)
-
       // 发送命令获取设备信息
       const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
 
@@ -694,7 +704,7 @@ watch(() => transportList.value, () => {
 
             <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
               <div style="color: black; width: 146px; height: 33px; text-align: center; line-height: 33px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="goPath">
-                点击更新设备
+                重大更新
               </div>
             </div>
 
