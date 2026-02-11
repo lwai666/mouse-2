@@ -786,6 +786,7 @@ class TransportWebHID extends Transport {
 }
 
 export function checkDevicesSupportSendReport(devices: HIDDevice[]): { reportId: number, device: HIDDevice } | undefined {
+  console.log('checkDevicesSupportSendReport devices==========111', devices)
   for (const device of devices) {
     for (const collection of device.collections) {
       if (collection.inputReports?.length === 1 && collection.outputReports?.length === 1) {
@@ -811,6 +812,7 @@ export async function getTransportWebHID(config: { id: string, commandHandler?: 
 }
 
 export async function HIDDeviceChangeTransportWebHID(devices: any, config: { id: any }) {
+  console.log('HIDDeviceChangeTransportWebHID devices==========', devices, config)
   if (!devices || devices.length === 0) { return false }
 
   const currentTransportWebHID = transportWebHID?._s.get(config.id)
@@ -821,6 +823,9 @@ export async function HIDDeviceChangeTransportWebHID(devices: any, config: { id:
   }
 
   const collection = checkDevicesSupportSendReport(devices)
+
+  console.log('HIDDeviceChangeTransportWebHID collection==========', collection)
+
   if (collection) {
     const transport = new TransportWebHID(collection.reportId, collection.device)
     await transport.connect()

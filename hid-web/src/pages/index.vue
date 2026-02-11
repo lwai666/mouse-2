@@ -135,6 +135,8 @@ async function getDeviceStatus() {
   const deviceStatusList = []
   for (const device of connectedDevices) {
     console.log('device====', device)
+    const isReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
+
     try {
       // 转换为 transport
       const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
@@ -145,12 +147,34 @@ async function getDeviceStatus() {
       // 解析设备信息
       const deviceInfo = parseDeviceInfo(data)
 
-      deviceStatusList.push({
-        vendorId: device.vendorId,
-        productId: device.productId,
-        productName: device.productName,
-        ...deviceInfo,
-      })
+      const pairingCodeData = await HIDDeviceRef?.send([isReceiver ? 0x2F : 0x2D])
+
+      let pairingCode = null
+
+      // 解析配对码（从索引3开始的4个字节，每个字节的前4位是配对码）
+      if (pairingCodeData && pairingCodeData.length >= 7) {
+        const byte0 = pairingCodeData[3] // 配对码低8位，高4位 (bit 4-7)
+        const byte1 = pairingCodeData[4] // 配对码8-15位，高4位 (bit 12-15)
+        const byte2 = pairingCodeData[5] // 配对码16-23位，高4位 (bit 20-23)
+        const byte3 = pairingCodeData[6] // 配对码24-31位，高4位 (bit 28-31)
+
+        // 提取每个字节的高4位（前面4位）
+        const code0 = (byte0 >> 4) & 0x0F // bit 4-7
+        const code1 = (byte1 >> 4) & 0x0F // bit 12-15
+        const code2 = (byte2 >> 4) & 0x0F // bit 20-23
+        const code3 = (byte3 >> 4) & 0x0F // bit 28-31
+
+        // 组合成16位配对码
+        pairingCode = (code3 << 12) | (code2 << 8) | (code1 << 4) | code0
+
+        deviceStatusList.push({
+          vendorId: device.vendorId,
+          productId: device.productId,
+          productName: device.productName,
+          pairingCode,
+          ...deviceInfo,
+        })
+      }
     }
     catch (error) {
       console.error(`获取设备状态失败: ${device.vendorId}-${device.productId}`, error)
@@ -177,7 +201,7 @@ async function getDeviceStatus() {
 
     // 查找匹配的设备
     const matchedIndex = storedTransportList.findIndex(
-      (item: any) => item.productId === deviceStatus.productId && item.vendorId === deviceStatus.vendorId,
+      (item: any) => (item.productId === deviceStatus.productId && item.vendorId === deviceStatus.vendorId) || item.pairingCode === deviceStatus.pairingCode,
     )
 
     if (matchedIndex !== -1) {
@@ -246,7 +270,7 @@ interface DeviceInfo {
   isCharging: boolean // 充电状态
   isConnected: boolean // 鼠标连接状态
   version: number // 固件版本号
-  color: number // 颜色
+  mouseColor: number // 颜色
 }
 // 解析设备信息的函数
 function parseDeviceInfo(data: Uint8Array): DeviceInfo {
@@ -283,113 +307,13 @@ function parseDeviceInfo(data: Uint8Array): DeviceInfo {
     mouseColor,
   }
 }
-// 添加新设备
-async function onAddNouseClick() {
-  transport.value = await createTransportWebHID({
-    id: 'v8',
-    filters: [
-      ...toRaw(userStore.devices),
-      ...toRaw(userStore.devicesMouse),
-      // // 其他设备
-      // { vendorId: 0x1532, productId: 0x00BF },
-      // { vendorId: 0x3554, productId: 0xF5F7 },
-      // { vendorId: 0x3554, productId: 0xF5F4 },
-    ],
-    commandHandler: async (data) => {
-      // console.log('接收的数据=======', data)
-    },
-  })
-
-  if (!transport.value)
-    return
-
-  const data = await transport.value.send([0x2E, 0x00, 0x03])
-
-  const device = parseDeviceInfo(data || [])
-
-  const { productId, vendorId } = transport.value.device
-
-  // 接收器设备需要检查鼠标连接状态
-  const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
-
-  if (isReceiver && !device.isConnected) {
-    return
-  }
-
-  // 添加前先检查设备是否已存在，避免重复添加- 获取配对码
-
-  const pairingCodeData = await transport.value.send([isReceiver ? 0x2F : 0x2D])
-
-  let pairingCode = null
-
-  // 解析配对码（从索引3开始的4个字节，每个字节的前4位是配对码）
-  if (pairingCodeData && pairingCodeData.length >= 7) {
-    const byte0 = pairingCodeData[3] // 配对码低8位，高4位 (bit 4-7)
-    const byte1 = pairingCodeData[4] // 配对码8-15位，高4位 (bit 12-15)
-    const byte2 = pairingCodeData[5] // 配对码16-23位，高4位 (bit 20-23)
-    const byte3 = pairingCodeData[6] // 配对码24-31位，高4位 (bit 28-31)
-
-    // 提取每个字节的高4位（前面4位）
-    const code0 = (byte0 >> 4) & 0x0F // bit 4-7
-    const code1 = (byte1 >> 4) & 0x0F // bit 12-15
-    const code2 = (byte2 >> 4) & 0x0F // bit 20-23
-    const code3 = (byte3 >> 4) & 0x0F // bit 28-31
-
-    // 组合成16位配对码
-    pairingCode = (code3 << 12) | (code2 << 8) | (code1 << 4) | code0
-
-    console.log('配对码解析结果====', {
-      pairingCode,
-    })
-  }
-
-  const transportListCopy = JSON.parse(localStorage.getItem('transportList') || '[]')
-
-  // 构建新的设备信息对象
-  const newDeviceInfo = {
-    ...transport.value,
-    productId,
-    vendorId,
-    productName: transport.value.device.productName,
-    collections: transport.value.device.collections,
-    battery: device.battery,
-    isCharging: device.isCharging,
-    isConnected: device.isConnected,
-    version: device.version,
-    mouseColor: device.mouseColor,
-    sn: device.sn,
-    isOnline: true, // 设备已连接
-    pairingCode,
-    isWifiConnected: isReceiver && device.isConnected, // 如果是接收器且已连接，标记为 WiFi 已连接
-  }
-
-  // 查找匹配设备的索引（通过配对码或 vendorId + productId）
-  const existingIndex = transportListCopy.findIndex(
-    (item: any) => item.pairingCode === pairingCode || (item.productId === productId && item.vendorId === vendorId),
-  )
-
-  if (existingIndex >= 0) {
-    // 设备已存在：替换为新设备信息
-    transportListCopy[existingIndex] = newDeviceInfo
-  }
-  else {
-    // 设备不存在：添加新设备
-    transportListCopy.push(newDeviceInfo)
-  }
-
-  // 更新 transportList 和 localStorage
-  transportList.value = transportListCopy
-  localStorage.setItem('transportList', JSON.stringify(transportList.value))
-  localStorage.setItem('tabActive', 'performance')
-  // router.push('/hid/v8')
-}
 
 // 删除设备
 function deleteTransport(item) {
   // 删除设备列表中的设备
   const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
   transportList.value = transportListCopy.filter((k) => {
-    return k.reportId !== item.reportId
+    return k.sn !== item.sn
   })
   localStorage.setItem('transportList', JSON.stringify(transportList.value))
 
@@ -563,64 +487,109 @@ function onDisconnect(event: any) {
 
 navigator.hid.addEventListener('disconnect', onDisconnect)
 
-// 监听设备连接
-navigator.hid.addEventListener('connect', async (event: any) => {
-  const { productId, vendorId } = event.device
+async function onAddNouseClick() {
+  transport.value = await createTransportWebHID({
+    id: 'v8',
+    filters: [
+      ...toRaw(userStore.devices),
+      ...toRaw(userStore.devicesMouse),
+      // // 其他设备
+      // { vendorId: 0x1532, productId: 0x00BF },
+      // { vendorId: 0x3554, productId: 0xF5F7 },
+      // { vendorId: 0x3554, productId: 0xF5F4 },
+    ],
+    commandHandler: async (data) => {
+      // console.log('接收的数据=======', data)
+    },
+  })
 
-  console.log('event.device====', event.device)
+  if (!transport.value)
+    return
 
-  console.log(`设备已连接: vendorId=${vendorId}, productId=${productId}`)
+  const data = await transport.value.send([0x2E, 0x00, 0x03])
 
-  // 查找匹配的设备
-  const matchedIndex = transportList.value.findIndex(
-    (item: any) => item.productId === productId && item.vendorId === vendorId,
-  )
+  const device = parseDeviceInfo(data || [])
 
-  if (matchedIndex === -1) {
-    console.log('设备不在 transportList 中，跳过')
+  const { productId, vendorId } = transport.value.device
+
+  // 接收器设备需要检查鼠标连接状态
+  const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
+
+  if (isReceiver && !device.isConnected) {
     return
   }
 
-  try {
-    // 转换为 transport
-    const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([event.device], { id: 'v8' })
-    transportWebHID?._s.set('v8', HIDDeviceRef)
+  // 添加前先检查设备是否已存在，避免重复添加- 获取配对码
 
-    console.log('HIDDeviceRef====', HIDDeviceRef)
+  const pairingCodeData = await transport.value.send([isReceiver ? 0x2F : 0x2D])
 
-    // 发送命令获取设备信息
-    const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
+  let pairingCode = null
 
-    console.log('连接后获取的设备信息数据:', data)
+  // 解析配对码（从索引3开始的4个字节，每个字节的前4位是配对码）
+  if (pairingCodeData && pairingCodeData.length >= 7) {
+    const byte0 = pairingCodeData[3] // 配对码低8位，高4位 (bit 4-7)
+    const byte1 = pairingCodeData[4] // 配对码8-15位，高4位 (bit 12-15)
+    const byte2 = pairingCodeData[5] // 配对码16-23位，高4位 (bit 20-23)
+    const byte3 = pairingCodeData[6] // 配对码24-31位，高4位 (bit 28-31)
 
-    // 解析设备信息
-    const deviceInfo = parseDeviceInfo(data)
+    // 提取每个字节的高4位（前面4位）
+    const code0 = (byte0 >> 4) & 0x0F // bit 4-7
+    const code1 = (byte1 >> 4) & 0x0F // bit 12-15
+    const code2 = (byte2 >> 4) & 0x0F // bit 20-23
+    const code3 = (byte3 >> 4) & 0x0F // bit 28-31
 
-    // 更新 transportList
-    transportList.value[matchedIndex] = {
-      ...transportList.value[matchedIndex],
-      battery: deviceInfo.battery,
-      isCharging: deviceInfo.isCharging,
-      isConnected: deviceInfo.isConnected,
-      sn: deviceInfo.sn,
-      isOnline: true, // 设备已连接
-      version: deviceInfo.version,
-      mouseColor: deviceInfo.color,
-    }
+    // 组合成16位配对码
+    pairingCode = (code3 << 12) | (code2 << 8) | (code1 << 4) | code0
 
-    // 如果是接收器且已连接，添加 WiFi 连接标识
-    if (vendorId === 0x2FE5 && productId === 0x0005 && deviceInfo.isConnected) {
-      transportList.value[matchedIndex].isWifiConnected = true
-    }
-    // 保存到 localStorage
-    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+    console.log('配对码解析结果====', {
+      pairingCode,
+    })
   }
-  catch (error) {
-    console.error('获取设备信息失败:', error)
-    // 即使出错，也标记为在线状态
-    transportList.value[matchedIndex].isOnline = true
-    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+
+  const transportListCopy = JSON.parse(localStorage.getItem('transportList') || '[]')
+
+  // 构建新的设备信息对象
+  const newDeviceInfo = {
+    ...transport.value,
+    productId,
+    vendorId,
+    productName: transport.value.device.productName,
+    collections: transport.value.device.collections,
+    battery: device.battery,
+    isCharging: device.isCharging,
+    isConnected: device.isConnected,
+    version: device.version,
+    mouseColor: device.mouseColor,
+    sn: device.sn,
+    isOnline: true, // 设备已连接
+    pairingCode,
+    isWifiConnected: isReceiver && device.isConnected, // 如果是接收器且已连接，标记为 WiFi 已连接
   }
+
+  // 查找匹配设备的索引（通过配对码或 vendorId + productId）
+  const existingIndex = transportListCopy.findIndex(
+    (item: any) => item.pairingCode === pairingCode || (item.productId === productId && item.vendorId === vendorId),
+  )
+
+  if (existingIndex >= 0) {
+    // 设备已存在：替换为新设备信息
+    transportListCopy[existingIndex] = newDeviceInfo
+  }
+  else {
+    // 设备不存在：添加新设备
+    transportListCopy.push(newDeviceInfo)
+  }
+
+  // 更新 transportList 和 localStorage
+  transportList.value = transportListCopy
+  localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  localStorage.setItem('tabActive', 'performance')
+  // router.push('/hid/v8')
+}
+
+// 监听设备连接
+navigator.hid.addEventListener('connect', async (event: any) => {
+  getDeviceStatus()
 })
 
 async function setColor(mode: any, profileInfo: any) {
