@@ -806,11 +806,20 @@ let visible = ref(false)
             >
 
             <div class="mt-5 flex">
-              <img v-show="item.isCharging" src="/v9/icon3.png" alt="" srcset="" class="mr-2">
-              <div v-show="!item.isCharging" style="position: relative;">
-                <img src="/v9/icon4.png" alt="" srcset="" class="mr-2">
+              <div v-show="item.isCharging" style="position: relative;" class="icon3 mr-2">
+                <div style="height: 80%;background:rgba(218, 255, 0,.6)" :style="{ width: `${item.battery}%` }" />
+                <div style="position: absolute; top: 50%; left: 15%; transform: translate(0%,-50%);align-items: center;" class="flex">
+                  <span style="font-size: 9px;margin-right:2px">{{ item.battery }}</span>
+                  <img src="/v9/icon7.png" alt="" srcset="" style="height: 82%">
+                </div>
+              </div>
+              <!-- <img v-show="item.isCharging" src="/v9/icon3.png" alt="" srcset="" class="mr-2"> -->
+              <div v-show="!item.isCharging" style="position: relative;" class="icon4 mr-2">
+                <!-- <img src="/v9/icon4.png" alt="" srcset="" class="mr-2"> -->
                 <span style="font-size: 10px; position: absolute;top: 50%; left: 18%; transform: translate(0%,-50%);">{{ item.battery }}</span>
               </div>
+              <!-- <img src="/v9/icon3.png" alt="" srcset="" class="mr-2"> -->
+
               <img v-show="!item.isWifiConnected" src="/v9/icon5.png" alt="" srcset="" class="mr-2">
               <img v-show="item.isWifiConnected" src="/v9/icon6.png" alt="" srcset="" class="mr-2">
             </div>
@@ -1045,5 +1054,25 @@ let visible = ref(false)
 }
 .zhezhao_tit {
   font-size: 27px;
+}
+.icon3 {
+  width: 24px;
+  height: 12px;
+  background-image: url('/v9/icon3.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  padding-left: 1.5px;
+}
+
+.icon4 {
+  width: 24px;
+  height: 12px;
+  background-image: url('/v9/icon4.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
 </style>
