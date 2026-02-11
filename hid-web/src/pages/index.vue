@@ -813,13 +813,9 @@ let visible = ref(false)
                   <img src="/v9/icon7.png" alt="" srcset="" style="height: 82%">
                 </div>
               </div>
-              <!-- <img v-show="item.isCharging" src="/v9/icon3.png" alt="" srcset="" class="mr-2"> -->
               <div v-show="!item.isCharging" style="position: relative;" class="icon4 mr-2">
-                <!-- <img src="/v9/icon4.png" alt="" srcset="" class="mr-2"> -->
                 <span style="font-size: 10px; position: absolute;top: 50%; left: 18%; transform: translate(0%,-50%);">{{ item.battery }}</span>
               </div>
-              <!-- <img src="/v9/icon3.png" alt="" srcset="" class="mr-2"> -->
-
               <img v-show="!item.isWifiConnected" src="/v9/icon5.png" alt="" srcset="" class="mr-2">
               <img v-show="item.isWifiConnected" src="/v9/icon6.png" alt="" srcset="" class="mr-2">
             </div>
