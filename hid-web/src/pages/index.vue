@@ -246,7 +246,7 @@ interface DeviceInfo {
   isCharging: boolean // 充电状态
   isConnected: boolean // 鼠标连接状态
   version: number // 固件版本号
-  mouseColor: number // 颜色
+  color: number // 颜色
 }
 // 解析设备信息的函数
 function parseDeviceInfo(data: Uint8Array): DeviceInfo {
@@ -345,18 +345,8 @@ async function onAddNouseClick() {
 
   const transportListCopy = JSON.parse(localStorage.getItem('transportList') || '[]')
 
-  // 检查配对码是否已存在，或者 vendorId 和 productId 一致，如果存在则不添加新设备，直接进入设置页面
-  const exists = transportListCopy.some(
-    (item: any) => item.pairingCode === pairingCode || (item.productId === productId && item.vendorId === vendorId),
-  )
-
-  if (exists) {
-    // router.push('/hid/v8')
-    localStorage.setItem('tabActive', 'performance')
-    return
-  }
-
-  transportList.value.push({
+  // 构建新的设备信息对象
+  const newDeviceInfo = {
     ...transport.value,
     productId,
     vendorId,
@@ -371,8 +361,24 @@ async function onAddNouseClick() {
     isOnline: true, // 设备已连接
     pairingCode,
     isWifiConnected: isReceiver && device.isConnected, // 如果是接收器且已连接，标记为 WiFi 已连接
-  })
+  }
 
+  // 查找匹配设备的索引（通过配对码或 vendorId + productId）
+  const existingIndex = transportListCopy.findIndex(
+    (item: any) => item.pairingCode === pairingCode || (item.productId === productId && item.vendorId === vendorId),
+  )
+
+  if (existingIndex >= 0) {
+    // 设备已存在：替换为新设备信息
+    transportListCopy[existingIndex] = newDeviceInfo
+  }
+  else {
+    // 设备不存在：添加新设备
+    transportListCopy.push(newDeviceInfo)
+  }
+
+  // 更新 transportList 和 localStorage
+  transportList.value = transportListCopy
   localStorage.setItem('transportList', JSON.stringify(transportList.value))
   localStorage.setItem('tabActive', 'performance')
   // router.push('/hid/v8')
@@ -380,11 +386,18 @@ async function onAddNouseClick() {
 
 // 删除设备
 function deleteTransport(item) {
+  // 删除设备列表中的设备
   const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
   transportList.value = transportListCopy.filter((k) => {
     return k.reportId !== item.reportId
   })
   localStorage.setItem('transportList', JSON.stringify(transportList.value))
+
+  // 删除 readUpdates 中对应的已读记录
+  const deviceKey = `${item.vendorId}_${item.productId}`
+  const readUpdates = JSON.parse(localStorage.getItem('readUpdates') || '[]')
+  const filteredReadUpdates = readUpdates.filter((r: any) => r.deviceKey !== deviceKey)
+  localStorage.setItem('readUpdates', JSON.stringify(filteredReadUpdates))
 }
 
 const clickCount = ref(0)
@@ -740,7 +753,7 @@ let visible = ref(false)
         <img class="h-60px" src="/logo.png" alt="logo">
       </div> -->
 
-      <div class="relative mb-5 h-[251px] w-[800px]">
+      <div class="relative mb-5 h-[251px] w-[800px] flex justify-center">
         <!-- 左按钮 -->
         <button
           v-if="canScrollLeft"
@@ -776,7 +789,6 @@ let visible = ref(false)
             </p>
 
             <div v-if="!item.isOnline" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
-            <!-- v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion" -->
             <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion && shouldShowMajorUpdate(item)" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
               <div style="color: black; width: 190px; height: 45px; text-align: center; line-height: 45px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="toUpdate(item)">
                 {{ t('index.majorUpdate') }}
@@ -813,9 +825,7 @@ let visible = ref(false)
           </div>
 
           <div
-            class="relative mb-5 flex flex-shrink-0 items-center justify-center"
-            style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;border: 1px solid rgba(255, 255, 255, 0.4);"
-            @click="onAddNouseClick"
+            class="relative mb-5 flex flex-shrink-0 items-center justify-center" style="width: 231px;height: 248px;border-radius: 10px;background-color: rgba(255, 255, 255, 0.1); margin-right: 10px;border: 1px solid rgba(255, 255, 255, 0.4);" @click="onAddNouseClick"
           >
             <p class="absolute top-5" style="font-weight: bold;font-size: 20px;">
               {{ t('title.new_device') }}
