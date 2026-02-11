@@ -674,6 +674,8 @@ function restartConnection() {
 
 async function initProfile() {
   await getProfile()
+  await getVersion()
+
   await sendChargingStatus() // 获取充电状态
   await sendMouseConnectionStatus()
   await sendMouseColor()
@@ -1607,7 +1609,8 @@ else {
 }
 
 onMounted(() => {
-  userStore.fetchLatestVersion()
+  getLatestVersion()
+
   const tabActive = localStorage.getItem('tabActive') || 'performance'
   activeBgChange(tabActive)
   autofit.init({
@@ -2418,6 +2421,24 @@ async function setColor(mode: any) {
 
   setLoadingStatus()
 }
+const currentVersion = ref(0)
+const latestVersion = ref(0)
+const latestFilePath = ref('')
+
+async function getLatestVersion() {
+  await userStore.fetchLatestVersion()
+  latestVersion.value = userStore.latestVersion.mouseVersion
+  latestFilePath.value = !!userStore.latestVersion.usbFilePath
+}
+
+async function getVersion() {
+  const data = await transport?.value.send([0x0F, 0x00, 0x00])
+  currentVersion.value = combineLowAndHigh8Bits(data[3], data[4])
+}
+
+const getUpdateFlag = computed(() => {
+  return (currentVersion.value < latestVersion.value) && latestFilePath.value
+})
 
 function selectMode(mode: number) {
   if (profileInfo.sensitivityModeIndex === mode) {
@@ -3227,8 +3248,11 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
             </p>
             <AnimateLoading />
           </div>
-
-          <img src="/v9/setting.png" alt="mouse-card" class="ml-6" @click="toSettings">
+          <img v-show="!getUpdateFlag" src="/v9/setting.png" alt="mouse-card" class="ml-6" @click="toSettings">
+          <div v-show="getUpdateFlag" style="position: relative;">
+            <img src="/v9/setting_active.png" alt="mouse-card" class="ml-6" @click="toSettings">
+            <span style="position: absolute;left: 64%;top: 15%;">1</span>
+          </div>
         </div>
       </div>
 
