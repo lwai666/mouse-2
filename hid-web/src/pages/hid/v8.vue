@@ -675,7 +675,6 @@ function restartConnection() {
 async function initProfile() {
   await getProfile()
   await getVersion()
-
   await sendChargingStatus() // 获取充电状态
   await sendMouseConnectionStatus()
   await sendMouseColor()
@@ -2432,7 +2431,7 @@ async function getLatestVersion() {
 }
 
 async function getVersion() {
-  const data = await transport?.value.send([0x0F, 0x00, 0x00])
+  const data = await transport?.value.send([0x0F])
   currentVersion.value = combineLowAndHigh8Bits(data[3], data[4])
 }
 
