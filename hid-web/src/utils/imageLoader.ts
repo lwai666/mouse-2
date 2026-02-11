@@ -12,6 +12,7 @@ export function getImagePaths(): string[] {
     const knownPaths = [
       // V9 images
       '/v9/setting.png',
+      '/v9/setting_active.png',
       '/v9/Motion.png',
       '/v9/active-bg.png',
       '/v9/bg-b.png',
@@ -27,7 +28,6 @@ export function getImagePaths(): string[] {
       '/v9/mouse1.png',
       '/v9/wenhao.png',
       '/v9/wenhao_active.png',
-      '/v9/setting_active.png',
 
       // Root level images
       '/background.png',

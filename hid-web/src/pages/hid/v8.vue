@@ -3248,8 +3248,8 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
             <AnimateLoading />
           </div>
           <img v-show="!getUpdateFlag" src="/v9/setting.png" alt="mouse-card" class="ml-6" @click="toSettings">
-          <div v-show="getUpdateFlag" style="position: relative;">
-            <img src="/v9/setting_active.png" alt="mouse-card" class="ml-6" @click="toSettings">
+          <div v-show="getUpdateFlag" style="position: relative;" @click="toSettings">
+            <img src="/v9/setting_active.png" alt="mouse-card" class="ml-6">
             <span style="position: absolute;left: 64%;top: 15%;">1</span>
           </div>
         </div>
