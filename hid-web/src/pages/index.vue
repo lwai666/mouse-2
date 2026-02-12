@@ -465,27 +465,6 @@ function sortedColorItems(mouseColor: any) {
 
   return filteredItems
 }
-// 监听设备断开
-function onDisconnect(event: any) {
-  const { productId, vendorId } = event.device
-
-  // 查找匹配的设备
-  const matchedIndex = transportList.value.findIndex(
-    (item: any) => item.productId === productId && item.vendorId === vendorId,
-  )
-
-  if (matchedIndex !== -1) {
-    // 更新设备在线状态
-    transportList.value[matchedIndex].isOnline = false
-
-    // 保存到 localStorage
-    localStorage.setItem('transportList', JSON.stringify(transportList.value))
-
-    console.log(`设备已断开: vendorId=${vendorId}, productId=${productId}`)
-  }
-}
-
-navigator.hid.addEventListener('disconnect', onDisconnect)
 
 async function onAddNouseClick() {
   transport.value = await createTransportWebHID({
@@ -587,9 +566,206 @@ async function onAddNouseClick() {
   // router.push('/hid/v8')
 }
 
+// 提取配对码（公共函数）
+function extractPairingCode(data: Uint8Array): number | null {
+  if (!data || data.length < 7) {
+    return null
+  }
+
+  const byte0 = data[3]
+  const byte1 = data[4]
+  const byte2 = data[5]
+  const byte3 = data[6]
+
+  const code0 = (byte0 >> 4) & 0x0F
+  const code1 = (byte1 >> 4) & 0x0F
+  const code2 = (byte2 >> 4) & 0x0F
+  const code3 = (byte3 >> 4) & 0x0F
+
+  return (code3 << 12) | (code2 << 8) | (code1 << 4) | code0
+}
+
+// 创建设备通信实例（公共函数）
+async function createDeviceTransport(device: HIDDevice) {
+  const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
+  if (!HIDDeviceRef) {
+    return null
+  }
+
+  transportWebHID?._s.set('v8', HIDDeviceRef)
+  return HIDDeviceRef
+}
+
+// 处理鼠标直接连接（有线连接）
+async function handleMouseConnection(device: HIDDevice) {
+  try {
+    // 1. 创建设备通信实例
+    const HIDDeviceRef = await createDeviceTransport(device)
+
+    if (!HIDDeviceRef) {
+      console.error('Failed to create transport for connected mouse')
+      return
+    }
+
+    // 2. 获取设备信息（电量、版本、序列号等）- 命令 0x2E
+    const deviceInfoData = await HIDDeviceRef.send([0x2E, 0x00, 0x03])
+    const deviceInfo = parseDeviceInfo(deviceInfoData || [])
+
+    // 3. 获取配对码 - 鼠标使用命令 0x2D
+    const pairingCodeData = await HIDDeviceRef.send([0x2D])
+    const pairingCode = extractPairingCode(pairingCodeData)
+
+    // 4. 更新 transportList - 将无线卡片转换为有线卡片
+    const transportListCopy = [...transportList.value]
+
+    const matchedIndex = transportListCopy.findIndex(
+      (item: any) =>
+        item.pairingCode === pairingCode
+        || (item.productId === device.productId && item.vendorId === device.vendorId),
+    )
+
+    if (matchedIndex !== -1) {
+      // 设备已存在 - 更新它（无线→有线转换）
+      transportListCopy[matchedIndex] = {
+        ...transportListCopy[matchedIndex],
+        battery: deviceInfo.battery,
+        isCharging: deviceInfo.isCharging,
+        isConnected: deviceInfo.isConnected,
+        sn: deviceInfo.sn,
+        isOnline: true,
+        version: deviceInfo.version,
+        mouseColor: deviceInfo.mouseColor,
+        isWifiConnected: false, // 转换为有线卡片
+        vendorId: device.vendorId,
+        productId: device.productId,
+        productName: device.productName,
+      }
+    }
+
+    // 5. 保存更新
+    transportList.value = transportListCopy
+    localStorage.setItem('transportList', JSON.stringify(transportListCopy))
+
+    console.log(`Mouse connected: ${device.productName}, pairingCode: ${pairingCode}`)
+  }
+  catch (error) {
+    console.error('Error handling mouse connection:', error)
+  }
+}
+
+// 处理接收器连接（无线连接）
+async function handleReceiverConnection(device: HIDDevice) {
+  try {
+    // 1. 创建设备通信实例
+    const HIDDeviceRef = await createDeviceTransport(device)
+    if (!HIDDeviceRef) {
+      console.error('Failed to create transport for connected receiver')
+      return
+    }
+
+    // 2. 获取接收器配对码 - 接收器使用命令 0x2F
+    const pairingCodeData = await HIDDeviceRef.send([0x2F])
+    const receiverPairingCode = extractPairingCode(pairingCodeData)
+
+    if (!receiverPairingCode) {
+      console.error('Failed to get receiver pairing code')
+      return
+    }
+
+    // 3. 在本地 transportList 中查找匹配的数据
+    const transportListCopy = [...transportList.value]
+    const matchedIndex = transportListCopy.findIndex(
+      (item: any) => item.pairingCode === receiverPairingCode,
+    )
+
+    // 4. 检查是否需要更新
+    if (matchedIndex === -1) {
+      // 没有匹配到 - 停止处理
+      console.log('Receiver connected but no matching mouse found in transportList')
+      return
+    }
+
+    const matchedCard = transportListCopy[matchedIndex]
+
+    if (matchedCard.isOnline) {
+      // 匹配到的卡片已在线 - 停止处理
+      console.log('Receiver connected but paired mouse is already online')
+      return
+    }
+
+    // 5. 匹配到了且卡片显示离线 - 更新卡片（有线→无线转换）
+    transportListCopy[matchedIndex] = {
+      ...matchedCard,
+      vendorId: device.vendorId, // 更新为接收器的 ID
+      productId: device.productId,
+      productName: device.productName,
+      isOnline: true,
+      isWifiConnected: true, // 转换为无线卡片
+    }
+
+    // 6. 保存更新
+    transportList.value = transportListCopy
+    localStorage.setItem('transportList', JSON.stringify(transportListCopy))
+
+    console.log(`Receiver connected, converted wired card to wireless for pairingCode: ${receiverPairingCode}`)
+  }
+  catch (error) {
+    console.error('Error handling receiver connection:', error)
+  }
+}
+
+// 监听设备断开
+function onDisconnect(event: any) {
+  const { productId, vendorId } = event.device
+
+  // 查找匹配的设备
+  const matchedIndex = transportList.value.findIndex(
+    (item: any) => item.productId === productId && item.vendorId === vendorId,
+  )
+
+  if (matchedIndex !== -1) {
+    // 更新设备在线状态
+    transportList.value[matchedIndex].isOnline = false
+
+    // 保存到 localStorage
+    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+
+    console.log(`设备已断开: vendorId=${vendorId}, productId=${productId}`)
+  }
+}
+
+navigator.hid.addEventListener('disconnect', onDisconnect)
+
 // 监听设备连接
 navigator.hid.addEventListener('connect', async (event: any) => {
-  getDeviceStatus()
+  // 1. 获取设备标识符
+  const { productId, vendorId } = event.device
+
+  // 2. 获取所有已授权的设备（用户之前授权过的设备列表）
+  const authorizedDevices = await navigator.hid.getDevices()
+  if (!authorizedDevices || authorizedDevices.length === 0) {
+    return []
+  }
+
+  // 3. 检查连接的设备是否在已授权列表中
+  const isAuthorized = authorizedDevices.some(
+    device => device.vendorId === vendorId && device.productId === productId,
+  )
+
+  if (!isAuthorized) {
+    return // 设备未授权，停止处理
+  }
+
+  // 4. 确定设备类型并路由到相应的处理函数
+  const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
+  const isMouse = vendorId === 0x2FE3 && productId === 0x0007
+
+  if (isMouse) {
+    await handleMouseConnection(event.device)
+  }
+  else if (isReceiver) {
+    await handleReceiverConnection(event.device)
+  }
 })
 
 async function setColor(mode: any, profileInfo: any) {
