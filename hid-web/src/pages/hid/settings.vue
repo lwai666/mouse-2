@@ -121,7 +121,29 @@ else {
   handlePageRefresh()
 }
 
-navigator.hid.addEventListener('disconnect', (event) => {
+// 注册和清理事件监听器
+onMounted(() => {
+  navigator.hid.addEventListener('connect', onConnect)
+  navigator.hid.addEventListener('disconnect', onDisconnect)
+})
+
+onUnmounted(() => {
+  navigator.hid.removeEventListener('connect', onConnect)
+  navigator.hid.removeEventListener('disconnect', onDisconnect)
+})
+
+async function onConnect(event: any) {
+  const { productId, vendorId } = event.device
+
+  if (vendorId === 0x2FE3 && productId === 0x0007) {
+    updateList.usb.disabled1 = true
+  }
+  else if (vendorId === 0x2FE5 && productId === 0x0005) {
+    updateList.spi.disabled1 = true
+  }
+}
+
+async function onDisconnect(event: any) {
   console.log('设备断开连接:', event.device)
   const { productId, vendorId } = event.device
   if (vendorId === 0x2FE3 && productId === 0x0007) {
@@ -135,19 +157,7 @@ navigator.hid.addEventListener('disconnect', (event) => {
       adapterTransport.value = null
     }
   }
-})
-
-navigator.hid.addEventListener('connect', (event) => {
-  console.log('设备连接:', event.device)
-  const { productId, vendorId } = event.device
-
-  if (vendorId === 0x2FE3 && productId === 0x0007) {
-    updateList.usb.disabled1 = true
-  }
-  else if (vendorId === 0x2FE5 && productId === 0x0005) {
-    updateList.spi.disabled1 = true
-  }
-})
+}
 
 // 获取版本号
 async function getVersion(transportInstance?: any) {

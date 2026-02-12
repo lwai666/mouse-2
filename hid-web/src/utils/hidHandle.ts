@@ -786,7 +786,6 @@ class TransportWebHID extends Transport {
 }
 
 export function checkDevicesSupportSendReport(devices: HIDDevice[]): { reportId: number, device: HIDDevice } | undefined {
-  console.log('checkDevicesSupportSendReport devices==========111', devices)
   for (const device of devices) {
     for (const collection of device.collections) {
       if (collection.inputReports?.length === 1 && collection.outputReports?.length === 1) {
@@ -894,10 +893,6 @@ export async function createTransportWebHID(config: { id: string, filters: HIDDe
     console.error('[createTransportWebHID] window is undefined')
     return false
   }
-
-  console.log('[createTransportWebHID] 开始请求设备，filters:', config.filters)
-  console.log('[createTransportWebHID] isElectron:', !!(window as any).electron)
-  console.log('[createTransportWebHID] navigator.hid 可用:', !!window.navigator.hid)
 
   let devices: HIDDevice[] = []
 
