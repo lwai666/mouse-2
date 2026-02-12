@@ -950,7 +950,7 @@ let visible = ref(false)
               srcset=""
             >
 
-            <div class="mt-5 flex">
+            <div v-if="item.isOnline" class="mt-5 flex">
               <div v-show="item.isCharging" style="position: relative;" class="icon3 mr-2">
                 <div style="height: 80%;background:rgba(218, 255, 0,.6)" :style="{ width: `${item.battery}%` }" />
                 <div style="position: absolute; top: 50%; left: 15%; transform: translate(0%,-50%);align-items: center;" class="flex">
