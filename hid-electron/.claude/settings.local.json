@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npm run dev:*)",
       "Bash(npm run postinstall:*)",
-      "Bash(pnpm install)"
+      "Bash(pnpm install)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(pnpm run dev)",
+      "Bash(npx electron-download:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
