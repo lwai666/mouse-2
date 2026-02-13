@@ -750,7 +750,7 @@ class TransportWebHID extends Transport {
           this.replyPromiseMap[type]?.reject(`0x${type.toString(16)} Response timeout`)
           loadingRef && loadingRef.close()
           loadingRef = null
-          showMessage(`0x${type.toString(16)} Response timeout`)
+          // showMessage(`0x${type.toString(16)} Response timeout`)
         },
         timeout || 5000,
       )

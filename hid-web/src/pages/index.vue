@@ -4,11 +4,14 @@ import { CircleClose, Plus } from '@element-plus/icons-vue'
 import { useIntervalFn } from '@vueuse/core'
 
 import autofit from 'autofit.js'
-import { ElCarousel, ElCarouselItem, ElIcon, ElMessageBox, ElSpace } from 'element-plus'
+import { co } from 'backend/dist/assets/index-CXSuisUs'
+import { ElCarousel, ElCarouselItem, ElIcon, ElSpace } from 'element-plus'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { loadLanguageAsync } from '~/modules/i18n'
+
+import { sleep } from '~/utils'
 
 import { connectAndStoreDevice, createTransportWebHID, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
 
@@ -88,7 +91,7 @@ onMounted(() => {
   resume() // 启动轮询，组件销毁时自动停止
 })
 // 获取面板卡片所有的状态
-async function getDeviceStatus(status) {
+async function getDeviceStatus(status?: boolean) {
   const storedTransportList: any[] = JSON.parse(localStorage.getItem('transportList') || '[]')
 
   if (!storedTransportList.length) {
@@ -97,6 +100,8 @@ async function getDeviceStatus(status) {
 
   // 1. 获取所有已授权的设备
   const devices = await navigator.hid.getDevices()
+
+  console.log('getDeviceStatus 获取到的设备列表====', devices)
 
   if (!devices || devices.length === 0) {
     localStorage.setItem('deviceStatusList', JSON.stringify([]))
@@ -475,8 +480,6 @@ async function onAddNouseClick() {
   if (!transport.value)
     return
 
-  getDeviceStatus(true)
-
   const data = await transport.value.send([0x2E, 0x00, 0x03])
 
   const device = parseDeviceInfo(data || [])
@@ -538,6 +541,8 @@ async function onAddNouseClick() {
     transportListCopy.push(newDeviceInfo)
   }
 
+  getDeviceStatus(true)
+
   // 更新 transportList 和 localStorage
   transportList.value = transportListCopy
   localStorage.setItem('transportList', JSON.stringify(transportList.value))
@@ -569,11 +574,10 @@ async function handleMouseConnection(device: HIDDevice) {
   try {
     // 去存储的 deviceStatusList 中去找 配对码
     const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
-    const pairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId)
+    const pairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId).pairingCode
 
     // 4. 更新 transportList - 将无线卡片转换为有线卡片
     const transportListCopy = [...transportList.value]
-
     const matchedIndex = transportListCopy.findIndex(
       (item: any) =>
         item.pairingCode === pairingCode
@@ -608,13 +612,15 @@ async function handleReceiverConnection(device: HIDDevice) {
   try {
     // 去存储的 deviceStatusList 中去找 配对码
     const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
-    const receiverPairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId)
+    const receiverPairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId).pairingCode
 
     // 3. 在本地 transportList 中查找匹配的数据
     const transportListCopy = [...transportList.value]
     const matchedIndex = transportListCopy.findIndex(
       (item: any) => item.pairingCode === receiverPairingCode,
     )
+
+    console.log('接收器连接，寻找匹配的鼠标，配对码====', receiverPairingCode, transportListCopy, matchedIndex)
 
     // 4. 检查是否需要更新
     if (matchedIndex === -1) {
@@ -656,7 +662,10 @@ async function handleReceiverConnection(device: HIDDevice) {
 async function onDisconnect(event: any) {
   console.log('设备断开事件====', event.device)
 
-  const deviceStatusList = await getDeviceStatus(true)
+  // 等待后重新加载
+  await sleep(3500)
+
+  await getDeviceStatus(true)
   const { productId, vendorId } = event.device
 
   const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
@@ -666,7 +675,7 @@ async function onDisconnect(event: any) {
     await handleReceiverDisconnect(productId, vendorId)
   }
   else if (isMouse) {
-    await handleMouseDisconnect(productId, vendorId, deviceStatusList)
+    await handleMouseDisconnect(productId, vendorId)
   }
 }
 
@@ -693,7 +702,9 @@ async function handleReceiverDisconnect(productId: number, vendorId: number) {
 }
 
 // 处理鼠标断开
-async function handleMouseDisconnect(productId: number, vendorId: number, deviceStatusList: any[]) {
+async function handleMouseDisconnect(productId: number, vendorId: number) {
+  const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
+
   console.log(deviceStatusList, 'deviceStatusList')
   const cardIndex = transportList.value.findIndex(
     item => item.productId === productId && item.vendorId === vendorId,
@@ -735,8 +746,11 @@ async function handleMouseDisconnect(productId: number, vendorId: number, device
 
 // 监听设备连接
 async function onConnect(event: any) {
+  // 等待后重新加载
+  await sleep(3000)
+
   console.log('设备连接事件====', event.device)
-  getDeviceStatus(true)
+  await getDeviceStatus(true)
   // 1. 获取设备标识符
   const { productId, vendorId } = event.device
 
@@ -760,7 +774,16 @@ async function onConnect(event: any) {
   const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
   const isMouse = vendorId === 0x2FE3 && productId === 0x0007
 
+  const hasValidCollection = event.device.collections?.some(
+    collection => collection.inputReports?.length === 1 && collection.outputReports?.length === 1,
+  )
+  if (!hasValidCollection) {
+    return
+  }
+
   if (isMouse) {
+    // 检查是否有 inputReports 和 outputReports
+
     console.log('检测到鼠标连接事件，正在处理...', event.device)
 
     await handleMouseConnection(event.device)
