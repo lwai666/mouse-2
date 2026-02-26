@@ -202,7 +202,7 @@ async function getDeviceStatus(status?: boolean) {
       (item: any) => (item.productId === deviceStatus.productId && item.vendorId === deviceStatus.vendorId) || item.pairingCode === deviceStatus.pairingCode,
     )
 
-    if (matchedIndex !== -1) {
+    if (matchedIndex !== -1 && deviceStatus.isConnected) {
       // 更新设备状态信息
       storedTransportList[matchedIndex] = {
         ...storedTransportList[matchedIndex],
