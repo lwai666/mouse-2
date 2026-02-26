@@ -863,6 +863,7 @@ export async function connectAndStoreDevice(
   }
 
   // 从现有连接中查找匹配的设备，需要有 inputReports 和 outputReports
+  console.log('[connectAndStoreDevice] 已连接设备列表:', devices, vendorId, productId)
   const matchedDevice = devices.find(device =>
     device.vendorId === vendorId
     && device.productId === productId

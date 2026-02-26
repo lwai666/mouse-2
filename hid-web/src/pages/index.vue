@@ -145,7 +145,11 @@ async function getDeviceStatus(status?: boolean) {
     try {
       // 转换为 transport
       const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
+
       transportWebHID?._s.set('v8', HIDDeviceRef)
+
+      console.log(HIDDeviceRef, 'HIDDeviceRefHIDDeviceRefHIDDeviceRef')
+
       // 发送命令获取设备信息
       const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
 
@@ -239,8 +243,8 @@ async function onNouseClick(item: any) {
     'v8',
     {
       showMessage,
-      noDeviceMessage: t('description.please_insert_device'),
-      deviceNotFoundMessage: t('description.please_insert_this_device'),
+      // noDeviceMessage: t('description.please_insert_device'),
+      // deviceNotFoundMessage: t('description.please_insert_this_device'),
     },
   )
 
@@ -817,7 +821,7 @@ async function setColor(mode: any, profileInfo: any) {
     {
       showMessage,
       noDeviceMessage: t('description.please_insert_device'),
-      deviceNotFoundMessage: t('description.please_insert_this_device'),
+      // deviceNotFoundMessage: t('description.please_insert_this_device'),
     },
   )
 
