@@ -867,7 +867,10 @@ export async function connectAndStoreDevice(
 
   const matchedDevice = devices.find(device =>
     device.vendorId === vendorId
-    && device.productId === productId,
+    && device.productId === productId
+    && device.collections?.some(
+      collection => collection.inputReports?.length === 1 && collection.outputReports?.length === 1,
+    ),
   )
 
   // if (!matchedDevice) {

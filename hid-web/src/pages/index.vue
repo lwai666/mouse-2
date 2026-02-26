@@ -195,7 +195,7 @@ async function getDeviceStatus(status?: boolean) {
 
   deviceStatusList.forEach((deviceStatus: any) => {
     // 跳过有错误或未连接的设备
-    if (deviceStatus.error || !deviceStatus.isConnected)
+    if (deviceStatus.error)
       return
 
     // 查找匹配的设备
@@ -211,7 +211,7 @@ async function getDeviceStatus(status?: boolean) {
         isCharging: deviceStatus.isCharging,
         isConnected: deviceStatus.isConnected,
         sn: deviceStatus.sn,
-        isOnline: true, // 设备当前处于连接状态
+        isOnline: deviceStatus.isConnected, // 设备当前处于连接状态
         version: deviceStatus.version,
         mouseColor: deviceStatus.mouseColor,
       }
@@ -269,6 +269,7 @@ interface DeviceInfo {
   isConnected: boolean // 鼠标连接状态
   version: number // 固件版本号
   mouseColor: number // 颜色
+  isOnline: boolean // 设备在线状态
 }
 // 解析设备信息的函数
 function parseDeviceInfo(data: Uint8Array): DeviceInfo {
@@ -303,6 +304,7 @@ function parseDeviceInfo(data: Uint8Array): DeviceInfo {
     isConnected,
     version,
     mouseColor,
+    isOnline: isConnected, // 设备已连接
   }
 }
 
