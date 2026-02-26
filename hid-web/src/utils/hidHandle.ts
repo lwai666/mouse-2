@@ -864,21 +864,20 @@ export async function connectAndStoreDevice(
 
   // 从现有连接中查找匹配的设备，需要有 inputReports 和 outputReports
   console.log('[connectAndStoreDevice] 已连接设备列表:', devices, vendorId, productId)
+
   const matchedDevice = devices.find(device =>
     device.vendorId === vendorId
-    && device.productId === productId
-    && device.collections?.some(
-      collection => collection.inputReports?.length === 1 && collection.outputReports?.length === 1,
-    ),
+    && device.productId === productId,
   )
 
-  if (!matchedDevice) {
-    options?.showMessage?.(options?.deviceNotFoundMessage || '')
-    return false
-  }
+  // if (!matchedDevice) {
+  //   options?.showMessage?.(options?.deviceNotFoundMessage || '')
+  //   return false
+  // }
 
   // 创建 transport 连接
   const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([matchedDevice], { id })
+
   if (!HIDDeviceRef) {
     return false
   }
