@@ -4,7 +4,6 @@ import { CircleClose, Plus } from '@element-plus/icons-vue'
 import { useIntervalFn } from '@vueuse/core'
 
 import autofit from 'autofit.js'
-import { co } from 'backend/dist/assets/index-CXSuisUs'
 import { ElCarousel, ElCarouselItem, ElIcon, ElSpace } from 'element-plus'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -217,7 +216,7 @@ async function getDeviceStatus(status?: boolean) {
       }
 
       // 如果是接收器且已连接，添加 WiFi 连接标识
-      if (deviceStatus.vendorId === 0x2FE5 && deviceStatus.productId === 0x0005) {
+      if (deviceStatus.vendorId === 0x2FE5 && deviceStatus.productId === 0x0005 && deviceStatus.isConnected) {
         storedTransportList[matchedIndex].isWifiConnected = true
       }
 
@@ -584,6 +583,7 @@ async function handleMouseConnection(device: HIDDevice) {
 
     // 4. 更新 transportList - 将无线卡片转换为有线卡片
     const transportListCopy = [...transportList.value]
+
     const matchedIndex = transportListCopy.findIndex(
       (item: any) =>
         item.pairingCode === pairingCode
