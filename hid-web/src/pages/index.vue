@@ -192,6 +192,7 @@ async function getDeviceStatus(status?: boolean) {
   // 5. 更新 localStorage 中的 transportList
   let updated = false
 
+  // 过滤所有信任的设备
   deviceStatusList.forEach((deviceStatus: any) => {
     // 跳过有错误或未连接的设备
     if (deviceStatus.error)
@@ -216,7 +217,7 @@ async function getDeviceStatus(status?: boolean) {
       }
 
       // 如果是接收器且已连接，添加 WiFi 连接标识
-      if (deviceStatus.vendorId === 0x2FE5 && deviceStatus.productId === 0x0005 && deviceStatus.isConnected) {
+      if (deviceStatus.vendorId === 0x2FE5 && deviceStatus.productId === 0x0005) {
         storedTransportList[matchedIndex].isWifiConnected = true
       }
 
