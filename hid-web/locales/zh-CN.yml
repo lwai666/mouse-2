@@ -295,4 +295,5 @@ description:
   mouse_pairing_instructions3_sub: 与PC端通过USB接口连接
   click_to_add_device: 点击新增设备
   click_to_select_device: 点击选择需要连接的设备名称
-  click_to_connect_device: 点击连接设备
+  click_to_connect_device: 确认连接设备
+  click_to_enter_settings: 点击进入设置

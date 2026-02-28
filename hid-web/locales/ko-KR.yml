@@ -280,4 +280,5 @@ description:
   mouse_pairing_instructions3_sub: USB 포트를 통해 PC에 연결합니다
   click_to_add_device: 장치 추가를 클릭하세요
   click_to_select_device: 연결할 장치 이름을 선택하려면 클릭하세요
-  click_to_connect_device: 장치 연결을 클릭하세요
+  click_to_connect_device: 장치 연결 확인
+  click_to_enter_settings: 클릭하여 설정 진입

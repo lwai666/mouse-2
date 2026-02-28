@@ -42,7 +42,7 @@ const languageShow = ref(false)
 
 const slideshowList = computed(() => [
   { title: t('index.pairingGuide'), type: 'component', component: 'MouseCarouseItem' },
-  { title: t('index.schematicGuide'), type: 'img', img: `/slideshow/2.png` },
+  // { title: t('index.schematicGuide'), type: 'img', img: `/slideshow/2.png` },
 
 ])
 
@@ -1060,7 +1060,7 @@ let visible = ref(false)
           @change="onChangeCarousel"
         >
           <ElCarouselItem v-for="item in slideshowList" :key="item.title" class="flex items-center justify-center">
-            <div class="h-100% w-1500px" style="position: relative;">
+            <div class="h-100% w-2500px" style="position: relative;">
               <div v-if="item.type == 'img'" class="flex justify-center">
                 <div class="relative" style="display: flex;justify-content: center;min-width: 639px;min-height: 385px;">
                   <img :src="item.img" alt="item.title"></img>

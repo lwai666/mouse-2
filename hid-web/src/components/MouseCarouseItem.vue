@@ -16,38 +16,44 @@ watch(() => language, () => {
 
 <template>
   <div class="w-100% flex items-center justify-between" style="flex-direction: column;margin-top: 20px;">
-    <div class="mb-10px flex items-center justify-between" style="width: 70%;">
+    <div class="mb-10px flex items-center justify-between" style="width: 84%;">
       <img src="/public/mouseCarouseItem/1.png" alt="" srcset="">
-      <img style="height: 1px;" src="/public/mouseCarouseItem/line.png" alt="" srcset="">
+      <img style="height: 1px;width: 320px;" src="/public/mouseCarouseItem/line.png" alt="" srcset="">
       <img src="/public/mouseCarouseItem/2.png" alt="" srcset="">
-      <img style="height: 1px;" src="/public/mouseCarouseItem/line.png" alt="" srcset="">
+      <img style="height: 1px;width: 320px;" src="/public/mouseCarouseItem/line.png" alt="" srcset="">
       <img src="/public/mouseCarouseItem/3.png" alt="" srcset="">
+      <img style="height: 1px;width: 320px;" src="/public/mouseCarouseItem/line.png" alt="" srcset="">
+      <img src="/public/mouseCarouseItem/4.png" alt="" srcset="">
     </div>
-    <div class="flex justify-between" style="width: 86%;margin-top: 20px;">
+    <div class="flex justify-between" style="width: 100%;margin-top: 20px;">
       <div class="flex items-center justify-between" style="flex-direction: column;width: 300px;">
-        <div style="margin-bottom: 5px;">
-          <p>{{ t('description.mouse_pairing_instructions1') }}</p>
-          <p>({{ t('description.mouse_pairing_instructions1_sub') }})</p>
+        <img src="/public/mouseCarouseItem/icon1_new.png" alt="" srcset="">
+        <div style="margin-top: 10px;">
+          <p>{{ t('description.click_to_add_device') }}</p>
         </div>
-        <img src="/public/mouseCarouseItem/icon1.png" alt="" srcset="">
       </div>
       <div class="flex items-center justify-between" style="flex-direction: column;width: 300px;">
-        <div style="margin-bottom: 5px;">
-          <p>{{ t('description.mouse_pairing_instructions3') }}</p>
-          <p style="margin-bottom: 5px;">
-            {{ t('description.mouse_pairing_instructions3_sub') }}
-          </p>
+        <img src="/public/mouseCarouseItem/icon2_new.png" alt="" srcset="">
+
+        <div
+          style="margin-top: 10px;align-self: flex-start;margin-left: 20px;"
+        >
+          <p>{{ t('description.click_to_select_device') }}</p>
         </div>
-        <img src="/public/mouseCarouseItem/icon3.png" alt="" srcset="">
       </div>
       <div class="flex items-center justify-between" style="flex-direction: column;width: 300px;">
-        <div style="margin-bottom: 5px;">
-          <p>{{ t('description.mouse_pairing_instructions2') }}</p>
-          <p style="margin-bottom: 5px;">
-            {{ t('description.mouse_pairing_instructions2_sub') }}
-          </p>
+        <img src="/public/mouseCarouseItem/icon3_new.png" alt="" srcset="">
+
+        <div style="margin-top: 10px;align-self: flex-start;margin-left: 80px;">
+          <p>{{ t('description.click_to_connect_device') }}</p>
         </div>
-        <img src="/public/mouseCarouseItem/icon2.png" alt="" srcset="">
+      </div>
+      <div class="flex items-center justify-between" style="flex-direction: column;width: 300px;">
+        <img src="/public/mouseCarouseItem/icon4_new.png" alt="" srcset="">
+
+        <div style="margin-top: 10px;">
+          <p>{{ t('description.click_to_enter_settings') }}</p>
+        </div>
       </div>
     </div>
   </div>

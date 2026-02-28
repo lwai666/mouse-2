@@ -298,4 +298,5 @@ description:
   mouse_pairing_instructions3_sub: USBポートを介してPCに接続します
   click_to_add_device: デバイス追加をクリック
   click_to_select_device: 接続するデバイス名を選択するにはクリック
-  click_to_connect_device: デバイス接続をクリック
+  click_to_connect_device: デバイス接続を確認
+  click_to_enter_settings: クリックして設定に入る
