@@ -163,23 +163,42 @@ async function getDeviceStatus(status?: boolean) {
       if (pairingCodeData && pairingCodeData.length >= 7) {
         pairingCode = extractPairingCode(pairingCodeData)
 
+        console.log('当前设备:', {
+          vendorId: device.vendorId,
+          productId: device.productId,
+          productName: device.productName,
+          pairingCode,
+          isReceiver: device.vendorId === 0x2FE5 && device.productId === 0x0005,
+        })
+
         // 判断是否是接收器
         const isCurrentDeviceReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
-        console.log('isCurrentDeviceReceiver:', isCurrentDeviceReceiver, pairingCode, deviceStatusList)
+
         // 如果当前设备是接收器，检查是否已有相同配对码的鼠标
         if (isCurrentDeviceReceiver) {
+          console.log('检查 deviceStatusList 中是否有相同配对码的鼠标...')
+          // 使用 JSON.stringify 深拷贝打印快照，避免引用问题
+          console.log('当前 deviceStatusList 快照:', JSON.stringify(deviceStatusList.map(item => ({
+            vendorId: item.vendorId,
+            productId: item.productId,
+            pairingCode: item.pairingCode,
+          })), null, 2))
+
           const hasMouseWithSamePairingCode = deviceStatusList.some(
             item => item.pairingCode === pairingCode
               && item.vendorId === 0x2FE3
               && item.productId === 0x0007,
           )
 
-          console.log('hasMouseWithSamePairingCode:', hasMouseWithSamePairingCode)
+          console.log('hasMouseWithSamePairingCode:', hasMouseWithSamePairingCode, '当前配对码:', pairingCode)
 
           // 如果已有相同配对码的鼠标，跳过接收器
           if (hasMouseWithSamePairingCode) {
-            console.log(`跳过接收器，配对码 ${pairingCode} 的鼠标已存在`)
+            console.log(`✅ 跳过接收器，配对码 ${pairingCode} 的鼠标已存在`)
             continue
+          }
+          else {
+            console.log(`❌ 未找到配对码 ${pairingCode} 的鼠标，将添加接收器`)
           }
         }
 
@@ -204,6 +223,12 @@ async function getDeviceStatus(status?: boolean) {
   }
 
   // 这里存起来, 然后断开的时候需要通过断开设备的vid pid 找到匹配对应无线或者有线的设备状态改成离线
+
+  console.log('✅ 最终 deviceStatusList:', JSON.stringify(deviceStatusList.map(item => ({
+    vendorId: item.vendorId,
+    productId: item.productId,
+    pairingCode: item.pairingCode,
+  })), null, 2))
 
   localStorage.setItem('deviceStatusList', JSON.stringify(deviceStatusList))
 
