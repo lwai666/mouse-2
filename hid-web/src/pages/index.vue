@@ -73,6 +73,10 @@ const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JS
 
 const latestVersion = ref({}) as any
 
+// 防抖和互斥锁变量
+let isGettingDeviceStatus = false
+let getDeviceStatusTimer: number | null = null
+
 // 设备状态轮询（每 5 分钟）
 const POLLING_INTERVAL = 5 * 60 * 1000 // 5 分钟
 
@@ -89,8 +93,35 @@ onMounted(() => {
   getDeviceStatus()
   resume() // 启动轮询，组件销毁时自动停止
 })
-// 获取面板卡片所有的状态
+
+// 获取面板卡片所有的状态（带防抖和互斥锁）
 async function getDeviceStatus(status?: boolean) {
+  // 互斥锁：如果正在执行，跳过
+  if (isGettingDeviceStatus) {
+    console.log('⏸️ 正在获取设备状态，跳过本次调用')
+    return []
+  }
+
+  // 防抖：清除之前的定时器
+  if (getDeviceStatusTimer) {
+    clearTimeout(getDeviceStatusTimer)
+  }
+
+  return new Promise((resolve) => {
+    getDeviceStatusTimer = setTimeout(async () => {
+      isGettingDeviceStatus = true
+      try {
+        const result = await getDeviceStatusImpl(status)
+        resolve(result)
+      } finally {
+        isGettingDeviceStatus = false
+      }
+    }, 300) // 300ms 防抖
+  })
+}
+
+// 获取面板卡片所有的状态（实际实现）
+async function getDeviceStatusImpl(status?: boolean) {
   const storedTransportList: any[] = JSON.parse(localStorage.getItem('transportList') || '[]')
 
   if (!storedTransportList.length) {
@@ -215,7 +246,13 @@ async function getDeviceStatus(status?: boolean) {
       }
     }
     catch (error) {
-      console.error(`获取设备状态失败: ${device.vendorId}-${device.productId}`, error)
+      // 特殊处理 InvalidStateError
+      if (error.name === 'InvalidStateError' || error.message?.includes('device state is in progress')) {
+        console.log(`⚠️ 设备 ${device.productName} 忙碌或已断开，跳过`)
+      }
+      else {
+        console.error(`获取设备状态失败: ${device.vendorId}-${device.productId}`, error)
+      }
     }
   }
 
