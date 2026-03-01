@@ -162,6 +162,25 @@ async function getDeviceStatus(status?: boolean) {
       // 解析配对码（从索引3开始的4个字节，每个字节的前4位是配对码）
       if (pairingCodeData && pairingCodeData.length >= 7) {
         pairingCode = extractPairingCode(pairingCodeData)
+
+        // 判断是否是接收器
+        const isCurrentDeviceReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
+
+        // 如果当前设备是接收器，检查是否已有相同配对码的鼠标
+        if (isCurrentDeviceReceiver) {
+          const hasMouseWithSamePairingCode = deviceStatusList.some(
+            item => item.pairingCode === pairingCode
+              && item.vendorId === 0x2FE3
+              && item.productId === 0x0007,
+          )
+
+          // 如果已有相同配对码的鼠标，跳过接收器
+          if (hasMouseWithSamePairingCode) {
+            console.log(`跳过接收器，配对码 ${pairingCode} 的鼠标已存在`)
+            continue
+          }
+        }
+
         deviceStatusList.push({
           vendorId: device.vendorId,
           productId: device.productId,
@@ -714,6 +733,7 @@ async function handleMouseDisconnect(productId: number, vendorId: number) {
   const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
 
   console.log(deviceStatusList, 'deviceStatusList')
+
   const cardIndex = transportList.value.findIndex(
     item => item.productId === productId && item.vendorId === vendorId,
   )

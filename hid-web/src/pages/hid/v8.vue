@@ -2985,7 +2985,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                 <div style="padding: 25px 25px 0 25px;">
                   <div>
                     <div style="font-size: 20px; display: flex; align-items: center;">
-                      <div style="width: 170px; margin-right: 10px;" class="flex items-center">
+                      <div style="width: 170px;" class="flex items-center">
                         <div style="text-align:left;">
                           {{ t('macro.dynamicSensitivity') }}
                         </div>
@@ -2996,7 +2996,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         >
                       </div>
                       <div
-                        class="flex items-center" style="position: relative;  width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
+                        class="flex items-center" style="position: relative;  min-width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
                         @click="radioChange1"
                       >
                         <transition name="right-fade">
@@ -3008,8 +3008,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </transition>
                       </div>
                     </div>
-                    <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 20px;">
-                      <!-- 选择你喜欢的鼠标速度或 自定义加速输出。 -->
+                    <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
                       {{ t('description.main_ui_heading') }}
                     </div>
                   </div>
@@ -3032,6 +3031,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </transition>
                       </div>
                     </div>
+                    <!-- <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                      {{ t('description.main_ui_heading') }}
+                    </div> -->
                   </div>
 
                   <div style="margin-top: 50px;">
@@ -3054,9 +3056,51 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </transition>
                       </div>
                     </div>
+                    <!-- <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                      {{ t('description.main_ui_heading') }}
+                    </div> -->
+                  </div>
+                  <div style="margin-top: 50px;">
+                    <div style="font-size: 20px; display: flex; align-items: center;">
+                      <div style="min-width: 170px;" class="flex items-center">
+                        <div style="text-align:left">
+                          接收器设置
+                        </div>
+                        <img
+                          style="margin-left: 10px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' : ''}.png`" srcset=""
+                          @mouseenter="showMouseenterChange('showMouseenter')"
+                          @mouseleave="showMouseenterChange('showMouseenter')"
+                        >
+                      </div>
+                      <div
+                        class="flex items-center" :style="{
+                          paddingLeft: profileInfo.lineUpdate ? '0px' : '22px',
+                          paddingRight: profileInfo.lineUpdate ? '22px' : '0px',
+
+                        }" style="
+                          position: relative;
+                          min-width: 51px;
+                          height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
+                        @click="lineUpdate"
+                      >
+                        <transition name="right-fade">
+                          <div
+                            :key="profileInfo.lineUpdate" class="absolute" :class="[profileInfo.lineUpdate ? 'right-0.5' : 'left-0.5']"
+                            style="width: 19px;height: 19px;border-radius: 50%;"
+                            :style="{ backgroundColor: profileInfo.lineUpdate ? '#DAFF00' : '#8B8A8A' }"
+                          />
+                        </transition>
+                        <div style="font-size: 12px;color: #DAFF00;margin: 0 5px;">
+                          返回
+                        </div>
+                      </div>
+                    </div>
+                    <!-- <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                      {{ t('description.main_ui_heading') }}
+                    </div> -->
                   </div>
                 </div>
-                <div class="absolute right-0 flex justify-between" style="width:1250px" :style="{ opacity: showMouseenter === 'show' ? 1 : 0 }">
+                <div class="absolute right-0 flex justify-between" style="width:1200px" :style="{ opacity: showMouseenter === 'show' ? 1 : 0 }">
                   <div v-if="!profileInfo.sensitivity" class="absolute h-100% w-100%" style="z-index:1; background: #0D0D0D;" />
                   <div style="padding: 25px 25px 0 25px; flex:1;">
                     <div class="ml-25 flex items-center" style="height: 40px;">
