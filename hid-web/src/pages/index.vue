@@ -169,15 +169,47 @@ async function getDeviceStatus(status?: boolean) {
           productName: device.productName,
           pairingCode,
           isReceiver: device.vendorId === 0x2FE5 && device.productId === 0x0005,
+          isMouse: device.vendorId === 0x2FE3 && device.productId === 0x0007,
         })
 
-        // 判断是否是接收器
+        // 判断设备类型
         const isCurrentDeviceReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
+        const isCurrentDeviceMouse = device.vendorId === 0x2FE3 && device.productId === 0x0007
 
+        // 如果当前设备是鼠标，检查是否已有相同配对码的接收器
+        if (isCurrentDeviceMouse) {
+          console.log('检查 deviceStatusList 中是否有相同配对码的接收器...')
+          console.log('当前 deviceStatusList 快照:', JSON.stringify(deviceStatusList.map(item => ({
+            vendorId: item.vendorId,
+            productId: item.productId,
+            pairingCode: item.pairingCode,
+          })), null, 2))
+
+          const receiverIndex = deviceStatusList.findIndex(
+            item => item.pairingCode === pairingCode
+              && item.vendorId === 0x2FE5
+              && item.productId === 0x0005,
+          )
+
+          if (receiverIndex !== -1) {
+            console.log(`✅ 找到配对码 ${pairingCode} 的接收器，将替换为鼠标`)
+            // 替换接收器为鼠标
+            deviceStatusList[receiverIndex] = {
+              vendorId: device.vendorId,
+              productId: device.productId,
+              productName: device.productName,
+              pairingCode,
+              ...deviceInfo,
+            }
+            continue // 已经替换了，跳过后续的 push
+          }
+          else {
+            console.log(`❌ 未找到配对码 ${pairingCode} 的接收器，将添加新鼠标`)
+          }
+        }
         // 如果当前设备是接收器，检查是否已有相同配对码的鼠标
-        if (isCurrentDeviceReceiver) {
+        else if (isCurrentDeviceReceiver) {
           console.log('检查 deviceStatusList 中是否有相同配对码的鼠标...')
-          // 使用 JSON.stringify 深拷贝打印快照，避免引用问题
           console.log('当前 deviceStatusList 快照:', JSON.stringify(deviceStatusList.map(item => ({
             vendorId: item.vendorId,
             productId: item.productId,
@@ -192,7 +224,6 @@ async function getDeviceStatus(status?: boolean) {
 
           console.log('hasMouseWithSamePairingCode:', hasMouseWithSamePairingCode, '当前配对码:', pairingCode)
 
-          // 如果已有相同配对码的鼠标，跳过接收器
           if (hasMouseWithSamePairingCode) {
             console.log(`✅ 跳过接收器，配对码 ${pairingCode} 的鼠标已存在`)
             continue
