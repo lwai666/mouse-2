@@ -136,7 +136,7 @@ async function getDeviceStatus(status?: boolean) {
   }
 
   // 4. 串行获取所有设备状态（一个一个发送，成功一个后再进行下一个）
-  const deviceStatusList = []
+  const deviceStatusList = [] as any
   for (const device of connectedDevices) {
     const isReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
 
@@ -216,12 +216,6 @@ async function getDeviceStatus(status?: boolean) {
     }
     catch (error) {
       console.error(`获取设备状态失败: ${device.vendorId}-${device.productId}`, error)
-      deviceStatusList.push({
-        vendorId: device.vendorId,
-        productId: device.productId,
-        productName: device.productName,
-        error: true,
-      })
     }
   }
 
@@ -831,6 +825,7 @@ async function onConnect(event: any) {
   const isMouse = vendorId === 0x2FE3 && productId === 0x0007
 
   if (isMouse) {
+    console.log('检测到鼠标连接，正在处理...', event.device)
     await handleMouseConnection(event.device)
   }
   else if (isReceiver) {
