@@ -717,7 +717,7 @@ async function onDisconnect(event: any) {
   console.log('设备断开事件====', event.device)
 
   // 等待后重新加载
-  await sleep(3500)
+  await sleep(1500)
 
   await getDeviceStatus(true)
 
@@ -803,7 +803,7 @@ async function handleMouseDisconnect(productId: number, vendorId: number) {
 // 监听设备连接
 async function onConnect(event: any) {
   // 等待后重新加载
-  await sleep(3000)
+  await sleep(1000)
 
   await getDeviceStatus(true)
   // 1. 获取设备标识符
