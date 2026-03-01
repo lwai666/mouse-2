@@ -668,6 +668,8 @@ async function handleMouseConnection(device: HIDDevice) {
         || (item.productId === device.productId && item.vendorId === device.vendorId),
     )
 
+    console.log('鼠标连接，寻找匹配的接收器，配对码====', pairingCode, transportListCopy, matchedIndex)
+
     if (matchedIndex !== -1) {
       // 设备已存在 - 更新它（无线→有线转换）
       transportListCopy[matchedIndex] = {
@@ -682,6 +684,7 @@ async function handleMouseConnection(device: HIDDevice) {
 
     // 5. 保存更新
     transportList.value = transportListCopy
+
     localStorage.setItem('transportList', JSON.stringify(transportListCopy))
 
     console.log(`Mouse connected: ${device.productName}, pairingCode: ${pairingCode}`)
