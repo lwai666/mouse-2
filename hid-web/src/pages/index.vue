@@ -165,7 +165,7 @@ async function getDeviceStatus(status?: boolean) {
 
         // 判断是否是接收器
         const isCurrentDeviceReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
-        console.log('isCurrentDeviceReceiver:', isCurrentDeviceReceiver, pairingCode)
+        console.log('isCurrentDeviceReceiver:', isCurrentDeviceReceiver, pairingCode, deviceStatusList)
         // 如果当前设备是接收器，检查是否已有相同配对码的鼠标
         if (isCurrentDeviceReceiver) {
           const hasMouseWithSamePairingCode = deviceStatusList.some(
