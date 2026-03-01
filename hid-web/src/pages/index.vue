@@ -138,7 +138,6 @@ async function getDeviceStatus(status?: boolean) {
   // 4. 串行获取所有设备状态（一个一个发送，成功一个后再进行下一个）
   const deviceStatusList = []
   for (const device of connectedDevices) {
-    console.log('device====', device)
     const isReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
 
     try {
@@ -146,8 +145,6 @@ async function getDeviceStatus(status?: boolean) {
       const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
 
       transportWebHID?._s.set('v8', HIDDeviceRef)
-
-      console.log(HIDDeviceRef, 'HIDDeviceRefHIDDeviceRefHIDDeviceRef')
 
       // 发送命令获取设备信息
       const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
@@ -163,28 +160,12 @@ async function getDeviceStatus(status?: boolean) {
       if (pairingCodeData && pairingCodeData.length >= 7) {
         pairingCode = extractPairingCode(pairingCodeData)
 
-        console.log('当前设备:', {
-          vendorId: device.vendorId,
-          productId: device.productId,
-          productName: device.productName,
-          pairingCode,
-          isReceiver: device.vendorId === 0x2FE5 && device.productId === 0x0005,
-          isMouse: device.vendorId === 0x2FE3 && device.productId === 0x0007,
-        })
-
         // 判断设备类型
         const isCurrentDeviceReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
         const isCurrentDeviceMouse = device.vendorId === 0x2FE3 && device.productId === 0x0007
 
         // 如果当前设备是鼠标，检查是否已有相同配对码的接收器
         if (isCurrentDeviceMouse) {
-          console.log('检查 deviceStatusList 中是否有相同配对码的接收器...')
-          console.log('当前 deviceStatusList 快照:', JSON.stringify(deviceStatusList.map(item => ({
-            vendorId: item.vendorId,
-            productId: item.productId,
-            pairingCode: item.pairingCode,
-          })), null, 2))
-
           const receiverIndex = deviceStatusList.findIndex(
             item => item.pairingCode === pairingCode
               && item.vendorId === 0x2FE5
@@ -209,20 +190,11 @@ async function getDeviceStatus(status?: boolean) {
         }
         // 如果当前设备是接收器，检查是否已有相同配对码的鼠标
         else if (isCurrentDeviceReceiver) {
-          console.log('检查 deviceStatusList 中是否有相同配对码的鼠标...')
-          console.log('当前 deviceStatusList 快照:', JSON.stringify(deviceStatusList.map(item => ({
-            vendorId: item.vendorId,
-            productId: item.productId,
-            pairingCode: item.pairingCode,
-          })), null, 2))
-
           const hasMouseWithSamePairingCode = deviceStatusList.some(
             item => item.pairingCode === pairingCode
               && item.vendorId === 0x2FE3
               && item.productId === 0x0007,
           )
-
-          console.log('hasMouseWithSamePairingCode:', hasMouseWithSamePairingCode, '当前配对码:', pairingCode)
 
           if (hasMouseWithSamePairingCode) {
             console.log(`✅ 跳过接收器，配对码 ${pairingCode} 的鼠标已存在`)
@@ -254,12 +226,6 @@ async function getDeviceStatus(status?: boolean) {
   }
 
   // 这里存起来, 然后断开的时候需要通过断开设备的vid pid 找到匹配对应无线或者有线的设备状态改成离线
-
-  console.log('✅ 最终 deviceStatusList:', JSON.stringify(deviceStatusList.map(item => ({
-    vendorId: item.vendorId,
-    productId: item.productId,
-    pairingCode: item.pairingCode,
-  })), null, 2))
 
   localStorage.setItem('deviceStatusList', JSON.stringify(deviceStatusList))
 
@@ -657,6 +623,7 @@ async function handleMouseConnection(device: HIDDevice) {
   try {
     // 去存储的 deviceStatusList 中去找 配对码
     const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
+
     const pairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId).pairingCode
 
     // 4. 更新 transportList - 将无线卡片转换为有线卡片
@@ -838,13 +805,13 @@ async function onConnect(event: any) {
   // 等待后重新加载
   await sleep(3000)
 
-  console.log('设备连接事件====', event.device)
   await getDeviceStatus(true)
   // 1. 获取设备标识符
   const { productId, vendorId } = event.device
 
   // 2. 获取所有已授权的设备（用户之前授权过的设备列表）
   const authorizedDevices = await navigator.hid.getDevices()
+
   if (!authorizedDevices || authorizedDevices.length === 0) {
     return []
   }
@@ -863,18 +830,7 @@ async function onConnect(event: any) {
   const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
   const isMouse = vendorId === 0x2FE3 && productId === 0x0007
 
-  const hasValidCollection = event.device.collections?.some(
-    collection => collection.inputReports?.length === 1 && collection.outputReports?.length === 1,
-  )
-  if (!hasValidCollection) {
-    return
-  }
-
   if (isMouse) {
-    // 检查是否有 inputReports 和 outputReports
-
-    console.log('检测到鼠标连接事件，正在处理...', event.device)
-
     await handleMouseConnection(event.device)
   }
   else if (isReceiver) {
