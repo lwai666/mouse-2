@@ -26,14 +26,14 @@ watch(() => language, () => {
       <img src="/public/mouseCarouseItem/4.png" alt="" srcset="">
     </div>
     <div class="flex justify-between" style="width: 100%;margin-top: 20px;">
-      <div class="flex items-center justify-between" style="flex-direction: column;width: 300px;">
-        <img src="/public/mouseCarouseItem/icon1_new.png" alt="" srcset="">
+      <div class="flex items-center" style="flex-direction: column;width: 330px;">
+        <img src="/public/mouseCarouseItem/icon1_new.png" alt="" srcset="" style="height: 142px;">
         <div style="margin-top: 10px;">
           <p>{{ t('description.click_to_add_device') }}</p>
         </div>
       </div>
-      <div class="flex items-center justify-between" style="flex-direction: column;width: 300px;">
-        <img src="/public/mouseCarouseItem/icon2_new.png" alt="" srcset="">
+      <div class="flex items-center" style="flex-direction: column;width: 330px;">
+        <img src="/public/mouseCarouseItem/icon2_new.png" alt="" srcset="" style="height: 142px;">
 
         <div
           style="margin-top: 10px;align-self: flex-start;margin-left: 20px;"
@@ -41,15 +41,15 @@ watch(() => language, () => {
           <p>{{ t('description.click_to_select_device') }}</p>
         </div>
       </div>
-      <div class="flex items-center justify-between" style="flex-direction: column;width: 300px;">
-        <img src="/public/mouseCarouseItem/icon3_new.png" alt="" srcset="">
+      <div class="flex items-center" style="flex-direction: column;width: 330px;">
+        <img src="/public/mouseCarouseItem/icon3_new.png" alt="" srcset="" style="height: 142px;">
 
         <div style="margin-top: 10px;align-self: flex-start;margin-left: 80px;">
           <p>{{ t('description.click_to_connect_device') }}</p>
         </div>
       </div>
-      <div class="flex items-center justify-between" style="flex-direction: column;width: 300px;">
-        <img src="/public/mouseCarouseItem/icon4_new.png" alt="" srcset="">
+      <div class="flex items-center" style="flex-direction: column;width: 330px;">
+        <img src="/public/mouseCarouseItem/icon4_new.png" alt="" srcset="" style="height: 142px;">
 
         <div style="margin-top: 10px;">
           <p>{{ t('description.click_to_enter_settings') }}</p>
