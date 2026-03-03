@@ -1697,6 +1697,24 @@ async function lineUpdate() {
   showMouseenter.value = 'line'
 }
 
+let receiverOpen = ref(false)
+
+// 接收器设置
+async function receiverUpdate() {
+  // if (profileInfo.lineUpdate === 1 || profileInfo.lineUpdate) {
+  //   profileInfo.lineUpdate = false
+  //   await transport?.value.send([0x28, 0x00, 0x00, 0])
+  //   return
+  // }
+  receiverOpen.value = !receiverOpen.value
+
+  if (!receiverOpen.value) {
+    showMouseenter.value = 'show'
+    return
+  }
+  showMouseenter.value = 'receiver'
+}
+
 // 直线修正发送鼠标信息
 
 async function lineUpdateSent(type) {
@@ -1730,6 +1748,22 @@ async function radioChange1() {
 
   removeHandleMouseMoveFn()
 
+  setLoadingStatus()
+}
+
+// 灯效开关
+
+async function radioChange2() {
+  // profileInfo.sensitivity = !profileInfo.sensitivity
+  // await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
+  setLoadingStatus()
+}
+
+// 按键触发灯效
+
+async function radioChange3() {
+  // profileInfo.sensitivity = !profileInfo.sensitivity
+  // await transport?.value.send([0x24, 0x00, 0x00, Number(profileInfo.sensitivity)])
   setLoadingStatus()
 }
 
@@ -2148,14 +2182,18 @@ function bottomItemChange(type) {
 }
 
 const imgActive = ref(false)
+const imgReceiverActive = ref(false)
 
-function showMouseenterChange(type) {
-  if (imgActive.value) {
-    imgActive.value = false
+function showMouseenterChange(type, active = 'imgActive') {
+  if (active === 'imgActive' ? imgActive.value : imgReceiverActive.value) {
+    active === 'imgActive' && (imgActive.value = false)
+    active === 'imgReceiverActive' && (imgReceiverActive.value = false)
+
     showMouseenter.value = 'show'
     return
   }
-  imgActive.value = true
+  active === 'imgActive' && (imgActive.value = true)
+  active === 'imgReceiverActive' && (imgReceiverActive.value = true)
   showMouseenter.value = type
 }
 
@@ -3067,31 +3105,32 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           接收器设置
                         </div>
                         <img
-                          style="margin-left: 10px;margin-right: 30px;" :src="`/v9/wenhao${imgActive ? '_active' : ''}.png`" srcset=""
-                          @mouseenter="showMouseenterChange('showMouseenter')"
-                          @mouseleave="showMouseenterChange('showMouseenter')"
+                          style="margin-left: 10px;margin-right: 30px;" :src="`/v9/wenhao${imgReceiverActive ? '_active' : ''}.png`" srcset=""
+                          @mouseenter="showMouseenterChange('showMouseenterReceiver', 'imgReceiverActive')"
+                          @mouseleave="showMouseenterChange('showMouseenterReceiver', 'imgReceiverActive')"
                         >
                       </div>
                       <div
                         class="flex items-center" :style="{
-                          paddingLeft: profileInfo.lineUpdate ? '0px' : '22px',
-                          paddingRight: profileInfo.lineUpdate ? '22px' : '0px',
+                          paddingLeft: receiverOpen ? '0px' : '22px',
+                          paddingRight: receiverOpen ? '22px' : '0px',
 
-                        }" style="
+                        }"
+                        style="
                           position: relative;
                           min-width: 51px;
                           height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
-                        @click="lineUpdate"
+                        @click="receiverUpdate"
                       >
                         <transition name="right-fade">
                           <div
-                            :key="profileInfo.lineUpdate" class="absolute" :class="[profileInfo.lineUpdate ? 'right-0.5' : 'left-0.5']"
+                            :key="receiverOpen" class="absolute" :class="[receiverOpen ? 'right-0.5' : 'left-0.5']"
                             style="width: 19px;height: 19px;border-radius: 50%;"
-                            :style="{ backgroundColor: profileInfo.lineUpdate ? '#DAFF00' : '#8B8A8A' }"
+                            :style="{ backgroundColor: receiverOpen ? '#DAFF00' : '#8B8A8A' }"
                           />
                         </transition>
                         <div style="font-size: 12px;color: #DAFF00;margin: 0 5px;">
-                          返回
+                          {{ receiverOpen ? '返回' : '关闭' }}
                         </div>
                       </div>
                     </div>
@@ -3248,35 +3287,86 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                 <Transition name="slide-right">
                   <div v-show="showMouseenter === 'line'" style="padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1; border-radius: 10px;" class="flex">
                     <div>
-                      <div style="font-size: 20px;text-align: left">
-                        {{ t('title.straight_line_correction') }}
-                      </div>
-
-                      <div style="width: 410px; text-align: left; color: #C8EA01;margin-top: 10px;">
-                        {{ t('title.straight_line_correction_action') }} <br>{{ t('title.straight_line_correction_reason') }}
-                      </div>
-
-                      <div style="width: 380px; text-align: left; color: #E80872;margin-top: 10px; line-height: 18px;">
-                        {{ t('title.straight_line_correction_warning') }}
-                      </div>
-
-                      <div class="mt-20 flex">
-                        <div class="button mr-10" @click="lineUpdateSent(0)">
-                          {{ t('macro.cancel') }}
-                        </div>
-                        <div class="button1" @click="lineUpdateSent(1)">
-                          {{ t('macro.confirm') }}
-                        </div>
-                      </div>
+                      222
                     </div>
                     <div style="height:297px;width:593px;">
-                      <AnimateCanvas
-                        :width="593"
-                        :height="297"
-                        :img-length="60"
-                        :end-stop="false"
-                        url="/01/01_00000_0"
-                      />
+                      333
+                    </div>
+                  </div>
+                </Transition>
+                <!-- 接收器设置的问号 -->
+                <Transition name="slide-right">
+                  <div v-show="showMouseenter === 'showMouseenterReceiver'" style="padding: 60px 100px 0 25px; width:80%;  background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
+                    <div style="width: 100%;">
+                      <div style="font-size: 24px;text-align: center">
+                        接收器设置
+                      </div>
+                      <div style="text-align: center; color: #DAFF00;margin-top: 10px;">
+                        进入到接收器设置页面，可以通过设置页面设置接收器的各项功能与灯效
+                      </div>
+                    </div>
+
+                    <!-- <ElIcon size="40" style="position: absolute; right: 10px; top: 10px;" @click="showMouseenter = 'show'">
+                      <Close />
+                    </ElIcon> -->
+                  </div>
+                </Transition>
+                <!-- 接收器的操作面板 -->
+                <Transition name="slide-right">
+                  <div v-show="showMouseenter === 'receiver'" style="padding: 25px 25px 0 25px; z-index:1; border-radius: 10px; align-items: center;width: 1200px;" class="flex">
+                    <div style="display: flex; justify-content: center; align-items: center;border-right: 1px solid #565656; height: 80%;width: 430px;">
+                      <img src="/v9/deng_bg.png" alt="" srcset="" style="position: absolute;">
+                      <img src="/v9/deng_active_bg.png" alt="" srcset="" style="position: absolute;">
+                    </div>
+                    <div style="height:80%;padding-left: 100px">
+                      <div style="margin-bottom:30px">
+                        <div style="font-size: 20px; display: flex; align-items: center;">
+                          <div style="width: 170px;" class="flex items-center">
+                            <div style="text-align:left;">
+                              灯效开关
+                            </div>
+                          </div>
+                          <div
+                            class="flex items-center" style="position: relative;  min-width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
+                            @click="radioChange2"
+                          >
+                            <transition name="right-fade">
+                              <div
+                                :key="!!profileInfo.sensitivity" class="absolute" :class="[!!profileInfo.sensitivity ? 'right-0.5' : 'left-0.5']"
+                                style="width: 19px;height: 19px;border-radius: 50%;"
+                                :style="{ backgroundColor: !!profileInfo.sensitivity ? '#DAFF00' : '#8B8A8A' }"
+                              />
+                            </transition>
+                          </div>
+                        </div>
+                        <div style="text-align: left; color: #DAFF00;margin-top: 10px;">
+                          将接收器的灯效关闭
+                        </div>
+                      </div>
+                      <div>
+                        <div style="font-size: 20px; display: flex; align-items: center;">
+                          <div style="width: 170px;" class="flex items-center">
+                            <div style="text-align:left;">
+                              按键触发灯效
+                            </div>
+                          </div>
+                          <div
+                            class="flex items-center" style="position: relative;  min-width: 51px; height: 25px; border:1px solid #8B8A8A; border-radius: 30px; background-color: #242424;overflow: hidden;"
+                            @click="radioChange3"
+                          >
+                            <transition name="right-fade">
+                              <div
+                                :key="!!profileInfo.sensitivity" class="absolute" :class="[!!profileInfo.sensitivity ? 'right-0.5' : 'left-0.5']"
+                                style="width: 19px;height: 19px;border-radius: 50%;"
+                                :style="{ backgroundColor: !!profileInfo.sensitivity ? '#DAFF00' : '#8B8A8A' }"
+                              />
+                            </transition>
+                          </div>
+                        </div>
+                        <div style="text-align: left; color: #DAFF00; margin-top: 10px;">
+                          点击按键时会触发接收器灯效闪烁
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Transition>
