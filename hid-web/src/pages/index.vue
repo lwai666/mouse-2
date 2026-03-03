@@ -121,6 +121,9 @@ async function getDeviceStatus(status?: boolean) {
   })
 }
 
+// 大禁用
+const cardVisible = ref(false)
+
 // 获取面板卡片所有的状态（实际实现）
 async function getDeviceStatusImpl(status?: boolean) {
   // 面板卡片数据
@@ -136,9 +139,12 @@ async function getDeviceStatusImpl(status?: boolean) {
   console.log('getDeviceStatus 获取到的设备列表====', devices)
 
   if (!devices || devices.length === 0) {
+    cardVisible.value = true
     localStorage.setItem('deviceStatusList', JSON.stringify([]))
     return []
   }
+
+  cardVisible.value = false
 
   // 2. 合并所有授权的设备类型（接收器 + 鼠标）
   const authorizedDevices = [
@@ -327,7 +333,13 @@ async function getDeviceStatusImpl(status?: boolean) {
     return
 
   // 5. 更新 localStorage 中的 transportList
-  let updated = false
+  let updated = true // 标记为需要更新，因为需要将所有设备标记为离线
+
+  // 先将所有设备标记为离线（解决浏览器关闭期间设备被拔掉后状态不同步的问题）
+  storedTransportList.forEach((item: any) => {
+    item.isOnline = false
+    item.isConnected = false
+  })
 
   // 过滤所有信任的设备
   deviceStatusList.forEach((deviceStatus: any) => {
@@ -380,10 +392,16 @@ async function onNouseClick(item: any) {
     'v8',
     {
       showMessage,
-      // noDeviceMessage: t('description.please_insert_device'),
+      noDeviceMessage: t('description.please_insert_device'),
       // deviceNotFoundMessage: t('description.please_insert_this_device'),
     },
   )
+
+  console.log('连接设备实例====', HIDDeviceRef)
+
+  if (!HIDDeviceRef) {
+    return
+  }
 
   // 使用找到的实例
   transport.value = HIDDeviceRef
@@ -718,7 +736,7 @@ async function handleMouseConnection(device: HIDDevice) {
     // 去存储的 deviceStatusList 中去找 配对码
     const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
 
-    const pairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId).pairingCode
+    const pairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId)?.pairingCode
 
     // 4. 更新 transportList - 将无线卡片转换为有线卡片
     const transportListCopy = [...transportList.value]
@@ -1110,7 +1128,7 @@ let visible = ref(false)
               {{ item.productName }}
             </p>
 
-            <div v-if="!item.isOnline" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
+            <div v-if="!item.isOnline || cardVisible" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
             <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion && shouldShowMajorUpdate(item)" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
               <div style="color: black; width: 190px; height: 45px; text-align: center; line-height: 45px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="toUpdate(item)">
                 {{ t('index.majorUpdate') }}
