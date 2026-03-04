@@ -331,8 +331,14 @@ async function getDeviceStatusImpl(status?: boolean) {
     try {
       // 发送命令获取设备信息
       console.log(HIDDeviceRef, 'HIDDeviceRef')
+      const newHIDDeviceRef = await HIDDeviceChangeTransportWebHID([device], { id: 'v8' })
 
-      const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
+      if (!newHIDDeviceRef) {
+        console.log(`⚠️ 设备 ${device.productName} 连接失败`)
+        continue
+      }
+
+      const data = await newHIDDeviceRef?.send([0x2E, 0x00, 0x03])
 
       // 解析设备信息
       const deviceInfo = parseDeviceInfo(data)
