@@ -282,7 +282,7 @@ description:
   click_to_connect_device: Gerätverbindung bestätigen
   click_to_enter_settings: Klicken, um in die Einstellungen zu gelangen
   receiver_settings: Empfänger
-  receiver_settings_description: Empfänger konfigurieren
+  receiver_settings_description: Öffnen Sie die Empfänger-Einstellungsseite, auf der Sie verschiedene Empfängerfunktionen und Lichteffekte konfigurieren können
   light_effect_switch: Lichteffekt-Schalter
   light_effect_off: Schalten Sie die Beleuchtung des Empfängers aus
   button_trigger_light_effect: Tastenauslöse-Lichteffekt

@@ -28,7 +28,8 @@
       "Bash(~/.ssh/known_hosts)",
       "Bash(git config:*)",
       "Bash(pnpm typecheck:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(grep:*)"
     ]
   }
 }

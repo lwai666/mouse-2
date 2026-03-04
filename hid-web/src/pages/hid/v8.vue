@@ -3023,7 +3023,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                 <div style="padding: 25px 25px 0 25px;">
                   <div>
                     <div style="font-size: 20px; display: flex; align-items: center;">
-                      <div style="width: 170px;" class="flex items-center">
+                      <div style="width: 170px; margin-right: 10px;" class="flex items-center">
                         <div style="text-align:left;">
                           {{ t('macro.dynamicSensitivity') }}
                         </div>
@@ -3051,9 +3051,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     </div> -->
                   </div>
 
-                  <div style="margin-top: 30px;">
+                  <div style="margin-top: 50px;">
                     <div style="font-size: 20px; display: flex; align-items: center;">
-                      <div style="width: 170px;" class="flex items-center">
+                      <div style="width: 170px;margin-right: 10px;" class="flex items-center">
                         <div>20K FPS</div>
                       </div>
                       <div
@@ -3076,7 +3076,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
 
                   <div style="margin-top: 50px;">
                     <div style="font-size: 20px; display: flex; align-items: center;">
-                      <div style="width: 170px;" class="flex items-center">
+                      <div style="width: 170px; margin-right: 10px;" class="flex items-center">
                         <div style="text-align:left">
                           {{ t('title.straight_line_correction') }}
                         </div>
@@ -3100,12 +3100,12 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   </div>
                   <div style="margin-top: 50px;">
                     <div style="font-size: 20px; display: flex; align-items: center;">
-                      <div style="min-width: 170px;" class="flex items-center">
+                      <div style="min-width: 170px;margin-right: 10px;" class="flex items-center">
                         <div style="text-align:left">
                           {{ t('description.receiver_settings') }}
                         </div>
                         <img
-                          style="margin-left: 10px;margin-right: 30px;" :src="`/v9/wenhao${imgReceiverActive ? '_active' : ''}.png`" srcset=""
+                          style="margin-left: 10px;" :src="`/v9/wenhao${imgReceiverActive ? '_active' : ''}.png`" srcset=""
                           @mouseenter="showMouseenterChange('showMouseenterReceiver', 'imgReceiverActive')"
                           @mouseleave="showMouseenterChange('showMouseenterReceiver', 'imgReceiverActive')"
                         >
