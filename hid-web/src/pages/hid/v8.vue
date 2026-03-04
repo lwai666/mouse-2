@@ -3046,9 +3046,9 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         </transition>
                       </div>
                     </div>
-                    <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
+                    <!-- <div style="width: 180px; text-align: left; color: #A6A6A6;margin-top: 10px;">
                       {{ t('description.main_ui_heading') }}
-                    </div>
+                    </div> -->
                   </div>
 
                   <div style="margin-top: 30px;">
@@ -3102,7 +3102,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                     <div style="font-size: 20px; display: flex; align-items: center;">
                       <div style="min-width: 170px;" class="flex items-center">
                         <div style="text-align:left">
-                          接收器设置
+                          {{ t('description.receiver_settings') }}
                         </div>
                         <img
                           style="margin-left: 10px;margin-right: 30px;" :src="`/v9/wenhao${imgReceiverActive ? '_active' : ''}.png`" srcset=""
@@ -3130,7 +3130,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           />
                         </transition>
                         <div style="font-size: 12px;color: #DAFF00;margin: 0 5px;">
-                          {{ receiverOpen ? '返回' : '关闭' }}
+                          {{ receiverOpen ? t('button.return_back') : t('button.close') }}
                         </div>
                       </div>
                     </div>
@@ -3287,10 +3287,35 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                 <Transition name="slide-right">
                   <div v-show="showMouseenter === 'line'" style="padding: 25px 25px 0 25px; background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1; border-radius: 10px;" class="flex">
                     <div>
-                      222
+                      <div style="font-size: 20px;text-align: left">
+                        {{ t('title.straight_line_correction') }}
+                      </div>
+
+                      <div style="width: 410px; text-align: left; color: #C8EA01;margin-top: 10px;">
+                        {{ t('title.straight_line_correction_action') }} <br>{{ t('title.straight_line_correction_reason') }}
+                      </div>
+
+                      <div style="width: 380px; text-align: left; color: #E80872;margin-top: 10px; line-height: 18px;">
+                        {{ t('title.straight_line_correction_warning') }}
+                      </div>
+
+                      <div class="mt-20 flex">
+                        <div class="button mr-10" @click="lineUpdateSent(0)">
+                          {{ t('macro.cancel') }}
+                        </div>
+                        <div class="button1" @click="lineUpdateSent(1)">
+                          {{ t('macro.confirm') }}
+                        </div>
+                      </div>
                     </div>
                     <div style="height:297px;width:593px;">
-                      333
+                      <AnimateCanvas
+                        :width="593"
+                        :height="297"
+                        :img-length="60"
+                        :end-stop="false"
+                        url="/01/01_00000_0"
+                      />
                     </div>
                   </div>
                 </Transition>
@@ -3299,10 +3324,10 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                   <div v-show="showMouseenter === 'showMouseenterReceiver'" style="padding: 60px 100px 0 25px; width:80%;  background-image: linear-gradient(to right, #0D0D0D 30%, #31350F, #A5AA5290); z-index:1;border-radius: 10px;" class="flex">
                     <div style="width: 100%;">
                       <div style="font-size: 24px;text-align: center">
-                        接收器设置
+                        {{ t('description.receiver_settings') }}
                       </div>
                       <div style="text-align: center; color: #DAFF00;margin-top: 10px;">
-                        进入到接收器设置页面，可以通过设置页面设置接收器的各项功能与灯效
+                        {{ t('description.receiver_settings_description') }}
                       </div>
                     </div>
 
@@ -3323,7 +3348,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                         <div style="font-size: 20px; display: flex; align-items: center;">
                           <div style="width: 170px;" class="flex items-center">
                             <div style="text-align:left;">
-                              灯效开关
+                              {{ t('description.light_effect_switch') }}
                             </div>
                           </div>
                           <div
@@ -3340,14 +3365,14 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           </div>
                         </div>
                         <div style="text-align: left; color: #DAFF00;margin-top: 10px;">
-                          将接收器的灯效关闭
+                          {{ t('description.light_effect_off') }}
                         </div>
                       </div>
                       <div>
                         <div style="font-size: 20px; display: flex; align-items: center;">
                           <div style="width: 170px;" class="flex items-center">
                             <div style="text-align:left;">
-                              按键触发灯效
+                              {{ t('description.button_trigger_light_effect') }}
                             </div>
                           </div>
                           <div
@@ -3364,7 +3389,7 @@ provide('mouseButtonClickFn', mouseButtonClickFn)
                           </div>
                         </div>
                         <div style="text-align: left; color: #DAFF00; margin-top: 10px;">
-                          点击按键时会触发接收器灯效闪烁
+                          {{ t('description.button_trigger_light_effect_description') }}
                         </div>
                       </div>
                     </div>

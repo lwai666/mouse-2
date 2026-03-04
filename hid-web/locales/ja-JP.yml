@@ -71,6 +71,8 @@ button:
   about: 概要
   back: 戻る
   go: 確認
+  return_back: 戻る
+  close: 閉じる
   ok: 確認
   cancel: 閉じる
   home: ホーム
@@ -300,3 +302,9 @@ description:
   click_to_select_device: 接続するデバイス名を選択するにはクリック
   click_to_connect_device: デバイス接続を確認
   click_to_enter_settings: クリックして設定に入る
+  receiver_settings: レシーバー設定
+  receiver_settings_description: レシーバー設定ページに入ると、レシーバーの各種機能とライト効果を設定できます
+  light_effect_switch: ライト効果スイッチ
+  light_effect_off: レシーバーのライト効果をオフにする
+  button_trigger_light_effect: ボタントリガーライト効果
+  button_trigger_light_effect_description: ボタンをクリックするとレシーバーのライト効果が点滅します

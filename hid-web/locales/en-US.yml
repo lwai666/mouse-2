@@ -71,6 +71,8 @@ button:
   about: About
   back: Back
   go: Confirm
+  return_back: Return
+  close: Close
   ok: OK
   cancel: Close
   home: Home
@@ -300,3 +302,9 @@ description:
   click_to_select_device: Click to select the device to connect
   click_to_connect_device: Confirm to connect device
   click_to_enter_settings: Click to enter settings
+  receiver_settings: Receiver Settings
+  receiver_settings_description: Enter the receiver settings page where you can configure various receiver functions and lighting effects
+  light_effect_switch: Light Effect Switch
+  light_effect_off: Turn off the receiver lighting effect
+  button_trigger_light_effect: Button Trigger Light Effect
+  button_trigger_light_effect_description: Clicking the button will trigger the receiver light effect to flash

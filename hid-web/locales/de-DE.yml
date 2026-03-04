@@ -50,6 +50,8 @@ button:
   about: Über
   back: Zurück
   go: Bestätigen
+  return_back: Zurück
+  close: Schließen
   ok: OK
   cancel: Schließen
   home: Startseite
@@ -279,3 +281,9 @@ description:
   click_to_select_device: Klicken, um das zu verbindende Gerät auszuwählen
   click_to_connect_device: Gerätverbindung bestätigen
   click_to_enter_settings: Klicken, um in die Einstellungen zu gelangen
+  receiver_settings: Empfänger
+  receiver_settings_description: Empfänger konfigurieren
+  light_effect_switch: Lichteffekt-Schalter
+  light_effect_off: Schalten Sie die Beleuchtung des Empfängers aus
+  button_trigger_light_effect: Tastenauslöse-Lichteffekt
+  button_trigger_light_effect_description: Durch Klicken auf die Taste blinkt die Empfängerbeleuchtung auf

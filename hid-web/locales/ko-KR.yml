@@ -52,6 +52,8 @@ button:
   about: 정보
   back: 뒤로
   go: 확인
+  return_back: 반환
+  close: 닫기
   ok: 확인
   cancel: 닫기
   home: 홈
@@ -282,3 +284,9 @@ description:
   click_to_select_device: 연결할 장치 이름을 선택하려면 클릭하세요
   click_to_connect_device: 장치 연결 확인
   click_to_enter_settings: 클릭하여 설정 진입
+  receiver_settings: 수신기 설정
+  receiver_settings_description: 수신기 설정 페이지에 들어가면 수신기의 각종 기능과 조명 효과를 설정할 수 있습니다
+  light_effect_switch: 조명 효과 스위치
+  light_effect_off: 수신기의 조명 효과를 끕니다
+  button_trigger_light_effect: 버튼 트리거 조명 효과
+  button_trigger_light_effect_description: 버튼을 클릭하면 수신기 조명 효과가 깜박입니다

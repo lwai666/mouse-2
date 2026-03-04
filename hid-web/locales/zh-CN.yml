@@ -68,6 +68,8 @@ button:
   about: 关于
   back: 返回
   go: 确定
+  return_back: 返回
+  close: 关闭
   ok: 确定
   cancel: 关闭
   home: 首页
@@ -297,3 +299,9 @@ description:
   click_to_select_device: 点击选择需要连接的设备名称
   click_to_connect_device: 确认连接设备
   click_to_enter_settings: 点击进入设置
+  receiver_settings: 接收器设置
+  receiver_settings_description: 进入到接收器设置页面，可以通过设置页面设置接收器的各项功能与灯效
+  light_effect_switch: 灯效开关
+  light_effect_off: 将接收器的灯效关闭
+  button_trigger_light_effect: 按键触发灯效
+  button_trigger_light_effect_description: 点击按键时会触发接收器灯效闪烁
