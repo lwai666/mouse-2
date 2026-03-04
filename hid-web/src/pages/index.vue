@@ -337,6 +337,7 @@ async function getDeviceStatusImpl(status?: boolean) {
         console.log(`⚠️ 设备 ${device.productName} 连接失败`)
         continue
       }
+      transportWebHID?._s.set('v8', newHIDDeviceRef)
 
       const data = await newHIDDeviceRef?.send([0x2E, 0x00, 0x03])
 
