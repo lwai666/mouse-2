@@ -252,7 +252,7 @@ async function getDeviceStatusImpl(status?: boolean) {
   // 4. 串行获取所有设备状态（一个一个发送，成功一个后再进行下一个）
 
   // 第一轮：查询所有设备的配对码，按配对码分组
-  type DeviceInfo = {
+  interface DeviceInfo {
     device: HIDDevice
     HIDDeviceRef: any
     isReceiver: boolean
@@ -313,6 +313,8 @@ async function getDeviceStatusImpl(status?: boolean) {
   // 第二轮：对每个配对码组，选择要查询的设备（优先鼠标，没有鼠标才用接收器）
   const deviceStatusList = [] as any
 
+  console.log(pairingCodeGroups, 'pairingCodeGroups')
+
   for (const [pairingCode, group] of pairingCodeGroups) {
     // 优先用鼠标，没有鼠标才用接收器
     const deviceToQuery = group.mouse || group.receiver
@@ -328,6 +330,8 @@ async function getDeviceStatusImpl(status?: boolean) {
 
     try {
       // 发送命令获取设备信息
+      console.log(HIDDeviceRef, 'HIDDeviceRef')
+
       const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
 
       // 解析设备信息
