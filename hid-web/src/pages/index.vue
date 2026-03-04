@@ -20,6 +20,82 @@ defineOptions({
 
 const version = __APP_VERSION__
 
+// ========== 安全的 localStorage 工具函数 ==========
+/**
+ * 安全地从 localStorage 读取数据
+ * @param key localStorage 键名
+ * @param defaultValue 默认值
+ * @returns 解析后的数据，出错时返回默认值
+ */
+function safeGetStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const data = localStorage.getItem(key)
+    if (data === null) {
+      return defaultValue
+    }
+    return JSON.parse(data) as T
+  }
+  catch (error) {
+    console.error(`❌ 读取 localStorage [${key}] 失败:`, error)
+    // 清理损坏的数据
+    try {
+      localStorage.removeItem(key)
+    }
+    catch (e) {
+      // 忽略删除错误
+    }
+    return defaultValue
+  }
+}
+
+/**
+ * 安全地向 localStorage 写入数据
+ * @param key localStorage 键名
+ * @param value 要写入的值
+ * @returns 是否写入成功
+ */
+function safeSetStorage<T>(key: string, value: T): boolean {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+    return true
+  }
+  catch (error) {
+    console.error(`❌ 写入 localStorage [${key}] 失败:`, error)
+    return false
+  }
+}
+
+// ========== 设备 ID 常量 ==========
+const DEVICE_IDS = {
+  RECEIVER: { vendorId: 0x2FE5, productId: 0x0005 },
+  MOUSE: { vendorId: 0x2FE3, productId: 0x0007 },
+} as const
+
+// ========== 时间常量 ==========
+const TIMING = {
+  DEVICE_CONNECT_DELAY: 1000,
+  DEVICE_DISCONNECT_DELAY: 1500,
+  DEBOUNCE_DELAY: 300,
+  SCROLL_UPDATE_DELAY: 100,
+  CLICK_RESET_DELAY: 3000,
+  POLLING_INTERVAL: 5 * 60 * 1000,
+} as const
+
+// ========== 辅助函数 ==========
+/**
+ * 判断是否为接收器设备
+ */
+function isReceiverDevice(vendorId: number, productId: number): boolean {
+  return vendorId === DEVICE_IDS.RECEIVER.vendorId && productId === DEVICE_IDS.RECEIVER.productId
+}
+
+/**
+ * 判断是否为鼠标设备
+ */
+function isMouseDevice(vendorId: number, productId: number): boolean {
+  return vendorId === DEVICE_IDS.MOUSE.vendorId && productId === DEVICE_IDS.MOUSE.productId
+}
+
 const { t, locale } = useI18n()
 
 const router = useRouter()
@@ -42,7 +118,7 @@ const languageShow = ref(false)
 
 const slideshowList = computed(() => [
   { title: t('index.pairingGuide'), type: 'component', component: 'MouseCarouseItem' },
-  // { title: t('index.schematicGuide'), type: 'img', img: `/slideshow/2.png` },
+  { title: t('index.schematicGuide'), type: 'img', img: `/slideshow/2.png` },
 
 ])
 
@@ -69,7 +145,7 @@ nextTick(() => {
   show.value = true
 })
 
-const transportList = ref(JSON.parse(localStorage.getItem('transportList') || JSON.stringify([])))
+const transportList = ref(safeGetStorage('transportList', []))
 
 const latestVersion = ref({}) as any
 
@@ -78,9 +154,9 @@ let isGettingDeviceStatus = false
 let getDeviceStatusTimer: number | null = null
 
 // 设备状态轮询（每 5 分钟）
-const POLLING_INTERVAL = 5 * 60 * 1000 // 5 分钟
+const POLLING_INTERVAL = TIMING.POLLING_INTERVAL // 5 分钟
 
-const { resume } = useIntervalFn(
+const { resume, pause } = useIntervalFn(
   () => {
     getDeviceStatus()
   },
@@ -88,14 +164,8 @@ const { resume } = useIntervalFn(
   { immediate: false }, // 不立即执行，在 onMounted 中手动调用第一次
 )
 
-onMounted(() => {
-  getLatestVersion()
-  getDeviceStatus()
-  resume() // 启动轮询，组件销毁时自动停止
-})
-
 // 获取面板卡片所有的状态（带防抖和互斥锁）
-async function getDeviceStatus(status?: boolean) {
+async function getDeviceStatus(status?: boolean): Promise<any[]> {
   // 互斥锁：如果正在执行，跳过
   if (isGettingDeviceStatus) {
     console.log('⏸️ 正在获取设备状态，跳过本次调用')
@@ -107,6 +177,7 @@ async function getDeviceStatus(status?: boolean) {
     clearTimeout(getDeviceStatusTimer)
   }
 
+  // 使用 Promise 包装防抖逻辑，始终返回 Promise
   return new Promise((resolve) => {
     getDeviceStatusTimer = setTimeout(async () => {
       isGettingDeviceStatus = true
@@ -114,10 +185,14 @@ async function getDeviceStatus(status?: boolean) {
         const result = await getDeviceStatusImpl(status)
         resolve(result)
       }
+      catch (error) {
+        console.error('❌ 获取设备状态失败:', error)
+        resolve([]) // 出错时返回空数组
+      }
       finally {
         isGettingDeviceStatus = false
       }
-    }, 300) // 300ms 防抖
+    }, TIMING.DEBOUNCE_DELAY)
   })
 }
 
@@ -127,7 +202,7 @@ const cardVisible = ref(false)
 // 获取面板卡片所有的状态（实际实现）
 async function getDeviceStatusImpl(status?: boolean) {
   // 面板卡片数据
-  const storedTransportList: any[] = JSON.parse(localStorage.getItem('transportList') || '[]')
+  const storedTransportList: any[] = safeGetStorage('transportList', [])
 
   if (!storedTransportList.length) {
     return
@@ -185,7 +260,7 @@ async function getDeviceStatusImpl(status?: boolean) {
   }>()
 
   for (const device of connectedDevices) {
-    const isReceiver = device.vendorId === 0x2FE5 && device.productId === 0x0005
+    const isReceiver = isReceiverDevice(device.vendorId, device.productId)
 
     try {
       // 转换为 transport
@@ -262,8 +337,8 @@ async function getDeviceStatusImpl(status?: boolean) {
       const deviceInfo = parseDeviceInfo(data)
 
       // 判断设备类型
-      const isCurrentDeviceReceiver = info.device.vendorId === 0x2FE5 && info.device.productId === 0x0005
-      const isCurrentDeviceMouse = info.device.vendorId === 0x2FE3 && info.device.productId === 0x0007
+      const isCurrentDeviceReceiver = isReceiverDevice(info.device.vendorId, info.device.productId)
+      const isCurrentDeviceMouse = isMouseDevice(info.device.vendorId, info.device.productId)
 
       // 如果当前设备是鼠标，检查是否已有相同配对码的接收器
       if (isCurrentDeviceMouse) {
@@ -327,7 +402,7 @@ async function getDeviceStatusImpl(status?: boolean) {
 
   // 这里存起来, 然后断开的时候需要通过断开设备的vid pid 找到匹配对应无线或者有线的设备状态改成离线
 
-  localStorage.setItem('deviceStatusList', JSON.stringify(deviceStatusList))
+  safeSetStorage('deviceStatusList', deviceStatusList)
 
   if (status)
     return
@@ -366,7 +441,7 @@ async function getDeviceStatusImpl(status?: boolean) {
       }
 
       // 如果是接收器且已连接，添加 WiFi 连接标识
-      if (deviceStatus.vendorId === 0x2FE5 && deviceStatus.productId === 0x0005) {
+      if (isReceiverDevice(deviceStatus.vendorId, deviceStatus.productId)) {
         storedTransportList[matchedIndex].isWifiConnected = true
       }
 
@@ -376,7 +451,7 @@ async function getDeviceStatusImpl(status?: boolean) {
 
   // 如果有更新，保存到 localStorage 和 ref
   if (updated) {
-    localStorage.setItem('transportList', JSON.stringify(storedTransportList))
+    safeSetStorage('transportList', storedTransportList)
     transportList.value = storedTransportList
     console.log('transportList 已更新====', storedTransportList)
   }
@@ -408,10 +483,10 @@ async function onNouseClick(item: any) {
   instanceRef.value = HIDDeviceRef
 
   // 存储当前设备的 productId 和 vendorId 到 localStorage
-  localStorage.setItem('currentDevice', JSON.stringify({
+  safeSetStorage('currentDevice', {
     productId: item.productId,
     vendorId: item.vendorId,
-  }))
+  })
 
   router.push(`/hid/v8`)
 }
@@ -466,17 +541,17 @@ function parseDeviceInfo(data: Uint8Array): DeviceInfo {
 // 删除设备
 function deleteTransport(item) {
   // 删除设备列表中的设备
-  const transportListCopy = localStorage.getItem('transportList') ? JSON.parse(localStorage.getItem('transportList')) : []
+  const transportListCopy = safeGetStorage('transportList', [])
   transportList.value = transportListCopy.filter((k) => {
     return k.sn !== item.sn
   })
-  localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  safeSetStorage('transportList', transportList.value)
 
   // 删除 readUpdates 中对应的已读记录
   const deviceKey = `${item.vendorId}_${item.productId}`
-  const readUpdates = JSON.parse(localStorage.getItem('readUpdates') || '[]')
+  const readUpdates = safeGetStorage('readUpdates', [])
   const filteredReadUpdates = readUpdates.filter((r: any) => r.deviceKey !== deviceKey)
-  localStorage.setItem('readUpdates', JSON.stringify(filteredReadUpdates))
+  safeSetStorage('readUpdates', filteredReadUpdates)
 }
 
 const clickCount = ref(0)
@@ -494,7 +569,7 @@ function handleTitleClick() {
   // 3秒内没有新的点击就重置计数
   clickTimer = window.setTimeout(() => {
     clickCount.value = 0
-  }, 3000)
+  }, TIMING.CLICK_RESET_DELAY)
 
   if (clickCount.value >= 10) {
     clickCount.value = 0
@@ -532,16 +607,16 @@ function sureUpdate() {
   // 标记为已读
   markUpdateAsRead(updateRef)
   // 存储当前设备的 productId 和 vendorId 到 localStorage
-  localStorage.setItem('currentDevice', JSON.stringify({
+  safeSetStorage('currentDevice', {
     productId: updateRef.productId,
     vendorId: updateRef.vendorId,
-  }))
+  })
   goPath()
 }
 
 // 标记更新为已读
 function markUpdateAsRead(item) {
-  const readUpdates = JSON.parse(localStorage.getItem('readUpdates') || '[]')
+  const readUpdates = safeGetStorage('readUpdates', [])
   const deviceKey = `${item.vendorId}_${item.productId}`
 
   // 检查是否已存在，如果存在则更新版本，否则添加新记录
@@ -561,12 +636,12 @@ function markUpdateAsRead(item) {
     readUpdates.push(record)
   }
 
-  localStorage.setItem('readUpdates', JSON.stringify(readUpdates))
+  safeSetStorage('readUpdates', readUpdates)
 }
 
 // 检查是否应该显示重大更新
 function shouldShowMajorUpdate(item): boolean {
-  const readUpdates = JSON.parse(localStorage.getItem('readUpdates') || '[]')
+  const readUpdates = safeGetStorage('readUpdates', [])
   const deviceKey = `${item.vendorId}_${item.productId}`
   const readRecord = readUpdates.find((r: any) => r.deviceKey === deviceKey)
 
@@ -582,9 +657,13 @@ function shouldShowMajorUpdate(item): boolean {
 const notSupportHid = ref(false)
 
 onMounted(() => {
+  // ========== 1. 检查 HID 支持 ==========
   if (!navigator.hid) {
     notSupportHid.value = true
+    return // 不支持则提前返回
   }
+
+  // ========== 2. 初始化自动适配 ==========
   autofit.init({
     dh: 1080,
     dw: 1920,
@@ -593,12 +672,25 @@ onMounted(() => {
     allowScroll: true,
   })
 
-  // 初始化滚动按钮状态，确保 DOM 完全渲染
+  // ========== 3. 获取版本信息 ==========
+  getLatestVersion()
+
+  // ========== 4. 获取设备状态 ==========
+  getDeviceStatus()
+
+  // ========== 5. 启动轮询 ==========
+  resume()
+
+  // ========== 6. 初始化滚动按钮状态，确保 DOM 完全渲染 ==========
   nextTick(() => {
     setTimeout(() => {
       updateScrollButtons()
-    }, 100)
+    }, TIMING.SCROLL_UPDATE_DELAY)
   })
+
+  // ========== 7. 注册 HID 设备事件监听器 ==========
+  navigator.hid.addEventListener('connect', onConnect)
+  navigator.hid.addEventListener('disconnect', onDisconnect)
 })
 
 const colorItems = [
@@ -648,7 +740,7 @@ async function onAddNouseClick() {
   const { productId, vendorId } = transport.value.device
 
   // 接收器设备需要检查鼠标连接状态
-  const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
+  const isReceiver = isReceiverDevice(vendorId, productId)
 
   if (isReceiver && !device.isConnected) {
     return
@@ -668,7 +760,7 @@ async function onAddNouseClick() {
     })
   }
 
-  const transportListCopy = JSON.parse(localStorage.getItem('transportList') || '[]')
+  const transportListCopy = safeGetStorage('transportList', [])
 
   // 构建新的设备信息对象
   const newDeviceInfo = {
@@ -706,7 +798,7 @@ async function onAddNouseClick() {
 
   // 更新 transportList 和 localStorage
   transportList.value = transportListCopy
-  localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  safeSetStorage('transportList', transportList.value)
   localStorage.setItem('tabActive', 'performance')
   // router.push('/hid/v8')
 }
@@ -734,7 +826,7 @@ function extractPairingCode(data: Uint8Array): number | null {
 async function handleMouseConnection(device: HIDDevice) {
   try {
     // 去存储的 deviceStatusList 中去找 配对码
-    const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
+    const deviceStatusList = safeGetStorage('deviceStatusList', [])
 
     const pairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId)?.pairingCode
 
@@ -764,7 +856,7 @@ async function handleMouseConnection(device: HIDDevice) {
     // 5. 保存更新
     transportList.value = transportListCopy
 
-    localStorage.setItem('transportList', JSON.stringify(transportListCopy))
+    safeSetStorage('transportList', transportListCopy)
 
     console.log(`Mouse connected: ${device.productName}, pairingCode: ${pairingCode}`)
   }
@@ -777,7 +869,7 @@ async function handleMouseConnection(device: HIDDevice) {
 async function handleReceiverConnection(device: HIDDevice) {
   try {
     // 去存储的 deviceStatusList 中去找 配对码
-    const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
+    const deviceStatusList = safeGetStorage('deviceStatusList', [])
     const receiverPairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId).pairingCode
 
     // 3. 在本地 transportList 中查找匹配的数据
@@ -815,7 +907,7 @@ async function handleReceiverConnection(device: HIDDevice) {
 
     // 6. 保存更新
     transportList.value = transportListCopy
-    localStorage.setItem('transportList', JSON.stringify(transportListCopy))
+    safeSetStorage('transportList', transportListCopy)
 
     console.log(`Receiver connected, converted wired card to wireless for pairingCode: ${receiverPairingCode}`)
   }
@@ -829,14 +921,14 @@ async function onDisconnect(event: any) {
   console.log('设备断开事件====', event.device)
 
   // 等待后重新加载
-  await sleep(1500)
+  await sleep(TIMING.DEVICE_DISCONNECT_DELAY)
 
   await getDeviceStatus(true)
 
   const { productId, vendorId } = event.device
 
-  const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
-  const isMouse = vendorId === 0x2FE3 && productId === 0x0007
+  const isReceiver = isReceiverDevice(vendorId, productId)
+  const isMouse = isMouseDevice(vendorId, productId)
 
   if (isReceiver) {
     await handleReceiverDisconnect(productId, vendorId)
@@ -863,14 +955,14 @@ async function handleReceiverDisconnect(productId: number, vendorId: number) {
   // 检查是否是 WiFi 连接并且在线
   if (card.isWifiConnected && card.isOnline) {
     transportList.value[cardIndex].isOnline = false
-    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+    safeSetStorage('transportList', transportList.value)
     console.log('接收器断开，卡片已下线')
   }
 }
 
 // 处理鼠标断开
 async function handleMouseDisconnect(productId: number, vendorId: number) {
-  const deviceStatusList = JSON.parse(localStorage.getItem('deviceStatusList') || JSON.stringify([]))
+  const deviceStatusList = safeGetStorage('deviceStatusList', [])
 
   console.log(deviceStatusList, 'deviceStatusList')
 
@@ -894,7 +986,7 @@ async function handleMouseDisconnect(productId: number, vendorId: number) {
   if (!receiverDevice) {
     // 找不到接收器，卡片下线
     transportList.value[cardIndex].isOnline = false
-    localStorage.setItem('transportList', JSON.stringify(transportList.value))
+    safeSetStorage('transportList', transportList.value)
     console.log('鼠标断开，未找到配对接收器，卡片已下线')
     return
   }
@@ -908,14 +1000,14 @@ async function handleMouseDisconnect(productId: number, vendorId: number) {
     isOnline: true,
     isWifiConnected: true,
   }
-  localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  safeSetStorage('transportList', transportList.value)
   console.log('鼠标断开，找到配对接收器，卡片已转换为无线连接')
 }
 
 // 监听设备连接
 async function onConnect(event: any) {
   // 等待后重新加载
-  await sleep(1000)
+  await sleep(TIMING.DEVICE_CONNECT_DELAY)
 
   await getDeviceStatus(true)
   // 1. 获取设备标识符
@@ -939,8 +1031,8 @@ async function onConnect(event: any) {
   }
 
   // 4. 确定设备类型并路由到相应的处理函数
-  const isReceiver = vendorId === 0x2FE5 && productId === 0x0005
-  const isMouse = vendorId === 0x2FE3 && productId === 0x0007
+  const isReceiver = isReceiverDevice(vendorId, productId)
+  const isMouse = isMouseDevice(vendorId, productId)
 
   if (isMouse) {
     console.log('检测到鼠标连接，正在处理...', event.device)
@@ -951,16 +1043,28 @@ async function onConnect(event: any) {
   }
 }
 
-// 注册和清理事件监听器
-onMounted(() => {
-  // 再添加监听器
-  navigator.hid.addEventListener('connect', onConnect)
-  navigator.hid.addEventListener('disconnect', onDisconnect)
-})
-
+// ========== 组件卸载清理 ==========
 onUnmounted(() => {
+  // 1. 清理 HID 事件监听器
   navigator.hid.removeEventListener('connect', onConnect)
   navigator.hid.removeEventListener('disconnect', onDisconnect)
+
+  // 2. 清理点击计时器
+  if (clickTimer) {
+    clearTimeout(clickTimer)
+    clickTimer = null
+  }
+
+  // 3. 清理防抖计时器
+  if (getDeviceStatusTimer) {
+    clearTimeout(getDeviceStatusTimer)
+    getDeviceStatusTimer = null
+  }
+
+  // 4. 暂停轮询
+  pause()
+
+  console.log('✅ 组件已清理，事件监听器和定时器已移除')
 })
 
 async function setColor(mode: any, profileInfo: any) {
@@ -989,7 +1093,7 @@ async function setColor(mode: any, profileInfo: any) {
     }
     return item
   })
-  localStorage.setItem('transportList', JSON.stringify(transportList.value))
+  safeSetStorage('transportList', transportList.value)
 }
 
 // 滚动容器相关
@@ -1147,7 +1251,7 @@ let visible = ref(false)
 
             <div v-if="item.isOnline" class="mt-5 flex">
               <div v-show="item.isCharging" style="position: relative;" class="icon3 mr-2">
-                <div style="height: 80%;background:rgba(218, 255, 0,.6)" :style="{ width: `${item.battery}%` }" />
+                <div style="height: 80%;" :style="{ width: `${item.battery}%`, background: !item.isWifiConnected ? 'rgba(218, 255, 0,.6)' : '#fff' }" />
                 <div style="position: absolute; top: 50%; left: 15%; transform: translate(0%,-50%);align-items: center;" class="flex">
                   <span style="font-size: 9px;margin-right:2px">{{ item.battery }}</span>
                   <img src="/v9/icon7.png" alt="" srcset="" style="height: 82%">
