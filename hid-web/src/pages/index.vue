@@ -251,12 +251,17 @@ async function getDeviceStatusImpl(status?: boolean) {
 
   // 4. 串行获取所有设备状态（一个一个发送，成功一个后再进行下一个）
 
-  // 第一轮：先查询配对码，建立配对码映射
-  const pairingCodeMap = new Map<number, {
+  // 第一轮：查询所有设备的配对码，按配对码分组
+  type DeviceInfo = {
     device: HIDDevice
     HIDDeviceRef: any
     isReceiver: boolean
-    shouldQuery: boolean // 是否需要发 0x2E
+  }
+
+  // 按配对码分组：每个配对码可能有一个鼠标和一个接收器
+  const pairingCodeGroups = new Map<number, {
+    mouse?: DeviceInfo
+    receiver?: DeviceInfo
   }>()
 
   for (const device of connectedDevices) {
@@ -271,43 +276,27 @@ async function getDeviceStatusImpl(status?: boolean) {
       // 先查配对码
       const pairingCodeData = await HIDDeviceRef?.send([isReceiver ? 0x2F : 0x2D])
 
-      let pairingCode = null
-
       // 解析配对码（从索引3开始的4个字节，每个字节的前4位是配对码）
       if (pairingCodeData && pairingCodeData.length >= 7) {
-        pairingCode = extractPairingCode(pairingCodeData)
+        const pairingCode = extractPairingCode(pairingCodeData)
 
-        // 检查是否已有相同配对码的设备
-        const existing = pairingCodeMap.get(pairingCode)
+        if (!pairingCode)
+          continue
 
-        if (existing) {
-          // 已有相同配对码的设备
-          if (isReceiver) {
-            // 当前是接收器，已有的是鼠标 -> 跳过接收器
-            console.log(`跳过接收器 ${pairingCode}，已有鼠标`)
-            continue
-          }
-          else {
-            // 当前是鼠标，已有的是接收器 -> 替换为鼠标，且标记需要查询
-            console.log(`用鼠标替换接收器 ${pairingCode}`)
-            pairingCodeMap.set(pairingCode, {
-              device,
-              HIDDeviceRef,
-              isReceiver: false,
-              shouldQuery: true,
-            })
-            continue
-          }
+        // 获取该配对码的当前分组
+        const group = pairingCodeGroups.get(pairingCode) || { mouse: undefined, receiver: undefined }
+
+        // 根据设备类型放入分组
+        if (isReceiver) {
+          group.receiver = { device, HIDDeviceRef, isReceiver }
+          console.log(`📡 配对码 ${pairingCode}: 添加接收器`)
+        }
+        else {
+          group.mouse = { device, HIDDeviceRef, isReceiver }
+          console.log(`🖱️ 配对码 ${pairingCode}: 添加鼠标`)
         }
 
-        // 首次遇到该配对码，记录下来
-        // 如果是接收器，先标记为"可能需要查询"（等后续看有没有鼠标）
-        pairingCodeMap.set(pairingCode, {
-          device,
-          HIDDeviceRef,
-          isReceiver,
-          shouldQuery: !isReceiver, // 鼠标肯定需要查，接收器暂时标记为不查
-        })
+        pairingCodeGroups.set(pairingCode, group)
       }
     }
     catch (error) {
@@ -321,70 +310,33 @@ async function getDeviceStatusImpl(status?: boolean) {
     }
   }
 
-  // 第二轮：只对需要查询的设备发 0x2E
+  // 第二轮：对每个配对码组，选择要查询的设备（优先鼠标，没有鼠标才用接收器）
   const deviceStatusList = [] as any
-  for (const [pairingCode, info] of pairingCodeMap) {
-    if (!info.shouldQuery) {
-      console.log(`跳过查询 ${pairingCode}（接收器，由鼠标处理）`)
+
+  for (const [pairingCode, group] of pairingCodeGroups) {
+    // 优先用鼠标，没有鼠标才用接收器
+    const deviceToQuery = group.mouse || group.receiver
+
+    if (!deviceToQuery) {
+      console.log(`⚠️ 配对码 ${pairingCode} 没有可用设备`)
       continue
     }
 
+    const { device, HIDDeviceRef, isReceiver } = deviceToQuery
+
+    console.log(`🔍 配对码 ${pairingCode}: 使用 ${isReceiver ? '接收器' : '鼠标'} 发送 0x2E`)
+
     try {
       // 发送命令获取设备信息
-      const data = await info.HIDDeviceRef?.send([0x2E, 0x00, 0x03])
+      const data = await HIDDeviceRef?.send([0x2E, 0x00, 0x03])
 
       // 解析设备信息
       const deviceInfo = parseDeviceInfo(data)
 
-      // 判断设备类型
-      const isCurrentDeviceReceiver = isReceiverDevice(info.device.vendorId, info.device.productId)
-      const isCurrentDeviceMouse = isMouseDevice(info.device.vendorId, info.device.productId)
-
-      // 如果当前设备是鼠标，检查是否已有相同配对码的接收器
-      if (isCurrentDeviceMouse) {
-        const receiverIndex = deviceStatusList.findIndex(
-          item => item.pairingCode === pairingCode
-            && item.vendorId === 0x2FE5
-            && item.productId === 0x0005,
-        )
-
-        if (receiverIndex !== -1) {
-          console.log(`✅ 找到配对码 ${pairingCode} 的接收器，将替换为鼠标`)
-          // 替换接收器为鼠标
-          deviceStatusList[receiverIndex] = {
-            vendorId: info.device.vendorId,
-            productId: info.device.productId,
-            productName: info.device.productName,
-            pairingCode,
-            ...deviceInfo,
-          }
-          continue // 已经替换了，跳过后续的 push
-        }
-        else {
-          console.log(`❌ 未找到配对码 ${pairingCode} 的接收器，将添加新鼠标`)
-        }
-      }
-      // 如果当前设备是接收器，检查是否已有相同配对码的鼠标
-      else if (isCurrentDeviceReceiver) {
-        const hasMouseWithSamePairingCode = deviceStatusList.some(
-          item => item.pairingCode === pairingCode
-            && item.vendorId === 0x2FE3
-            && item.productId === 0x0007,
-        )
-
-        if (hasMouseWithSamePairingCode) {
-          console.log(`✅ 跳过接收器，配对码 ${pairingCode} 的鼠标已存在`)
-          continue
-        }
-        else {
-          console.log(`❌ 未找到配对码 ${pairingCode} 的鼠标，将添加接收器`)
-        }
-      }
-
       deviceStatusList.push({
-        vendorId: info.device.vendorId,
-        productId: info.device.productId,
-        productName: info.device.productName,
+        vendorId: device.vendorId,
+        productId: device.productId,
+        productName: device.productName,
         pairingCode,
         ...deviceInfo,
       })
@@ -392,10 +344,10 @@ async function getDeviceStatusImpl(status?: boolean) {
     catch (error) {
       // 特殊处理 InvalidStateError
       if (error.name === 'InvalidStateError' || error.message?.includes('device state is in progress')) {
-        console.log(`⚠️ 设备 ${info.device.productName} 忙碌或已断开，跳过`)
+        console.log(`⚠️ 设备 ${device.productName} 忙碌或已断开，跳过`)
       }
       else {
-        console.error(`获取设备状态失败: ${info.device.vendorId}-${info.device.productId}`, error)
+        console.error(`获取设备状态失败: ${device.vendorId}-${device.productId}`, error)
       }
     }
   }
