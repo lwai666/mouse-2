@@ -1284,6 +1284,8 @@ async function addMacroFn() {
   profileInfo.macroList[macroIndex].name = macroName
   profileInfo.macroList[macroIndex].value = []
 
+  onMacroButtonMouseUp(macroIndex)
+
   nextTick(() => {
     restartConnection()
     onExecutionSuccess()
@@ -1457,6 +1459,7 @@ function onDragOver(event: DragEvent, index: number) {
 function dragend() {
   isDragging.value = false
   dropPosition.value = 'before' // 清理状态
+  saveMacro()
 }
 
 function onDrop(event: DragEvent, dropIndex: number) {

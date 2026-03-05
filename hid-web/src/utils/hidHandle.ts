@@ -797,7 +797,6 @@ export function checkDevicesSupportSendReport(devices: HIDDevice[]): { reportId:
 
 export async function getTransportWebHID(config: { id: string, commandHandler?: CommandHandler }) {
   const devices = typeof window !== 'undefined' ? await window.navigator.hid.getDevices() : []
-  console.log('devices==========', devices)
   if (!devices || devices.length === 0) { return false }
 
   const collection = checkDevicesSupportSendReport(devices)
@@ -805,7 +804,6 @@ export async function getTransportWebHID(config: { id: string, commandHandler?: 
     const transport = new TransportWebHID(collection.reportId, collection.device, config.commandHandler)
     await transport.connect()
     transportWebHID?._s.set(config.id, transport)
-
     return transport
   }
 }

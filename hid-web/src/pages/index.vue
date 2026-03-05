@@ -1195,7 +1195,7 @@ let visible = ref(false)
               {{ item.productName }}
             </p>
 
-            <div v-if="!item.isOnline || cardVisible" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.3); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
+            <div v-if="!item.isOnline || cardVisible" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.5); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
             <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion && shouldShowMajorUpdate(item)" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
               <div style="color: black; width: 190px; height: 45px; text-align: center; line-height: 45px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="toUpdate(item)">
                 {{ t('index.majorUpdate') }}

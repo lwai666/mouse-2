@@ -42,9 +42,9 @@ watch(() => language, () => {
         </div>
       </div>
       <div class="flex items-center" style="flex-direction: column;width: 330px;">
-        <img src="/public/mouseCarouseItem/icon3_new.png" alt="" srcset="" style="height: 142px;">
+        <img src="/public/mouseCarouseItem/icon3_new.png" alt="" srcset="">
 
-        <div style="margin-top: 38px;align-self: flex-start;margin-left: 80px;">
+        <div style="margin-top: 26px;align-self: flex-start;margin-left: 80px;">
           <p>{{ t('description.click_to_connect_device') }}</p>
         </div>
       </div>
