@@ -12,7 +12,7 @@ import { loadLanguageAsync } from '~/modules/i18n'
 
 import { sleep } from '~/utils'
 
-import { connectAndStoreDevice, createTransportWebHID, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, createTransportWebHID, globalHIDEvents, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
 
 defineOptions({
   name: 'Scyrox',
@@ -101,6 +101,9 @@ const { t, locale } = useI18n()
 const router = useRouter()
 
 const userStore = useUserStore()
+
+// ========== 全局 HID 事件订阅管理 ==========
+let unsubscribe: (() => void) | null = null
 
 const transport = ref()
 
@@ -654,6 +657,23 @@ onMounted(() => {
   // ========== 7. 注册 HID 设备事件监听器 ==========
   navigator.hid.addEventListener('connect', onConnect)
   navigator.hid.addEventListener('disconnect', onDisconnect)
+
+  // 订阅 0x2A 命令
+  unsubscribe = globalHIDEvents.onCommand(0x2A, () => {
+    console.log('📨 收到 0x2A 命令的回复')
+    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    // // console.log('设备名称:', params.device.productName)
+    // // console.log('VendorID:', '0x' + params.device.vendorId.toString(16).toUpperCase())
+    // // console.log('ProductID:', '0x' + params.device.productId.toString(16).toUpperCase())
+    // // console.log('命令:', '0x' + params.command.toString(16).toUpperCase())
+    // // console.log('数据内容:', Array.from(params.data))
+    // // console.log('数据长度:', params.data.length)
+    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
+    getDeviceStatus()
+  })
+
+  console.log('✅ 已订阅 0x2A 命令监听')
 })
 
 const colorItems = [
@@ -1027,7 +1047,11 @@ onUnmounted(() => {
   // 4. 暂停轮询
   pause()
 
-  console.log('✅ 组件已清理，事件监听器和定时器已移除')
+  // ========== 5. 取消全局 HID 事件订阅 ==========
+  if (unsubscribe) {
+    unsubscribe()
+    unsubscribe = null
+  }
 })
 
 async function setColor(mode: any, profileInfo: any) {
