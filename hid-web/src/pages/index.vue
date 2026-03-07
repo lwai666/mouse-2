@@ -1220,7 +1220,8 @@ let visible = ref(false)
             </p>
 
             <div v-if="!item.isOnline || cardVisible" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.5); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
-            <div v-if="item.isOnline && latestVersion.forceUpdate && item.version < latestVersion.mouseVersion && shouldShowMajorUpdate(item)" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
+
+            <div v-if="item.isOnline && latestVersion.forceUpdate && Number(item.version) < Number(latestVersion.mouseVersion) && shouldShowMajorUpdate(item)" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(255,255,255,0.5); position: absolute; top: 0; left: 0;z-index: 100; display: flex; align-items: center;justify-content: center;" @click.stop>
               <div style="color: black; width: 190px; height: 45px; text-align: center; line-height: 45px;background: #DAFF00; border-radius: 100px; font-size: 17px;" @click="toUpdate(item)">
                 {{ t('index.majorUpdate') }}
               </div>
@@ -1236,9 +1237,9 @@ let visible = ref(false)
               srcset=""
             >
 
-            <div v-if="item.isOnline" class="mt-5 flex">
+            <div v-if="item.isOnline && !cardVisible" class="mt-5 flex">
               <div v-show="item.isCharging" style="position: relative;" class="icon3 mr-2">
-                <div style="height: 80%;" :style="{ width: `${item.battery}%`, background: !item.isWifiConnected ? 'rgba(218, 255, 0,.6)' : '#fff' }" />
+                <div style="height: 80%;" :style="{ width: `${item.battery}%`, background: !item.isWifiConnected ? 'rgba(218, 255, 0,.6)' : 'rgba(255, 255, 255,.7)' }" />
                 <div style="position: absolute; top: 50%; left: 15%; transform: translate(0%,-50%);align-items: center;" class="flex">
                   <span style="font-size: 9px;margin-right:2px">{{ item.battery }}</span>
                   <img src="/v9/icon7.png" alt="" srcset="" style="height: 82%">
