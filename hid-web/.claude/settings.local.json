@@ -29,7 +29,8 @@
       "Bash(git config:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(kill:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

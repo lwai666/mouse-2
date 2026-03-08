@@ -204,8 +204,8 @@ const cardVisible = ref(false)
 
 // 获取面板卡片所有的状态（实际实现）
 async function getDeviceStatusImpl(status?: boolean) {
-  // 面板卡片数据 - 使用当前 transportList.value 的深拷贝
-  const storedTransportList: any[] = JSON.parse(JSON.stringify(transportList.value))
+  // 面板卡片数据
+  const storedTransportList: any[] = safeGetStorage('transportList', [])
 
   if (!storedTransportList.length) {
     return
@@ -377,13 +377,10 @@ async function getDeviceStatusImpl(status?: boolean) {
   let updated = true // 标记为需要更新，因为需要将所有设备标记为离线
 
   // 先将所有设备标记为离线（解决浏览器关闭期间设备被拔掉后状态不同步的问题）
-  // 创建新对象以确保 Vue 能检测到变化
-  storedTransportList = storedTransportList.map((item: any) => ({
-    ...item,
-    isOnline: false,
-    isConnected: false,
-    isWifiConnected: false,
-  }))
+  storedTransportList.forEach((item: any) => {
+    item.isOnline = false
+    item.isConnected = false
+  })
 
   // 过滤所有信任的设备
   deviceStatusList.forEach((deviceStatus: any) => {
@@ -397,7 +394,7 @@ async function getDeviceStatusImpl(status?: boolean) {
     )
 
     if (matchedIndex !== -1) {
-      // 更新设备状态信息 - 创建新对象
+      // 更新设备状态信息
       storedTransportList[matchedIndex] = {
         ...storedTransportList[matchedIndex],
         productId: deviceStatus.productId,
@@ -409,7 +406,11 @@ async function getDeviceStatusImpl(status?: boolean) {
         isOnline: deviceStatus.isConnected, // 设备当前处于连接状态
         version: deviceStatus.version,
         mouseColor: deviceStatus.mouseColor,
-        isWifiConnected: isReceiverDevice(deviceStatus.vendorId, deviceStatus.productId),
+      }
+
+      // 如果是接收器且已连接，添加 WiFi 连接标识
+      if (isReceiverDevice(deviceStatus.vendorId, deviceStatus.productId)) {
+        storedTransportList[matchedIndex].isWifiConnected = true
       }
 
       updated = true
@@ -419,17 +420,18 @@ async function getDeviceStatusImpl(status?: boolean) {
   // 如果有更新，保存到 localStorage 和 ref
   if (updated) {
     safeSetStorage('transportList', storedTransportList)
-    // 创建新数组引用，确保 Vue 响应式系统能检测到变化
-    transportList.value = [...storedTransportList]
+    console.log('🔧 准备更新 transportList')
+    console.log('  - storedTransportList 引用:', storedTransportList)
+    console.log('  - transportList.value 更新前引用:', transportList.value)
+    console.log('  - 是否相同引用:', storedTransportList === transportList.value)
+
+    transportList.value = storedTransportList
+
+    console.log('  - transportList.value 更新后引用:', transportList.value)
+    console.log('  - 更新后数据:', JSON.stringify(transportList.value, null, 2))
+
     cardVisible.value = false
-    console.log('📦 transportList 已更新====')
-    console.log('  - 新数组引用:', transportList.value)
-    console.log('  - 数组长度:', transportList.value.length)
-    console.log('  - 每个设备的状态:')
-    transportList.value.forEach((item, index) => {
-      console.log(`    [${index}] ${item.productName}: isOnline=${item.isOnline}, battery=${item.battery}, isConnected=${item.isConnected}`)
-    })
-    console.log('  - cardVisible:', cardVisible.value)
+    console.log('transportList 已更新====', storedTransportList, cardVisible.value)
   }
 
   return deviceStatusList
