@@ -420,7 +420,8 @@ async function getDeviceStatusImpl(status?: boolean) {
   // 如果有更新，保存到 localStorage 和 ref
   if (updated) {
     safeSetStorage('transportList', storedTransportList)
-    transportList.value = storedTransportList
+    // 创建新数组引用，确保 Vue 响应式系统能检测到变化
+    transportList.value = [...storedTransportList]
     console.log('transportList 已更新====', storedTransportList)
   }
 
