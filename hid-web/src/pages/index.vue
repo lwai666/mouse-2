@@ -1220,8 +1220,8 @@ let visible = ref(false)
           @scroll="updateScrollButtons"
         >
           <div
-            v-for="item in transportList"
-            :key="item.reportId"
+            v-for="(item, index) in transportList"
+            :key="index"
             class="relative mb-5 flex flex-shrink-0 items-center"
             style="width: 231px;
             height: 248px;
@@ -1236,6 +1236,8 @@ let visible = ref(false)
             <p style="color: #fff; font-weight: bold;font-size: 18px;">
               {{ item.productName }}
             </p>
+
+            {{ item.isOnline }} {{ cardVisible }}
 
             <div v-if="!item.isOnline || cardVisible" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.5); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
 
