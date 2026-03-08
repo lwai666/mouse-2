@@ -204,8 +204,8 @@ const cardVisible = ref(false)
 
 // 获取面板卡片所有的状态（实际实现）
 async function getDeviceStatusImpl(status?: boolean) {
-  // 面板卡片数据
-  const storedTransportList: any[] = safeGetStorage('transportList', [])
+  // 面板卡片数据 - 使用当前 transportList.value 的深拷贝
+  const storedTransportList: any[] = JSON.parse(JSON.stringify(transportList.value))
 
   if (!storedTransportList.length) {
     return
@@ -422,7 +422,14 @@ async function getDeviceStatusImpl(status?: boolean) {
     // 创建新数组引用，确保 Vue 响应式系统能检测到变化
     transportList.value = [...storedTransportList]
     cardVisible.value = false
-    console.log('transportList 已更新====', storedTransportList, cardVisible.value)
+    console.log('📦 transportList 已更新====')
+    console.log('  - 新数组引用:', transportList.value)
+    console.log('  - 数组长度:', transportList.value.length)
+    console.log('  - 每个设备的状态:')
+    transportList.value.forEach((item, index) => {
+      console.log(`    [${index}] ${item.productName}: isOnline=${item.isOnline}, battery=${item.battery}, isConnected=${item.isConnected}`)
+    })
+    console.log('  - cardVisible:', cardVisible.value)
   }
 
   return deviceStatusList
