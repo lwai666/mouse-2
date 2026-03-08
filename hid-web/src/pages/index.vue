@@ -377,10 +377,13 @@ async function getDeviceStatusImpl(status?: boolean) {
   let updated = true // 标记为需要更新，因为需要将所有设备标记为离线
 
   // 先将所有设备标记为离线（解决浏览器关闭期间设备被拔掉后状态不同步的问题）
-  storedTransportList.forEach((item: any) => {
-    item.isOnline = false
-    item.isConnected = false
-  })
+  // 创建新对象以确保 Vue 能检测到变化
+  storedTransportList = storedTransportList.map((item: any) => ({
+    ...item,
+    isOnline: false,
+    isConnected: false,
+    isWifiConnected: false,
+  }))
 
   // 过滤所有信任的设备
   deviceStatusList.forEach((deviceStatus: any) => {
@@ -394,7 +397,7 @@ async function getDeviceStatusImpl(status?: boolean) {
     )
 
     if (matchedIndex !== -1) {
-      // 更新设备状态信息
+      // 更新设备状态信息 - 创建新对象
       storedTransportList[matchedIndex] = {
         ...storedTransportList[matchedIndex],
         productId: deviceStatus.productId,
@@ -406,11 +409,7 @@ async function getDeviceStatusImpl(status?: boolean) {
         isOnline: deviceStatus.isConnected, // 设备当前处于连接状态
         version: deviceStatus.version,
         mouseColor: deviceStatus.mouseColor,
-      }
-
-      // 如果是接收器且已连接，添加 WiFi 连接标识
-      if (isReceiverDevice(deviceStatus.vendorId, deviceStatus.productId)) {
-        storedTransportList[matchedIndex].isWifiConnected = true
+        isWifiConnected: isReceiverDevice(deviceStatus.vendorId, deviceStatus.productId),
       }
 
       updated = true
