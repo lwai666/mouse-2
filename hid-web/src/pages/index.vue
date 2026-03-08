@@ -421,17 +421,16 @@ async function getDeviceStatusImpl(status?: boolean) {
   if (updated) {
     safeSetStorage('transportList', storedTransportList)
     console.log('🔧 准备更新 transportList')
-    console.log('  - storedTransportList 引用:', storedTransportList)
-    console.log('  - transportList.value 更新前引用:', transportList.value)
-    console.log('  - 是否相同引用:', storedTransportList === transportList.value)
-
-    transportList.value = storedTransportList
+    transportList.value = []
 
     console.log('  - transportList.value 更新后引用:', transportList.value)
     console.log('  - 更新后数据:', JSON.stringify(transportList.value, null, 2))
 
     cardVisible.value = false
     console.log('transportList 已更新====', storedTransportList, cardVisible.value)
+    nextTick(() => {
+      transportList.value = storedTransportList
+    })
   }
 
   return deviceStatusList
