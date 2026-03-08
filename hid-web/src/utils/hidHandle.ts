@@ -824,7 +824,8 @@ class TransportWebHID extends Transport {
     const data = new Uint8Array(e.data.buffer)
     const device = e.device
 
-    console.log('回复=========1', data)
+    const command = data[0]
+    console.log(`回复=========1 设备: ${device.productName} (VID: 0x${device.vendorId.toString(16)}, PID: 0x${device.productId.toString(16)}), 命令: 0x${command.toString(16)}, 数据:`, Array.from(data))
 
     // ========== 触发全局 HID 事件 ==========
     // 1. 触发所有输入报告事件

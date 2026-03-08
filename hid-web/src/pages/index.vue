@@ -422,7 +422,8 @@ async function getDeviceStatusImpl(status?: boolean) {
     safeSetStorage('transportList', storedTransportList)
     // 创建新数组引用，确保 Vue 响应式系统能检测到变化
     transportList.value = [...storedTransportList]
-    console.log('transportList 已更新====', storedTransportList)
+    cardVisible.value = false
+    console.log('transportList 已更新====', storedTransportList, cardVisible.value)
   }
 
   return deviceStatusList
@@ -662,14 +663,15 @@ onMounted(() => {
   navigator.hid.addEventListener('disconnect', onDisconnect)
 
   // 订阅 0x2A 命令
-  unsubscribe = globalHIDEvents.onCommand(0x2A, () => {
+  unsubscribe = globalHIDEvents.onCommand(0x2A, (params: any) => {
     console.log('📨 收到 0x2A 命令的回复')
+    // console.log('  - 设备名称:', params.device.productName)
+    // console.log('  - VendorID:', '0x' + params.device.vendorId.toString(16).toUpperCase())
+    // console.log('  - ProductID:', '0x' + params.device.productId.toString(16).toUpperCase())
+    // console.log('  - 数据内容:', Array.from(params.data))
+    // console.log('  - 当前订阅数:', globalHIDEvents.getSubscriberCount(0x2A))
     // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    // // console.log('设备名称:', params.device.productName)
-    // // console.log('VendorID:', '0x' + params.device.vendorId.toString(16).toUpperCase())
-    // // console.log('ProductID:', '0x' + params.device.productId.toString(16).toUpperCase())
     // // console.log('命令:', '0x' + params.command.toString(16).toUpperCase())
-    // // console.log('数据内容:', Array.from(params.data))
     // // console.log('数据长度:', params.data.length)
     // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
