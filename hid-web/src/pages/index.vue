@@ -397,6 +397,8 @@ async function getDeviceStatusImpl(status?: boolean) {
       // 更新设备状态信息
       storedTransportList[matchedIndex] = {
         ...storedTransportList[matchedIndex],
+        productId: deviceStatus.productId,
+        vendorId: deviceStatus.vendorId,
         battery: deviceStatus.battery,
         isCharging: deviceStatus.isCharging,
         isConnected: deviceStatus.isConnected,
@@ -617,7 +619,7 @@ function shouldShowMajorUpdate(item): boolean {
   }
 
   // 已读版本 < 当前服务器最新版本，说明有新版本，显示
-  return readRecord.readMouseVersion < latestVersion.value.mouseVersion
+  return Number(readRecord.readMouseVersion) < Number(latestVersion.value.mouseVersion)
 }
 
 const notSupportHid = ref(false)
@@ -672,8 +674,6 @@ onMounted(() => {
 
     getDeviceStatus()
   })
-
-  console.log('✅ 已订阅 0x2A 命令监听')
 })
 
 const colorItems = [
@@ -813,6 +813,8 @@ async function handleMouseConnection(device: HIDDevice) {
 
     const pairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId)?.pairingCode
 
+    const deviceItem = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId)
+
     // 4. 更新 transportList - 将无线卡片转换为有线卡片
     const transportListCopy = [...transportList.value]
 
@@ -833,6 +835,8 @@ async function handleMouseConnection(device: HIDDevice) {
         vendorId: device.vendorId,
         productId: device.productId,
         productName: device.productName,
+        isCharging: deviceItem?.isCharging || false,
+        battery: deviceItem?.battery || 0,
       }
     }
 
@@ -854,6 +858,7 @@ async function handleReceiverConnection(device: HIDDevice) {
     // 去存储的 deviceStatusList 中去找 配对码
     const deviceStatusList = safeGetStorage('deviceStatusList', [])
     const receiverPairingCode = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId).pairingCode
+    const deviceItem = deviceStatusList.find(item => item.productId === device.productId && item.vendorId === device.vendorId)
 
     // 3. 在本地 transportList 中查找匹配的数据
     const transportListCopy = [...transportList.value]
@@ -886,6 +891,8 @@ async function handleReceiverConnection(device: HIDDevice) {
       productName: device.productName,
       isOnline: true,
       isWifiConnected: true, // 转换为无线卡片
+      isCharging: deviceItem?.isCharging || false,
+      battery: deviceItem?.battery || 0,
     }
 
     // 6. 保存更新

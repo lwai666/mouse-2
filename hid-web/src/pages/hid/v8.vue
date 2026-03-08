@@ -28,7 +28,7 @@ import { useGlobalInputListener } from '~/composables/useGlobalInputListener.ts'
 
 import { loadLanguageAsync } from '~/modules/i18n'
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/utils'
-import { connectAndStoreDevice, keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, globalHIDEvents, keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 const { t, locale } = useI18n()
 
@@ -1609,10 +1609,10 @@ else {
   console.log('[v8.vue] 未检测到缓存的 transport 实例，尝试重新连接')
   handlePageRefresh()
 }
+let unsubscribe: (() => void) | null = null
 
 onMounted(() => {
   getLatestVersion()
-
   const tabActive = localStorage.getItem('tabActive') || 'performance'
   activeBgChange(tabActive)
   autofit.init({
@@ -1622,11 +1622,33 @@ onMounted(() => {
     resize: true,
     allowScroll: true,
   })
+  // 订阅 0x2A 命令
+  unsubscribe = globalHIDEvents.onCommand(0x2A, (params) => {
+    console.log('数据内容0x2A:', params.data)
+    const status = params.data[3] === 0
+    if (status) {
+      router.push('/')
+    }
+
+    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    // // console.log('设备名称:', params.device.productName)
+    // // console.log('VendorID:', '0x' + params.device.vendorId.toString(16).toUpperCase())
+    // // console.log('ProductID:', '0x' + params.device.productId.toString(16).toUpperCase())
+    // // console.log('命令:', '0x' + params.command.toString(16).toUpperCase())
+    // // console.log('数据内容:', Array.from(params.data))
+    // // console.log('数据长度:', params.data.length)
+    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  })
 })
 
 onUnmounted(() => {
   transport.value.off('input-all', onInputReport)
   navigator.hid.removeEventListener('disconnect', onDisconnect)
+  // ========== 5. 取消全局 HID 事件订阅 ==========
+  if (unsubscribe) {
+    unsubscribe()
+    unsubscribe = null
+  }
 })
 
 // 使用 provide 提供数据

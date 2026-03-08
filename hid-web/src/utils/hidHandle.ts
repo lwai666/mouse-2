@@ -742,43 +742,6 @@ export class GlobalHIDEventEmitter extends EventEmitter {
   }
 }
 
-/**
- * 导出全局 HID 事件发射器单例
- *
- * @example
- * // 订阅所有 HID 数据
- * import { globalHIDEvents } from '~/utils/hidHandle'
- *
- * const unsubscribe = globalHIDEvents.onAll((params) => {
- *   console.log('收到数据:', params.data)
- *   console.log('设备:', params.device.productName)
- *   console.log('命令:', '0x' + params.command.toString(16).toUpperCase())
- * })
- *
- * // 取消订阅
- * unsubscribe()
- *
- * @example
- * // 订阅特定命令
- * const unsubscribe = globalHIDEvents.onCommand(0x2E, (params) => {
- *   console.log('0x2E 设备状态:', params.data)
- * })
- *
- * // 订阅多个命令
- * const unsubscribers = [
- *   globalHIDEvents.onCommand(0x2E, handleStatus),
- *   globalHIDEvents.onCommand(0x2D, handlePairing),
- * ]
- *
- * // 取消所有订阅
- * unsubscribers.forEach(unsub => unsub())
- *
- * @example
- * // 只订阅一次
- * globalHIDEvents.onceCommand(0x29, (params) => {
- *   console.log('颜色设置完成（只触发一次）')
- * })
- */
 export const globalHIDEvents = GlobalHIDEventEmitter.getInstance()
 
 export interface TransportWebHIDInstance {
@@ -1080,10 +1043,10 @@ export async function connectAndStoreDevice(
     ),
   )
 
-  // if (!matchedDevice) {
-  //   options?.showMessage?.(options?.deviceNotFoundMessage || '')
-  //   return false
-  // }
+  if (!matchedDevice) {
+    // options?.showMessage?.(options?.deviceNotFoundMessage || '')
+    return false
+  }
 
   // 创建 transport 连接
   const HIDDeviceRef = await HIDDeviceChangeTransportWebHID([matchedDevice], { id })

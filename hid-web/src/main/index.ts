@@ -1,16 +1,17 @@
+import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { spawn } from 'node:child_process'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, session, shell } from 'electron'
-
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/icon.png'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = join(__filename, '..')
 
 let mainWindow: BrowserWindow | null = null
 let serverProcess: ReturnType<typeof spawn> | null = null
+
+let hidDeviceCallback: ((deviceId: string) => void) | null = null
 
 /**
  * 启动后端 Express 服务器
@@ -58,6 +59,17 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
+  })
+
+  // 监听 HID 设备选择事件
+  mainWindow.webContents.session.on('select-hid-device', (event, details, callback) => {
+    event.preventDefault()
+
+    // 保存 callback
+    hidDeviceCallback = callback
+
+    // 发送设备列表到渲染进程，显示自定义选择界面
+    mainWindow?.webContents.send('show-hid-device-selector', details.deviceList)
   })
 
   // 监听 F12 快捷键打开 DevTools
@@ -128,6 +140,22 @@ app.whenReady().then(() => {
     return { success: true }
   })
 
+  // HID 设备选择相关的 IPC handlers
+  ipcMain.on('select-hid-device', (_event, deviceId: string) => {
+    if (hidDeviceCallback) {
+      hidDeviceCallback(deviceId)
+      hidDeviceCallback = null
+    }
+  })
+
+  ipcMain.on('cancel-hid-device-selection', () => {
+    if (hidDeviceCallback) {
+      // 传递空字符串表示取消
+      hidDeviceCallback('')
+      hidDeviceCallback = null
+    }
+  })
+
   // 设置权限处理器 - 必须在 app.whenReady() 之后设置
   // 设置设备权限处理器（用于处理已授权设备的访问）
   session.defaultSession.setDevicePermissionHandler((details) => {
@@ -170,7 +198,7 @@ app.on('window-all-closed', () => {
 // 退出前清理后端服务器进程
 app.on('before-quit', () => {
   if (serverProcess) {
-    console.log('关闭后端服务器')
+    console.log('关闭后端服务器1')
     serverProcess.kill()
   }
 })
