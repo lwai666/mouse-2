@@ -1624,20 +1624,23 @@ onMounted(() => {
   })
   // 订阅 0x2A 命令
   unsubscribe = globalHIDEvents.onCommand(0x2A, (params) => {
-    console.log('数据内容0x2A:', params.data)
+    console.log('🔧 设备页收到 0x2A 命令:', params.data)
     const status = params.data[3] === 0
     if (status) {
-      router.push('/')
+      // loading.close()
+      const loading = ElLoading.service({
+        lock: true,
+        text: '',
+        spinner: 'none',
+        background: 'rgba(0, 0, 0, 0.7)',
+      })
+      setTimeout(() => {
+        loading.close()
+        unsubscribe && unsubscribe()
+        unsubscribe = null
+        router.push('/')
+      }, 1000)
     }
-
-    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    // // console.log('设备名称:', params.device.productName)
-    // // console.log('VendorID:', '0x' + params.device.vendorId.toString(16).toUpperCase())
-    // // console.log('ProductID:', '0x' + params.device.productId.toString(16).toUpperCase())
-    // // console.log('命令:', '0x' + params.command.toString(16).toUpperCase())
-    // // console.log('数据内容:', Array.from(params.data))
-    // // console.log('数据长度:', params.data.length)
-    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   })
 })
 

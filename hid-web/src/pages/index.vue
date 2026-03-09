@@ -428,6 +428,7 @@ async function getDeviceStatusImpl(status?: boolean) {
 
     cardVisible.value = false
     console.log('transportList 已更新====', storedTransportList, cardVisible.value)
+
     nextTick(() => {
       transportList.value = storedTransportList
     })
@@ -671,7 +672,7 @@ onMounted(() => {
 
   // 订阅 0x2A 命令
   unsubscribe = globalHIDEvents.onCommand(0x2A, (params: any) => {
-    console.log('📨 收到 0x2A 命令的回复')
+    console.log('🏠 首页收到 0x2A 命令')
     // console.log('  - 设备名称:', params.device.productName)
     // console.log('  - VendorID:', '0x' + params.device.vendorId.toString(16).toUpperCase())
     // console.log('  - ProductID:', '0x' + params.device.productId.toString(16).toUpperCase())
@@ -1219,8 +1220,8 @@ let visible = ref(false)
           @scroll="updateScrollButtons"
         >
           <div
-            v-for="(item, index) in transportList"
-            :key="index"
+            v-for="(item) in transportList"
+            :key="item.sn"
             class="relative mb-5 flex flex-shrink-0 items-center"
             style="width: 231px;
             height: 248px;
