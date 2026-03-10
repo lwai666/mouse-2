@@ -1626,12 +1626,25 @@ onMounted(() => {
   // 订阅 0x2A 命令
   unsubscribe = onHIDData((params) => {
     // 只处理 0x2A 命令
-    if (params.command !== 0x2A) return
+    if (params.command !== 0x2A)
+      return
 
     console.log('数据内容0x2A:', params.data)
     const status = params.data[3] === 0
     if (status) {
-      router.push('/')
+      // loading.close()
+      const loading = ElLoading.service({
+        lock: true,
+        text: '',
+        spinner: 'none',
+        background: 'rgba(0, 0, 0, 0.7)',
+      })
+      setTimeout(() => {
+        loading.close()
+        unsubscribe && unsubscribe()
+        unsubscribe = null
+        router.push('/')
+      }, 1000)
     }
   })
 })

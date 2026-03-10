@@ -12,7 +12,7 @@ import { loadLanguageAsync } from '~/modules/i18n'
 
 import { sleep } from '~/utils'
 
-import { connectAndStoreDevice, createTransportWebHID, onHIDData, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, createTransportWebHID, HIDDeviceChangeTransportWebHID, onHIDData, transportWebHID } from '~/utils/hidHandle'
 
 defineOptions({
   name: 'Scyrox',
@@ -428,6 +428,7 @@ async function getDeviceStatusImpl(status?: boolean) {
 
     cardVisible.value = false
     console.log('transportList 已更新====', storedTransportList, cardVisible.value)
+
     nextTick(() => {
       transportList.value = storedTransportList
     })
@@ -672,7 +673,8 @@ onMounted(() => {
   // 订阅 0x2A 命令
   unsubscribe = onHIDData((params: any) => {
     // 只处理 0x2A 命令
-    if (params.command !== 0x2A) return
+    if (params.command !== 0x2A)
+      return
 
     console.log('📨 收到 0x2A 命令的回复')
     getDeviceStatus()
@@ -1212,8 +1214,8 @@ let visible = ref(false)
           @scroll="updateScrollButtons"
         >
           <div
-            v-for="(item, index) in transportList"
-            :key="index"
+            v-for="(item) in transportList"
+            :key="item.sn"
             class="relative mb-5 flex flex-shrink-0 items-center"
             style="width: 231px;
             height: 248px;
