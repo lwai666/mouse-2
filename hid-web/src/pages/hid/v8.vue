@@ -28,7 +28,7 @@ import { useGlobalInputListener } from '~/composables/useGlobalInputListener.ts'
 
 import { loadLanguageAsync } from '~/modules/i18n'
 import { base64ToJson, checkProfile, chunkArray, combineLowAndHigh8Bits, decodeArrayBufferToArray, decodeArrayBufferToString, encodeStringToArrayBuffer, getLowAndHigh8Bits, insertAt9th, jsonToBase64, mapHexToRange, mapRangeToHex, processArrayToObject, removeAt9th } from '~/utils'
-import { connectAndStoreDevice, globalHIDEvents, keyMap, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, keyMap, onHIDData, transportWebHID, useTransportWebHID } from '~/utils/hidHandle'
 
 const { t, locale } = useI18n()
 
@@ -1622,22 +1622,17 @@ onMounted(() => {
     resize: true,
     allowScroll: true,
   })
+
   // 订阅 0x2A 命令
-  unsubscribe = globalHIDEvents.onCommand(0x2A, (params) => {
+  unsubscribe = onHIDData((params) => {
+    // 只处理 0x2A 命令
+    if (params.command !== 0x2A) return
+
     console.log('数据内容0x2A:', params.data)
     const status = params.data[3] === 0
     if (status) {
       router.push('/')
     }
-
-    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    // // console.log('设备名称:', params.device.productName)
-    // // console.log('VendorID:', '0x' + params.device.vendorId.toString(16).toUpperCase())
-    // // console.log('ProductID:', '0x' + params.device.productId.toString(16).toUpperCase())
-    // // console.log('命令:', '0x' + params.command.toString(16).toUpperCase())
-    // // console.log('数据内容:', Array.from(params.data))
-    // // console.log('数据长度:', params.data.length)
-    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   })
 })
 
@@ -2375,7 +2370,6 @@ async function onChange(macroName: string, index: number) {
   console.log('设置宏按键名字=======', macroName, index)
   const macroNameArrayBuffer = encodeStringToArrayBuffer(macroName)
   await transport?.value.send([0x19, 0x00, macroNameArrayBuffer.length, 6 + index, ...macroNameArrayBuffer])
-
   profileInfo.macroList[index].name = macroName
   isHovered.value = ''
   setLoadingStatus('')

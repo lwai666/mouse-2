@@ -585,7 +585,7 @@ class EventEmitter {
   }
 }
 
-// ========== 全局 HID 事件总线 ==========
+// ========== 超级简单的 HID 数据回调 ==========
 /**
  * HID 设备数据类型
  */
@@ -596,153 +596,49 @@ export interface HIDDeviceData {
 }
 
 /**
- * HID 事件订阅器类型
+ * HID 事件回调函数类型
  */
-export type HIDEventCallback = (data: HIDDeviceData) => void
+export type HIDCallback = (data: HIDDeviceData) => void
 
 /**
- * 取消订阅的函数类型
+ * 简单的 HID 数据回调管理器
+ * 就是一个数组，存储所有回调函数
  */
-export type HIDUnsubscribe = () => void
+const hidCallbacks: HIDCallback[] = []
 
-export class GlobalHIDEventEmitter extends EventEmitter {
-  private static instance: GlobalHIDEventEmitter
-  private subscriptions: Map<string, Set<HIDEventCallback>> = new Map()
-
-  private constructor() {
-    super()
-  }
-
-  /**
-   * 获取单例实例
-   */
-  static getInstance(): GlobalHIDEventEmitter {
-    if (!GlobalHIDEventEmitter.instance) {
-      GlobalHIDEventEmitter.instance = new GlobalHIDEventEmitter()
+/**
+ * 添加回调函数
+ * @param callback 回调函数
+ * @returns 取消函数
+ */
+export function onHIDData(callback: HIDCallback): () => void {
+  hidCallbacks.push(callback)
+  // 返回取消函数
+  return () => {
+    const index = hidCallbacks.indexOf(callback)
+    if (index > -1) {
+      hidCallbacks.splice(index, 1)
     }
-    return GlobalHIDEventEmitter.instance
-  }
-
-  /**
-   * 订阅所有 HID 输入报告
-   * @param callback 回调函数，接收 { data, device, command }
-   * @returns 取消订阅的函数
-   */
-  onAll(callback: HIDEventCallback): HIDUnsubscribe {
-    const eventName = 'hid-input-report'
-
-    this.on(eventName, (data: Uint8Array, device: HIDDevice) => {
-      callback({
-        data,
-        device,
-        command: data[0],
-      })
-    })
-
-    // 保存订阅记录
-    if (!this.subscriptions.has(eventName)) {
-      this.subscriptions.set(eventName, new Set())
-    }
-    this.subscriptions.get(eventName)!.add(callback)
-
-    // 返回取消订阅函数
-    return () => {
-      this.off(eventName, callback)
-      this.subscriptions.get(eventName)?.delete(callback)
-    }
-  }
-
-  /**
-   * 订阅特定命令的 HID 输入报告
-   * @param command 命令字节（如 0x2E）
-   * @param callback 回调函数，接收 { data, device, command }
-   * @returns 取消订阅的函数
-   */
-  onCommand(command: number, callback: HIDEventCallback): HIDUnsubscribe {
-    const eventName = `hid-command-${command.toString(16)}`
-
-    this.on(eventName, (params: HIDDeviceData) => {
-      callback(params)
-    })
-
-    // 保存订阅记录
-    if (!this.subscriptions.has(eventName)) {
-      this.subscriptions.set(eventName, new Set())
-    }
-    this.subscriptions.get(eventName)!.add(callback)
-
-    // 返回取消订阅函数
-    return () => {
-      this.off(eventName, callback)
-      this.subscriptions.get(eventName)?.delete(callback)
-    }
-  }
-
-  /**
-   * 订阅特定命令（只触发一次）
-   * @param command 命令字节
-   * @param callback 回调函数
-   */
-  onceCommand(command: number, callback: HIDEventCallback): void {
-    const eventName = `hid-command-${command.toString(16)}`
-    const wrapper: HIDEventCallback = (params) => {
-      callback(params)
-      this.off(eventName, wrapper as any)
-    }
-    this.on(eventName, wrapper as any)
-  }
-
-  /**
-   * 取消订阅所有 HID 输入报告
-   * @param callback 之前订阅时传入的回调函数
-   */
-  offAll(callback: HIDEventCallback): void {
-    const eventName = 'hid-input-report'
-    this.off(eventName, callback as any)
-    this.subscriptions.get(eventName)?.delete(callback)
-  }
-
-  /**
-   * 取消订阅特定命令
-   * @param command 命令字节
-   * @param callback 之前订阅时传入的回调函数
-   */
-  offCommand(command: number, callback: HIDEventCallback): void {
-    const eventName = `hid-command-${command.toString(16)}`
-    this.off(eventName, callback as any)
-    this.subscriptions.get(eventName)?.delete(callback)
-  }
-
-  /**
-   * 清除所有订阅（谨慎使用）
-   */
-  clear(): void {
-    this.subscriptions.forEach((callbacks, eventName) => {
-      callbacks.forEach((callback) => {
-        this.off(eventName, callback as any)
-      })
-    })
-    this.subscriptions.clear()
-  }
-
-  /**
-   * 获取某个命令的订阅者数量
-   * @param command 命令字节，不传则返回所有订阅数
-   */
-  getSubscriberCount(command?: number): number {
-    if (command === undefined) {
-      let total = 0
-      this.subscriptions.forEach((callbacks) => {
-        total += callbacks.size
-      })
-      return total
-    }
-    const eventName = `hid-command-${command.toString(16)}`
-    return this.subscriptions.get(eventName)?.size || 0
   }
 }
 
-export const globalHIDEvents = GlobalHIDEventEmitter.getInstance()
+/**
+ * 触发所有回调（内部使用）
+ * @param data HID 数据
+ */
+function triggerHIDCallbacks(data: HIDDeviceData) {
+  // 使用 setTimeout 避免阻塞协议处理
+  setTimeout(() => {
+    hidCallbacks.forEach((callback) => {
+      try {
+        callback(data)
+      }
+      catch (error) {
+        console.error('[HID Callback] 回调执行错误:', error)
+      }
+    })
+  }, 0)
+}
 
 export interface TransportWebHIDInstance {
   install: (ctx: { app: App }) => void
@@ -824,18 +720,14 @@ class TransportWebHID extends Transport {
     const data = new Uint8Array(e.data.buffer)
     const device = e.device
 
-    console.log('回复=========1', data)
+    console.log('回复=================1', data)
 
-    // ========== 触发全局 HID 事件 ==========
-    // 1. 触发所有输入报告事件
+    // ========== 触发简单的回调（异步，不阻塞协议）==========
     if (data.length > 0) {
       const command = data[0]
       const params = { data, device, command }
-
-      globalHIDEvents.emit('hid-input-report', params)
-      globalHIDEvents.emit(`hid-command-${command.toString(16)}`, params)
+      triggerHIDCallbacks(params)
     }
-    // ========== 全局事件结束 ==========
 
     // 每次都重新计时
     if (loadingFlag) {
@@ -873,7 +765,6 @@ class TransportWebHID extends Transport {
       delete this.#errorMap[data.toString()]
       this.replyPromiseMap[data[0]]?.resolve(data)
       delete this.replyPromiseMap[data[0]]
-
       await this.handler(data)
     }
   }

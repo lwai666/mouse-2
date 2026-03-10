@@ -12,7 +12,7 @@ import { loadLanguageAsync } from '~/modules/i18n'
 
 import { sleep } from '~/utils'
 
-import { connectAndStoreDevice, createTransportWebHID, globalHIDEvents, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
+import { connectAndStoreDevice, createTransportWebHID, onHIDData, HIDDeviceChangeTransportWebHID, transportWebHID } from '~/utils/hidHandle'
 
 defineOptions({
   name: 'Scyrox',
@@ -670,18 +670,11 @@ onMounted(() => {
   navigator.hid.addEventListener('disconnect', onDisconnect)
 
   // 订阅 0x2A 命令
-  unsubscribe = globalHIDEvents.onCommand(0x2A, (params: any) => {
-    console.log('📨 收到 0x2A 命令的回复')
-    // console.log('  - 设备名称:', params.device.productName)
-    // console.log('  - VendorID:', '0x' + params.device.vendorId.toString(16).toUpperCase())
-    // console.log('  - ProductID:', '0x' + params.device.productId.toString(16).toUpperCase())
-    // console.log('  - 数据内容:', Array.from(params.data))
-    // console.log('  - 当前订阅数:', globalHIDEvents.getSubscriberCount(0x2A))
-    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    // // console.log('命令:', '0x' + params.command.toString(16).toUpperCase())
-    // // console.log('数据长度:', params.data.length)
-    // // console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  unsubscribe = onHIDData((params: any) => {
+    // 只处理 0x2A 命令
+    if (params.command !== 0x2A) return
 
+    console.log('📨 收到 0x2A 命令的回复')
     getDeviceStatus()
   })
 })
