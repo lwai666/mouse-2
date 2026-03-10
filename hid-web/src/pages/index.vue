@@ -4,7 +4,7 @@ import { CircleClose, Plus } from '@element-plus/icons-vue'
 import { useIntervalFn } from '@vueuse/core'
 
 import autofit from 'autofit.js'
-import { ElCarousel, ElCarouselItem, ElIcon, ElSpace } from 'element-plus'
+import { ElCarousel, ElCarouselItem, ElIcon, ElLoading, ElSpace } from 'element-plus'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -677,7 +677,17 @@ onMounted(() => {
       return
 
     console.log('📨 收到 0x2A 命令的回复')
-    getDeviceStatus()
+
+    const loading = ElLoading.service({
+      lock: true,
+      text: '',
+      spinner: 'none',
+      background: 'rgba(0, 0, 0, 0.7)',
+    })
+    setTimeout(() => {
+      loading.close()
+      getDeviceStatus()
+    }, 1500)
   })
 })
 
@@ -1230,8 +1240,6 @@ let visible = ref(false)
             <p style="color: #fff; font-weight: bold;font-size: 18px;">
               {{ item.productName }}
             </p>
-
-            {{ item.isOnline }} {{ cardVisible }}
 
             <div v-if="!item.isOnline || cardVisible" style="border-radius: 10px;width: 100%;height: 100%; background-color: rgba(0,0,0,0.5); position: absolute; top: 0; left: 0;z-index: 100;" @click.stop />
 
