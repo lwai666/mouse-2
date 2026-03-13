@@ -20,7 +20,7 @@
     "preinstall": "npx only-allow pnpm",
     "postinstall": "npx simple-git-hooks",
     "sizecheck": "npx vite-bundle-visualizer",
-    "electron:dev": "cross-env ELECTRON_RENDERER_URL=http://localhost:9000 electron-vite dev",
+    "electron:dev": "cross-env ELECTRON_RENDERER_URL=http://localhost:3010 electron-vite dev",
     "electron:build": "electron-vite build",
     "electron:preview": "electron-vite preview",
     "build:win": "pnpm run build && cross-env VITE_SERVER_API=https://scyrox2.shunyue.top pnpm run electron:build && electron-builder --win",
