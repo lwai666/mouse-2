@@ -2,23 +2,26 @@
  * 使用示意:
  * =====================================================================================
 
-// registerDriver(
-//   13652,
-//   62967,
-//   createSimpleDriver({
-//     computeChecksum: checksumByReportIdPlusSum_ActualBytesOnly,
-//     // 可覆盖 pktIndex 生成序列（不同厂商）：
-//     // buildPktIndexSequence: (total) => total <= 1 ? [0] : [ ...自定义... ],
-//   })
-// )
+// 1. 注册鼠标
+registerDriver({
+  vendorId: 0x2FE5,
+  productId: 0x0005,
+  driver: createSimpleDriver({
+    computeChecksum: scyroxChecksum, // 可覆盖 checksum 生成方法（不同厂商）
+    // buildPktIndexSequence: (total) => total <= 1 ? [0] : [ ...自定义... ], // 可覆盖 pktIndex 生成序列（不同厂商）
+  })
+})
 
-// const suite = createHidSuite({ vendorId: 13652, productId: 62967, packetSize: 64 })
-// await suite.connect()
-// await suite.send({
-//   type: 1,
-//   payload: new Uint8Array([ ... ]),
-//   onProgress: (p) => console.log(p.phase, `${p.index}/${p.total}`),
-// })
+// 2. 创建设备连接
+const suite = createHidSuite({ vendorId: 0x2FE5, productId: 0x0005, packetSize: 63 })
+await suite.connect()
+
+// 3. 发送数据
+await suite.send({
+  type: 1, // 发送的协议类型
+  payload: new Uint8Array([]), // 需要发送的数据，该数据可以无限大，里面自动做好了分包逻辑。【去除第一个 reportId, 第二个 type 协议类型，第三个 index 第几个数据包，最后一个 Checksum 校验和,的纯中间数据】
+  onProgress: (p) => console.log(p.phase, `${p.index}/${p.total}`),
+})
 
  * ===================================================================================== */
 
@@ -169,12 +172,13 @@ export type HidDriver = {
 type InternalState = "idle" | "connecting" | "connected" | "disconnected"
 
 const defaultLogger: Logger = {
-  debug: () => {},
-  info: () => {},
+  debug: console.warn.bind(console),
+  info: console.warn.bind(console),
   warn: console.warn.bind(console),
   error: console.error.bind(console),
 }
 
+/** new HidSuite(HidSuiteOptions 设备信息, HidDriver 设备协议驱动) */
 export class HidSuite {
   private options: Required<Pick<HidSuiteOptions, "packetSize" | "timeoutMs">> &
     Omit<HidSuiteOptions, "packetSize" | "timeoutMs" | "logger"> & { logger: Logger }
@@ -266,6 +270,9 @@ export class HidSuite {
   }
 
   private onInputReport = (ev: HIDInputReportEvent) => {
+    const data = new Uint8Array(ev.data.buffer)
+    this.options.logger.info('回复的数据================', data)
+
     if (!this.device) return
     const parsed = this.driver.tryParseInputReport({
       device: this.device,
@@ -478,7 +485,6 @@ export type SimpleDriverOptions = {
   // 字段布局
   typeOffset?: number
   pktIndexOffset?: number
-  totalOffset?: number
   payloadOffset?: number
   statusOffset?: number
 
@@ -489,8 +495,7 @@ export type SimpleDriverOptions = {
 export function createSimpleDriver(opts: SimpleDriverOptions): HidDriver {
   const typeOffset = opts.typeOffset ?? 0
   const pktIndexOffset = opts.pktIndexOffset ?? 1
-  const totalOffset = opts.totalOffset ?? 2
-  const payloadOffset = opts.payloadOffset ?? 3
+  const payloadOffset = opts.payloadOffset ?? 2
   const statusOffset = opts.statusOffset ?? 2
 
   const getMaxChunkPayloadBytes = (packetSize: number) => {
@@ -509,7 +514,6 @@ export function createSimpleDriver(opts: SimpleDriverOptions): HidDriver {
     const buf = new Uint8Array(args.packetSize)
     buf[typeOffset] = args.type & 0xff
     buf[pktIndexOffset] = args.pktIndex & 0xff
-    buf[totalOffset] = args.totalChunks & 0xff
 
     const maxChunk = getMaxChunkPayloadBytes(args.packetSize)
     if (args.chunkPayload.length > maxChunk) throw new Error(`chunkPayload too large: ${args.chunkPayload.length} > ${maxChunk}`)
@@ -517,10 +521,11 @@ export function createSimpleDriver(opts: SimpleDriverOptions): HidDriver {
 
     const lastMeaningfulIndex = args.chunkPayload.length > 0
         ? payloadOffset + args.chunkPayload.length - 1
-        : Math.max(typeOffset, pktIndexOffset, totalOffset)
+        : Math.max(typeOffset, pktIndexOffset)
 
     const bytesForChecksum = buf.slice(0, lastMeaningfulIndex + 1)
     buf[args.packetSize - 1] = opts.computeChecksum({ reportId: args.reportId, bytesForChecksum }) & 0xff
+
     return buf
   }
 
@@ -544,6 +549,7 @@ export function createSimpleDriver(opts: SimpleDriverOptions): HidDriver {
   return {
     name: "simple-driver",
 
+    /** 获取设备对象 */
     pickDevice(devices: HIDDevice[], hint?: string): HIDDevice {
       return (opts.pickDevice ?? ((ds) => {
         for (const d of ds) {
@@ -553,6 +559,7 @@ export function createSimpleDriver(opts: SimpleDriverOptions): HidDriver {
       }))(devices, hint)
     },
 
+    /** 选择输出报告Id */
     pickOutputReportId(device: HIDDevice): number {
       const c = pickFirstCollectionWithInOut(device)
       if (!c) throw new Error("Cannot find a collection with both inputReports and outputReports")
@@ -562,6 +569,7 @@ export function createSimpleDriver(opts: SimpleDriverOptions): HidDriver {
       return reportId
     },
 
+    /** 尝试解析输入数据报告 */
     tryParseInputReport(args: { device: HIDDevice, reportId: number, data: DataView, packetSize: number }): HidParsedIncoming | null {
       const bytes = new Uint8Array(args.data.buffer.slice(args.data.byteOffset, args.data.byteOffset + args.data.byteLength))
       if (bytes.length !== args.packetSize) return null
@@ -581,10 +589,12 @@ export function createSimpleDriver(opts: SimpleDriverOptions): HidDriver {
       }
     },
 
+    /** 匹配响应 */
     matchResponse(incoming: HidParsedIncoming, meta: OutgoingChunkMeta): boolean {
       return incoming.kind === "response" && incoming.type === meta.type && incoming.pktIndex === meta.pktIndex
     },
 
+    /** 构建区块计划 */
     buildChunkPlan(args: { device: HIDDevice, reportId: number, packetSize: number, type: number, payload: Uint8Array }): ChunkPlan {
       return planner({
         reportId: args.reportId,
@@ -597,10 +607,10 @@ export function createSimpleDriver(opts: SimpleDriverOptions): HidDriver {
 }
 
 /* =====================================================================================
- * Section 8) checksum 示例（reportId + sum(实际字段)）
+ *  scyrox 鼠标的数据校验方法：
  * ===================================================================================== */
 
-export function checksumByReportIdPlusSum_ActualBytesOnly(args: {
+export function scyroxChecksum(args: {
   reportId: number
   bytesForChecksum: Uint8Array
 }): number {
@@ -610,14 +620,14 @@ export function checksumByReportIdPlusSum_ActualBytesOnly(args: {
 }
 
 /* =====================================================================================
- * Section 9) Registry + Factory
+ * 注册 + 工厂 功能整合
  * ===================================================================================== */
 
 type DriverKey = `${number}:${number}`
 const driverRegistry = new Map<DriverKey, HidDriver>()
 
-export function registerDriver(vendorId: number, productId: number, driver: HidDriver) {
-  driverRegistry.set(`${vendorId}:${productId}`, driver)
+export function registerDriver(options: { vendorId: number, productId: number, driver: HidDriver }) {
+  driverRegistry.set(`${options.vendorId}:${options.productId}`, options.driver)
 }
 
 export function createHidSuite(options: HidSuiteOptions): HidSuite {
